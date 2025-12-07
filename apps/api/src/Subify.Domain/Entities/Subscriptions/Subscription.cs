@@ -9,7 +9,10 @@ namespace Subify.Domain.Entities.Subscriptions;
 public sealed class Subscription : BaseEntity, ISoftDeletable
 {
     public Guid UserId { get; set; }
+
     public Guid? CategoryId { get; set; }
+
+    public Guid? UserCategoryId { get; set; }
 
     /// <summary>
     /// Subscription name. Examples: 'Netflix', 'Spotify Premium'
@@ -77,6 +80,7 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
     // Navigation
     public ApplicationUser User { get; set; } = null!;
     public Category? Category { get; set; }
+    public UserCategory? UserCategory { get; set; }
     public ICollection<SubscriptionPaymentRecord> PaymentRecords { get; set; } = [];
     public ICollection<NotificationLog> NotificationLogs { get; set; } = [];
 }

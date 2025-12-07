@@ -1,6 +1,6 @@
 ﻿namespace Subify.Domain.Entities.Common;
 
-public class Resource : BaseEntity
+public sealed class Resource : BaseEntity
 {
     /// <summary>
     /// Logical grouping for client-side namespacing.

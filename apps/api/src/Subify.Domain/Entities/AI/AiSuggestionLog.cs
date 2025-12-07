@@ -1,10 +1,5 @@
 ﻿using Subify.Domain.Entities.Common;
 using Subify.Domain.Entities.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Subify.Domain.Entities.AI;
 
@@ -12,7 +7,7 @@ namespace Subify.Domain.Entities.AI;
 /// Logs AI suggestion requests and responses.
 /// Used for debugging, analytics, and cost tracking.
 /// </summary>
-public class AiSuggestionLog: BaseEntity
+public sealed class AiSuggestionLog: BaseEntity
 {
     public Guid UserId { get; set; }
 
