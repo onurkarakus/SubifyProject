@@ -3,7 +3,7 @@ using Subify.Domain.Entities.Common;
 
 namespace Subify.Domain.Entities.Subscriptions;
 
-public class Category : BaseEntity
+public sealed class Category : BaseEntity
 {
     /// <summary>
     /// URL-friendly unique identifier.

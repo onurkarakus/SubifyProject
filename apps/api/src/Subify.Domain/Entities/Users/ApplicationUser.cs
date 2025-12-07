@@ -1,5 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Subify.Domain.Abstractions.Common;
+using Subify.Domain.Entities.AI;
+using Subify.Domain.Entities.ApplicationPayments;
+using Subify.Domain.Entities.AuditLogs;
+using Subify.Domain.Entities.Auth;
+using Subify.Domain.Entities.Notifications;
 using Subify.Domain.Entities.Subscriptions;
 
 namespace Subify.Domain.Entities.Users;
@@ -20,11 +25,18 @@ public class ApplicationUser : IdentityUser<Guid>, ISoftDeletable
 
     // Navigation
     public Profile? Profile { get; set; }
+
     public ICollection<Subscription> Subscriptions { get; set; } = [];
+
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
+
     public ICollection<PushToken> PushTokens { get; set; } = [];
+
     public ICollection<NotificationLog> NotificationLogs { get; set; } = [];
+
     public ICollection<AiSuggestionLog> AiSuggestionLogs { get; set; } = [];
+
     public ICollection<BillingSession> BillingSessions { get; set; } = [];
+
     public ICollection<EntitlementCache> Entitlements { get; set; } = [];
 }
