@@ -4,7 +4,7 @@ using Subify.Domain.Enums;
 
 namespace Subify.Domain.Entities.Subscriptions;
 
-public class SubscriptionPaymentRecord: BaseEntity
+public sealed class SubscriptionPaymentRecord: BaseEntity
 {
     public Guid SubscriptionId { get; set; }
     public Guid UserId { get; set; }

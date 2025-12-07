@@ -1,16 +1,12 @@
 ﻿using Subify.Domain.Abstractions.Common;
+using Subify.Domain.Entities.AuditLogs;
 using Subify.Domain.Entities.Common;
 using Subify.Domain.Entities.Users;
 using Subify.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Subify.Domain.Entities.Subscriptions;
 
-public class Subscription : BaseEntity, ISoftDeletable
+public sealed class Subscription : BaseEntity, ISoftDeletable
 {
     public Guid UserId { get; set; }
     public Guid? CategoryId { get; set; }
@@ -61,12 +57,26 @@ public class Subscription : BaseEntity, ISoftDeletable
     /// </summary>
     public bool Archived { get; set; }
 
+    /// <summary>
+    /// Total number of people sharing this subscription (including the user).
+    /// 1 = not shared (user pays full price)
+    /// 3 = shared with 2 others (user pays Price / 3)
+    /// </summary>
+    public int SharedWithCount { get; set; } = 1;
+
+    /// <summary>
+    /// Calculated: User's actual payment amount.
+    /// Formula: Price / SharedWithCount
+    /// This is a computed property, not stored in DB.
+    /// </summary>
+    public decimal UserShare => SharedWithCount > 0 ? Price / SharedWithCount : Price;
+
     // ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }
 
     // Navigation
     public ApplicationUser User { get; set; } = null!;
     public Category? Category { get; set; }
-    public ICollection<PaymentRecord> PaymentRecords { get; set; } = [];
+    public ICollection<SubscriptionPaymentRecord> PaymentRecords { get; set; } = [];
     public ICollection<NotificationLog> NotificationLogs { get; set; } = [];
 }

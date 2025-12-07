@@ -39,4 +39,6 @@ public class ApplicationUser : IdentityUser<Guid>, ISoftDeletable
     public ICollection<BillingSession> BillingSessions { get; set; } = [];
 
     public ICollection<EntitlementCache> Entitlements { get; set; } = [];
+
+    public ICollection<UserCategory> UserCategories { get; set; } = [];
 }

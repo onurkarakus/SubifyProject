@@ -3,7 +3,7 @@ using Subify.Domain.Enums;
 
 namespace Subify.Domain.Entities.Users;
 
-public class Profile : BaseEntity
+public sealed class Profile : BaseEntity
 {
     // Id inherited from BaseEntity, serves as both PK and FK to ApplicationUser
 
@@ -14,6 +14,14 @@ public class Profile : BaseEntity
     /// ISO 639-1 language code.  'tr' or 'en'.
     /// </summary>
     public string Locale { get; set; } = "tr";
+
+    public string ApplicationThemeColor { get; set; } = "Royal Purple";
+
+    public bool DarkTheme { get; set; } = false;
+
+    public string MainCurrency { get; set; } = "TRY";
+
+    public decimal MonthlyBudget { get; set; } = 0m;
 
     /// <summary>
     /// Subscription plan.  'free' or 'premium'.
