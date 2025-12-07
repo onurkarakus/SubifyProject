@@ -1,0 +1,33 @@
+﻿namespace Subify.Domain.Entities.Common;
+
+public class Resource : BaseEntity
+{
+    /// <summary>
+    /// Logical grouping for client-side namespacing.
+    /// Examples: 'Common', 'Category', 'Subscription', 'Error', 'Validation'
+    /// </summary>
+    public string PageName { get; set; }
+
+    /// <summary>
+    /// Resource key within the page.
+    /// Examples: 'Music', 'Streaming', 'SaveButton', 'RequiredField'
+    /// Client uses: {PageName}. {Name} → 'Category.Music'
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// ISO 639-1 language code.
+    /// Examples: 'TR', 'EN'
+    /// </summary>
+    public string LanguageCode { get; set; }
+
+    /// <summary>
+    /// The localized text value.
+    /// </summary>
+    public string Value { get; set; }
+
+    /// <summary>
+    /// Indicates whether the resource is active and available for use.
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+}
