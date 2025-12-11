@@ -35,5 +35,6 @@ public sealed class Profile : BaseEntity
 
     // Navigation
     public ApplicationUser User { get; set; } = null!;
-    public NotificationSettings? NotificationSettings { get; set; }
+
+    public NotificationSetting? NotificationSettings { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using Subify.Domain.Entities.Common;
 using Subify.Domain.Entities.Users;
+using Subify.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

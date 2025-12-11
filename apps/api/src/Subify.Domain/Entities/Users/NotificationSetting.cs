@@ -6,7 +6,7 @@ namespace Subify.Domain.Entities.Users;
 /// User notification preferences.
 /// Uses shared primary key pattern (Id = Profile.Id = User.Id).
 /// </summary>
-public sealed class NotificationSettings : BaseEntity
+public sealed class NotificationSetting : BaseEntity
 {
     // Id = User.Id (shared PK pattern)
 
