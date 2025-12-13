@@ -13,7 +13,7 @@ public sealed class UserCategoryConfiguration : IEntityTypeConfiguration<UserCat
         builder.HasKey(uc => uc.Id);
 
         builder.Property(uc => uc.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(uc => uc.UserId).IsRequired();
+        builder.Property(uc => uc.UserId);
         builder.Property(uc => uc.Name).IsRequired().HasMaxLength(100);
         builder.Property(uc => uc.Slug).IsRequired().HasMaxLength(100);
         builder.Property(uc => uc.Icon).HasMaxLength(50);

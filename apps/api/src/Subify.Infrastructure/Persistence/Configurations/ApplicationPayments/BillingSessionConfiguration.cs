@@ -14,7 +14,7 @@ public sealed class BillingSessionConfiguration : IEntityTypeConfiguration<Billi
         builder.HasKey(bs => bs.Id);
 
         builder.Property(bs => bs.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(bs => bs.UserId).IsRequired();
+        builder.Property(bs => bs.UserId);
         builder.Property(bs => bs.Provider).IsRequired().HasMaxLength(30).HasDefaultValue("revenuecat");
         builder.Property(bs => bs.SessionId).IsRequired().HasMaxLength(200);
         builder.Property(bs => bs.Plan).IsRequired().HasMaxLength(30);

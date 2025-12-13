@@ -14,7 +14,7 @@ public sealed class AiSuggestionLogConfiguration : IEntityTypeConfiguration<AiSu
         builder.HasKey(asl => asl.Id);
 
         builder.Property(asl => asl.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(asl => asl.UserId).IsRequired();
+        builder.Property(asl => asl.UserId);
         builder.Property(asl => asl.RequestPayload).IsRequired();
         builder.Property(asl => asl.ResponsePayload);
         builder.Property(asl => asl.Model).IsRequired().HasMaxLength(50).HasDefaultValue("gpt-4o-mini");

@@ -14,7 +14,7 @@ public sealed class EntitlementCacheConfiguration : IEntityTypeConfiguration<Ent
         builder.HasKey(ec => ec.Id);
 
         builder.Property(ec => ec.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(ec => ec.UserId).IsRequired();
+        builder.Property(ec => ec.UserId);
         builder.Property(ec => ec.Entitlement).IsRequired().HasMaxLength(100);
         builder.Property(ec => ec.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(EntitlementStatus.Active);
         builder.Property(ec => ec.ExpiresAt);

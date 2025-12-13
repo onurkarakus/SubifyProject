@@ -14,7 +14,7 @@ public sealed class NotificationLogConfiguration : IEntityTypeConfiguration<Noti
         builder.HasKey(nl => nl.Id);
 
         builder.Property(nl => nl.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(nl => nl.UserId).IsRequired();
+        builder.Property(nl => nl.UserId);
         builder.Property(nl => nl.Type).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(nl => nl.Channel).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(nl => nl.Title).IsRequired().HasMaxLength(200);

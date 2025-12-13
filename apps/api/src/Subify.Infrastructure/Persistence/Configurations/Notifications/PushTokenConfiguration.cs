@@ -13,7 +13,7 @@ public sealed class PushTokenConfiguration : IEntityTypeConfiguration<PushToken>
         builder.HasKey(pt => pt.Id);
 
         builder.Property(pt => pt.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(pt => pt.UserId).IsRequired();
+        builder.Property(pt => pt.UserId);
         builder.Property(pt => pt.Token).IsRequired().HasMaxLength(500);
         builder.Property(pt => pt.Platform).IsRequired().HasMaxLength(20);
         builder.Property(pt => pt.DeviceId).HasMaxLength(100);

@@ -11,7 +11,7 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.HasKey(rt => rt.Id);
 
         builder.Property(rt => rt.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(rt => rt.UserId).IsRequired();
+        builder.Property(rt => rt.UserId);
         builder.Property(rt => rt.TokenHash).IsRequired().HasMaxLength(256);
         builder.Property(rt => rt.ExpiresAt).IsRequired();
         builder.Property(rt => rt.IsRevoked).HasDefaultValue(false);

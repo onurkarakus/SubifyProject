@@ -15,7 +15,7 @@ public sealed class SubscriptionPaymentRecordConfiguration : IEntityTypeConfigur
 
         builder.Property(pr => pr.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
         builder.Property(pr => pr.SubscriptionId).IsRequired();
-        builder.Property(pr => pr.UserId).IsRequired();
+        builder.Property(pr => pr.UserId);
         builder.Property(pr => pr.Amount).HasPrecision(10, 2).IsRequired();
         builder.Property(pr => pr.Currency).IsRequired().HasMaxLength(10).HasDefaultValue("TRY");
         builder.Property(pr => pr.PaymentDate).IsRequired();

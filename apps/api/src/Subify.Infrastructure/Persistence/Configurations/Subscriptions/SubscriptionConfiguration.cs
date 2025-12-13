@@ -18,7 +18,7 @@ public sealed class SubscriptionConfiguration : IEntityTypeConfiguration<Subscri
         builder.HasKey(s => s.Id);
 
         builder.Property(s => s.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-        builder.Property(s => s.UserId).IsRequired();
+        builder.Property(s => s.UserId);
         builder.Property(s => s.Name).IsRequired().HasMaxLength(200);
         builder.Property(s => s.Price).HasPrecision(10, 2).IsRequired();
         builder.Property(s => s.Currency).IsRequired().HasMaxLength(10).HasDefaultValue("TRY");
