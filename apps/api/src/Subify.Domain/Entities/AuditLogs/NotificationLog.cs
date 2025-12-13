@@ -10,7 +10,7 @@ namespace Subify.Domain.Entities.AuditLogs;
 /// </summary>
 public sealed class NotificationLog : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public Guid? SubscriptionId { get; set; }
 
     /// <summary>
@@ -49,6 +49,7 @@ public sealed class NotificationLog : BaseEntity
     public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
+    
     public Subscription? Subscription { get; set; }
 }

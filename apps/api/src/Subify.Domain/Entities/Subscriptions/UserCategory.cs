@@ -9,7 +9,7 @@ namespace Subify.Domain.Entities.Subscriptions;
 /// </summary>
 public sealed class UserCategory : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Category name defined by user.
@@ -40,6 +40,6 @@ public sealed class UserCategory : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
     public ICollection<Subscription> Subscriptions { get; set; } = [];
 }

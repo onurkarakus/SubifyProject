@@ -9,7 +9,7 @@ namespace Subify.Domain.Entities.AI;
 /// </summary>
 public sealed class AiSuggestionLog: BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Request payload sent to AI (PII redacted).
@@ -47,5 +47,5 @@ public sealed class AiSuggestionLog: BaseEntity
     public string? ErrorMessage { get; set; }
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; }
 }

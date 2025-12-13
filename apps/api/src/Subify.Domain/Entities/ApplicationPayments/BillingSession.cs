@@ -14,7 +14,7 @@ namespace Subify.Domain.Entities.ApplicationPayments;
 /// </summary>
 public sealed class BillingSession : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Payment provider: 'revenuecat', 'stripe'
@@ -52,5 +52,5 @@ public sealed class BillingSession : BaseEntity
     public DateTimeOffset? CompletedAt { get; set; }
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
 }

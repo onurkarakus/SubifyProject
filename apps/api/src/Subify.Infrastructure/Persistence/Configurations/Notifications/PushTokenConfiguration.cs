@@ -23,7 +23,7 @@ public sealed class PushTokenConfiguration : IEntityTypeConfiguration<PushToken>
         builder.Property(pt => pt.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(pt => pt.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasOne(pt => pt.User).WithMany(u => u.PushTokens).HasForeignKey(pt => pt.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(pt => pt.User).WithMany(u => u.PushTokens).HasForeignKey(pt => pt.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         builder.HasIndex(pt => new { pt.Token, pt.Platform }).IsUnique().HasDatabaseName("IX_PushTokens_Token_Platform_Unique");
         builder.HasIndex(pt => new { pt.UserId, pt.IsActive }).HasDatabaseName("IX_PushTokens_UserId_IsActive");
     }

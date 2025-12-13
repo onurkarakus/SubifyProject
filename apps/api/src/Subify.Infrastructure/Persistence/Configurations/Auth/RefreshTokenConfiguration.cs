@@ -22,7 +22,7 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.Property(rt => rt.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(rt => rt.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasOne(rt => rt.User).WithMany(u => u.RefreshTokens).HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(rt => rt.User).WithMany(u => u.RefreshTokens).HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         builder.HasIndex(rt => rt.TokenHash).HasDatabaseName("IX_RefreshTokens_TokenHash");
         builder.HasIndex(rt => new { rt.UserId, rt.IsRevoked, rt.ExpiresAt }).HasDatabaseName("IX_RefreshTokens_UserId_IsRevoked_ExpiresAt");
     }

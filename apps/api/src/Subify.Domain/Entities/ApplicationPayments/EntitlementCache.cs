@@ -10,7 +10,7 @@ namespace Subify.Domain.Entities.ApplicationPayments;
 /// </summary>
 public sealed class EntitlementCache : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// Entitlement identifier: 'premium'
@@ -48,5 +48,5 @@ public sealed class EntitlementCache : BaseEntity
     public bool WillRenew { get; set; } = true;
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
 }

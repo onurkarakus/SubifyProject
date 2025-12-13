@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Subify.Domain.Entities.AI;
+using Subify.Domain.Entities.Users;
 
 namespace Subify.Infrastructure.Persistence.Configurations.AI;
 
@@ -24,8 +25,8 @@ public sealed class AiSuggestionLogConfiguration : IEntityTypeConfiguration<AiSu
         builder.Property(asl => asl.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(asl => asl.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasOne(asl => asl.User).WithMany(u => u.AiSuggestionLogs).HasForeignKey(asl => asl.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(asl => asl.User).WithMany(u => u.AiSuggestionLogs).HasForeignKey(asl => asl.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         builder.HasIndex(asl => new { asl.UserId, asl.CreatedAt }).HasDatabaseName("IX_AiSuggestionLogs_UserId_CreatedAt");
-        builder.HasIndex(asl => new { asl.UserId, asl.IsSuccess, asl.CreatedAt }).HasDatabaseName("IX_AiSuggestionLogs_UserId_IsSuccess_CreatedAt");
+        builder.HasIndex(asl => new { asl.UserId, asl.IsSuccess, asl.CreatedAt }).HasDatabaseName("IX_AiSuggestionLogs_UserId_IsSuccess_CreatedAt");        
     }
 }

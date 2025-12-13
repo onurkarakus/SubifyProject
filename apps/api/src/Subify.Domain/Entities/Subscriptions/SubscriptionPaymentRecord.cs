@@ -6,7 +6,8 @@ namespace Subify.Domain.Entities.Subscriptions;
 
 public sealed class SubscriptionPaymentRecord: BaseEntity
 {
-    public Guid SubscriptionId { get; set; }
+    public Guid? SubscriptionId { get; set; }
+    
     public Guid UserId { get; set; }
 
     public decimal Amount { get; set; }
@@ -21,7 +22,7 @@ public sealed class SubscriptionPaymentRecord: BaseEntity
 
     public string? Notes { get; set; }
 
-    public Subscription Subscription { get; set; } = null!;
-    public ApplicationUser User { get; set; } = null!;
+    public Subscription? Subscription { get; set; } = null!;
 
+    public ApplicationUser User { get; set; } = null!;
 }

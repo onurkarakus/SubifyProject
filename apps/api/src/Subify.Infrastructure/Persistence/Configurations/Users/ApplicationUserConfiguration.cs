@@ -14,11 +14,13 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
         builder.Property(u => u.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(u => u.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
+        builder.HasQueryFilter(u => u.DeletedAt == null);
+
         builder.HasIndex(u => u.DeletedAt)
             .HasFilter("[DeletedAt] IS NULL")
             .HasDatabaseName("IX_AspNetUsers_DeletedAt_Active");
 
         builder.HasIndex(u => new { u.IsActive, u.Email })
-            .HasDatabaseName("IX_AspNetUsers_IsActive_Email");
+            .HasDatabaseName("IX_AspNetUsers_IsActive_Email");       
     }
 }

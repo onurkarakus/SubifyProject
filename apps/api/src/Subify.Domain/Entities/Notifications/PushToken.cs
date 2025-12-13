@@ -14,7 +14,7 @@ namespace Subify.Domain.Entities.Notifications;
 /// </summary>
 public sealed class PushToken : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// FCM/APNS token string.
@@ -49,5 +49,5 @@ public sealed class PushToken : BaseEntity
     public DateTimeOffset LastUsedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
 }

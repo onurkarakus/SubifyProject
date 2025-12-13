@@ -23,8 +23,9 @@ public sealed class UserCategoryConfiguration : IEntityTypeConfiguration<UserCat
         builder.Property(uc => uc.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(uc => uc.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasOne(uc => uc.User).WithMany(u => u.UserCategories).HasForeignKey(uc => uc.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(uc => uc.User).WithMany(u => u.UserCategories).HasForeignKey(uc => uc.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         builder.HasIndex(uc => new { uc.UserId, uc.Slug }).IsUnique().HasDatabaseName("IX_UserCategories_UserId_Slug_Unique");
         builder.HasIndex(uc => new { uc.UserId, uc.IsActive, uc.SortOrder }).HasDatabaseName("IX_UserCategories_UserId_IsActive_SortOrder");
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Subify.Domain.Entities.Users;
+using Subify.Domain.Enums;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Users;
 
@@ -21,7 +22,7 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         builder.Property(p => p.DarkTheme).HasDefaultValue(false);
         builder.Property(p => p.MainCurrency).IsRequired().HasMaxLength(10).HasDefaultValue("TRY");
         builder.Property(p => p.MonthlyBudget).HasPrecision(18, 2).HasDefaultValue(0m);
-        builder.Property(p => p.Plan).HasConversion<string>().HasMaxLength(20).HasDefaultValue("Free");
+        builder.Property(p => p.Plan).HasConversion<string>().HasMaxLength(20).HasDefaultValue(PlanType.Free);
         builder.Property(p => p.PlanRenewsAt);
         builder.Property(p => p.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(p => p.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
@@ -29,7 +30,8 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         builder.HasOne(p => p.User)
                .WithOne(u => u.Profile)
                .HasForeignKey<Profile>(p => p.Id)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Cascade)
+               .IsRequired(false);
 
         builder.HasOne(p => p.NotificationSettings)
                 .WithOne(ns => ns.Profile)

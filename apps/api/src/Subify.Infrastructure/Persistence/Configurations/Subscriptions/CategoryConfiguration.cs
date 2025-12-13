@@ -12,7 +12,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasKey(c => c.Id);
 
-        builder.Property(c => c.Id).HasDefaultValue("NEWSEQUENTIALID()");
+        builder.Property(c => c.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
         builder.Property(c => c.Slug).IsRequired().HasMaxLength(50);
         builder.Property(c => c.Icon).HasMaxLength(50);
         builder.Property(c => c.Color).HasMaxLength(20);

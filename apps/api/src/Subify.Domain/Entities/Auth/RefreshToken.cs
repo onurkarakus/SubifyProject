@@ -8,7 +8,7 @@ namespace Subify.Domain.Entities.Auth;
 /// </summary>
 public sealed class RefreshToken : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     /// <summary>
     /// SHA256 hash of the token (never store raw token).
@@ -56,5 +56,5 @@ public sealed class RefreshToken : BaseEntity
     public string? UserAgent { get; set; }
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null!;
 }

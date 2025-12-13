@@ -17,7 +17,8 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddDbContext<SubifyDbContext>(options => options.UseSqlServer(connectionString));
+        builder.Services.AddDbContext<SubifyDbContext>(options =>
+            options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Subify.Infrastructure")));
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
         {

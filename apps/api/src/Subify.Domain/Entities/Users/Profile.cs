@@ -1,5 +1,6 @@
-﻿using Subify.Domain.Entities.Common;
+﻿﻿using Subify.Domain.Entities.Common;
 using Subify.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Subify.Domain.Entities.Users;
 
@@ -7,7 +8,10 @@ public sealed class Profile : BaseEntity
 {
     // Id inherited from BaseEntity, serves as both PK and FK to ApplicationUser
 
+    public Guid? UserId { get; set; }
+
     public string Email { get; set; } = null!;
+
     public string? FullName { get; set; }
 
     /// <summary>
@@ -34,7 +38,8 @@ public sealed class Profile : BaseEntity
     public DateTimeOffset? PlanRenewsAt { get; set; }
 
     // Navigation
-    public ApplicationUser User { get; set; } = null!;
+    [ForeignKey(nameof(UserId))]
+    public ApplicationUser? User { get; set; }
 
     public NotificationSetting? NotificationSettings { get; set; }
 }

@@ -3,7 +3,7 @@ using Subify.Domain.Entities.Common;
 
 namespace Subify.Domain.Entities.Subscriptions;
 
-public sealed class Category : BaseEntity
+public sealed class Category : BaseEntity, ISoftDeletable
 {
     /// <summary>
     /// URL-friendly unique identifier.
@@ -34,6 +34,8 @@ public sealed class Category : BaseEntity
     /// </summary>
     public bool IsActive { get; set; } = true;
 
+    public DateTimeOffset? DeletedAt { get; set; }
+
     // Navigation
-    public ICollection<Subscription> Subscriptions { get; set; } = [];
+    public ICollection<Subscription> Subscriptions { get; set; } = [];    
 }
