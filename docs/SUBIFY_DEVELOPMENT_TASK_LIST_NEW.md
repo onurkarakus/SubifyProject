@@ -1,4 +1,4 @@
-# 📋 Subify Development Task List (ASP.NET Core + Expo)
+# 📋 Subify Development Task List (ASP.NET Core + Flutter)
 
 ## 1. 🔙 Backend (ASP.NET Core Web API)
 
@@ -33,36 +33,54 @@
 - [ ] `POST /api/ai/suggestions`: Kullanıcı verisini topla -> Prompt oluştur -> OpenAI'a at -> Cevabı dön.
 - [ ] Cron Job (Hangfire veya Quartz.NET): Günlük ödeme kontrolü ve mail gönderimi.
 
+### 1.6 Admin Modülü (Backend)
+- [ ] `AdminController` oluştur (`[Authorize(Roles = "Admin")]`).
+- [ ] `GET /api/admin/users`: Kullanıcı listesi ve arama.
+- [ ] `GET /api/admin/stats`: Basit istatistikler (Count sorguları).
+- [ ] `GET /api/admin/transactions`: Ödeme geçmişi listesi (`billing_sessions` join `users`).
+
 ---
 
-## 2. 📱 Mobile (Expo / React Native)
+## 2. 📱 Mobile (Flutter)
 
 ### 2.1 Kurulum
-- [ ] `npx create-expo-app@latest subify-mobile --template blank-typescript`
-- [ ] Klasör yapısı: `app`, `components`, `services`, `store`.
-- [ ] React Native Paper veya NativeWind kurulumu.
+- [ ] Flutter projesi oluştur: `flutter create subify_mobile --org com.subify.app`
+- [ ] Klasör yapısı: `lib/core`, `lib/features`, `lib/shared`.
+- [ ] Paketleri ekle: `dio`, `flutter_riverpod`, `go_router`, `flutter_secure_storage`, `purchases_flutter`.
 
 ### 2.2 Auth Flow
-- [ ] Login Screen & Register Screen tasarımları.
-- [ ] Axios Interceptor kurulumu (JWT'yi header'a ekle, 401 gelirse logout yap).
-- [ ] SecureStore ile Token saklama.
+- [ ] Login, Register ve Forgot Password ekranları.
+- [ ] Dio Interceptor kurulumu (JWT header ekleme, 401 refresh token rotation logic).
+- [ ] Secure Storage servisi yazımı.
 
 ### 2.3 Dashboard & Abonelikler
-- [ ] Dashboard UI: Toplam harcama kartı, liste.
+- [ ] Dashboard UI: Toplam harcama kartı, SliverList yapısı.
 - [ ] "Add Subscription" Modal (Bottom Sheet).
 - [ ] Abonelik Detay ekranı.
 
 ### 2.4 Premium Features
 - [ ] Paywall Modalı tasarımı (Upgrade to Premium).
 - [ ] AI Suggestion Ekranı (Loading state + Sonuç kartları).
-- [ ] Push Notification izinleri ve testi.
+- [ ] Firebase Cloud Messaging (FCM) kurulumu ve izinler.
 
 ---
 
-## 3. 🌐 Landing Page (Next.js)
+## 3. 🌐 Web App (Next.js)
 
-### 3.1 Basit Tanıtım Sitesi
+### 3.1 Landing Page (Public)
 - [ ] Hero Section: "Aboneliklerini Cepten Yönet".
 - [ ] App Store / Play Store butonları (veya "Coming Soon" formu).
 - [ ] Features Section.
 - [ ] Pricing Table.
+
+### 3.2 User App (Protected)
+- [ ] Auth Middleware (Login kontrolü).
+- [ ] Dashboard UI (Mobile benzeri grid yapı).
+- [ ] Subscription Management (Table view).
+
+### 3.3 Admin Panel (Role: Admin)
+- [ ] Admin Middleware (Role kontrolü).
+- [ ] Users Table (Listeleme, Yasaklama/Silme).
+- [ ] Transactions Table (Kim, Ne Zaman, Ne Kadar Ödedi?).
+- [ ] Revenue Chart (Basit grafik).
+- [ ] Error Logs Viewer (Basit liste).

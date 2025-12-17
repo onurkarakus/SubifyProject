@@ -66,7 +66,7 @@ Subify, kullanıcıların tüm aboneliklerini (Netflix, Spotify, HBOMax vb.) tek
 6) **Paywall**
    - Premium özelliklere tıklanınca modal + fiyat + CTA.
 7) **Mobil**
-   - Flutter app: dashboard, abonelik listesi, raporlar (premium), AI öneri tetikleme, push.
+   - Flutter app: Dashboard, abonelik listesi, raporlar (premium), AI öneri tetikleme, push, profil yönetimi.
 
 ---
 
@@ -81,7 +81,7 @@ Subify, kullanıcıların tüm aboneliklerini (Netflix, Spotify, HBOMax vb.) tek
 
 ### 🧱 Technical Stack
 - **Web Frontend**: Next.js (App Router), TypeScript, next-i18next, Tailwind/Chakra (tercih).
-- **Mobile**: Flutter (iOS/Android), Riverpod/Bloc (state mgmt), Flutter Intl (i18n), Dio/Chopper (HTTP).
+- **Mobile**: Flutter (iOS/Android), Riverpod (State Mgmt), GoRouter (Navigation), Dio (HTTP), Flutter Intl (i18n).
 - **Backend**: ASP.NET Core 8 Web API (minimal APIs veya controllers), C#, DI (built-in), ProblemDetails, FluentValidation.
 - **Database**: MSSQL (on VPS). Migrations: EF Core.
 - **Auth**: ASP.NET Core Identity + JWT (access+refresh). Password flow (MVP), sosyal giriş sonraya.
@@ -91,7 +91,7 @@ Subify, kullanıcıların tüm aboneliklerini (Netflix, Spotify, HBOMax vb.) tek
 - **AI**: OpenAI API (chat/completions). Prompt server-side; rate limit & logging.
 - **Notifications**:
   - Email: SMTP/Resend (sunucu tarafı job).
-  - Push: FCM/APNS (Flutter) + RevenueCat entitlement webhook ile plan sync.
+  - Push: Firebase Cloud Messaging (FCM) + RevenueCat entitlement webhook ile plan sync.
 - **Background Jobs**: Hangfire (VPS, MSSQL storage) veya Quartz.NET. Cron benzeri: yenileme uyarıları, email dispatch, cleanup.
 - **Caching**: In-memory (IMemoryCache) + opsiyonel Redis (VPS yanına eklenebilir).
 - **Observability**: OpenTelemetry (traces/logs/metrics) + OTLP exporter; Serilog + JSON; Health Checks `/health` + liveness/readiness; Prometheus format opsiyonel (prom-to-otlp veya node exporter yanına otelcol).
@@ -113,7 +113,7 @@ Subify, kullanıcıların tüm aboneliklerini (Netflix, Spotify, HBOMax vb.) tek
 ---
 
 ### 🌍 Dil Desteği
-- EN + TR. Web: next-i18next JSON. Mobile: Flutter Intl/ARB.
+- EN + TR. Web: next-i18next JSON. Mobile: Flutter Intl (.arb files).
 - Backend yanıtları i18n-aware (Accept-Language / profile.locale).
 - Email ve AI yanıtları için dil seçimi.
 
@@ -217,44 +217,57 @@ Indexes:
 ### 🌐 API Tasarımı (ASP.NET Core Web API, `/api`)
 Auth: Bearer JWT. All endpoints return RFC 7807 ProblemDetails on errors.
 
-1) `GET /api/me`
-   - Returns profile, plan, locale.
-   - If profile missing, create default (plan=free, locale from Accept-Language).
+1) **AuthController** (`/api/auth`)
+   - `POST /register`: Yeni kullanıcı kaydı.
+   - `POST /login`: Giriş (Access + Refresh Token).
+   - `POST /refresh-token`: Token yenileme.
+   - `POST /logout`: Çıkış (Refresh token revoke).
+   - `POST /forgot-password`: Şifre sıfırlama isteği.
+   - `POST /reset-password`: Şifre sıfırlama işlemi.
 
-2) `GET /api/subscriptions`
-   - Query: `includeArchived`, `category`.
-   - Returns active list.
+2) **SubscriptionsController** (`/api/subscriptions`)
+   - `GET /`: Listeleme (Filtre: `includeArchived`, `category`).
+   - `GET /{id}`: Detay.
+   - `POST /`: Ekleme (Freemium limiti kontrolü).
+   - `PUT /{id}`: Güncelleme.
+   - `DELETE /{id}`: Arşivleme (Soft delete).
+   - `GET /upcoming`: Yaklaşan ödemeler.
 
-3) `POST /api/subscriptions`
-   - Body: name, category, price, currency, billing_cycle, next_renewal_date, last_used_at?
-   - Free plan with >=3 active → 403.
+3) **CategoriesController** (`/api/categories`)
+   - `GET /`: Sistem kategorileri (Resource tablosundan).
+   - `POST /`: (Opsiyonel) Özel kategori.
 
-4) `PATCH /api/subscriptions/{id}`
-   - Partial update.
+4) **ReportsController** (`/api/reports`)
+   - `GET /monthly-spend`: Aylık grafik verisi.
+   - `GET /category-breakdown`: Kategori dağılımı.
+   - `GET /currency-distribution`: Para birimi dağılımı.
 
-5) `DELETE /api/subscriptions/{id}`
-   - Soft delete → archived=true.
+5) **AiController** (`/api/ai`)
+   - `POST /analyze`: Analiz ve öneri üret (Premium).
+   - `GET /history`: Geçmiş öneriler.
+   - `POST /feedback`: Geri bildirim.
 
-6) `POST /api/ai/suggestions`
-   - Premium-only (check entitlement).
-   - Server fetches subscriptions, computes monthly total, builds prompt, calls OpenAI.
-   - Logs request/response to `ai_suggestions_logs`.
-   - Response: { summary, tips[], estimated_savings }
+6) **ProfileController** (`/api/profile`)
+   - `GET /`: Profil bilgileri.
+   - `PUT /`: Güncelleme.
+   - `PUT /notifications`: Bildirim ayarları.
+   - `POST /device-token`: Push token kaydı.
 
-7) `POST /api/billing/checkout`
-   - Creates RevenueCat web checkout session (Stripe). Body: plan (monthly/yearly), locale.
-   - Returns `checkout_url`.
+7) **PaymentsController** (`/api/payments` & `/api/billing`)
+   - `GET /api/payments/status`: Premium durum sorgusu.
+   - `POST /api/billing/checkout`: Web ödeme oturumu başlatma (RevenueCat/Stripe).
+   - `POST /api/webhooks/revenuecat`: Webhook handler.
 
-8) `POST /api/billing/webhook` (RevenueCat)
-   - Verifies signature.
-   - On purchase/renew: profiles.plan='premium', plan_renews_at set, entitlements_cache updated.
-   - On expiration/refund: downgrade plan or set expiry.
+8) **SystemController** (`/api/system`)
+   - `GET /currencies`: Döviz kurları.
+   - `GET /health`: Health check (Global).
 
-9) `GET /api/notifications/preview` (optional)
-   - Returns sample email content.
-
-10) `GET /health` (liveness/readiness)
-11) `GET /metrics` (Prometheus text, optional) or OTLP via collector.
+9) **AdminController** (`/api/admin`) - *Require Role: Admin*
+   - `GET /users`: Tüm kullanıcıları listele (Sayfalama + Arama).
+   - `GET /stats`: Dashboard metrikleri (Toplam kullanıcı, Aktif abonelik, Tahmini gelir).
+   - `GET /logs`: Sistem loglarını görüntüle (Son hatalar).
+   - `GET /transactions`: Ödeme geçmişini listele (BillingSessions tablosundan).
+   - `GET /feedback`: Kullanıcıların AI önerilerine verdiği geri bildirimler.
 
 ---
 
@@ -273,7 +286,7 @@ Rate limiting: user-level (e.g., 5/min) + daily quota (e.g., 20/day) for cost co
 
 ### 🔔 Notifications
 - Email: daily job checks `next_renewal_date <= today + days_before_renewal`; send via SMTP/Resend.
-- Push: Flutter uses FCM/APNS tokens; only premium gets push-enabled; link with RevenueCat entitlement.
+  - Push: Mobile uses FCM tokens; only premium gets push-enabled; link with RevenueCat entitlement.
 - Locale-aware templates (TR/EN).
 
 ---
@@ -286,17 +299,22 @@ Rate limiting: user-level (e.g., 5/min) + daily quota (e.g., 20/day) for cost co
 ---
 
 ### 📱 Mobile (Flutter)
-- Pages: Auth, Dashboard, Subscriptions, Reports (premium), AI Suggestions, Settings (locale, notifications), Paywall.
-- State: Riverpod/Bloc.
-- Networking: Dio/Chopper with interceptors for JWT refresh.
-- i18n: ARB files (tr, en).
-- Push: FCM/APNS token registration to backend (for future targeted notifications).
-- RevenueCat SDK: shows paywall, retrieves entitlements; backend trusts webhook + client entitlement check (defense in depth).
+- **Pages**: Auth (Login/Register/Forgot Password), Dashboard, Subscriptions (List/Add/Detail), Reports (Premium), AI Suggestions, Settings (Profile, Notifications, Language, Currency), Paywall.
+- **State**: Riverpod (Code generation mode recommended).
+- **Networking**: Dio with interceptors.
+  - **Auth Interceptor**: Attaches `Bearer` token. Handles `401` by locking request queue (Dio `Lock` or `QueuedInterceptor`), calling `/api/auth/refresh-token`, then retrying.
+- **Storage**: `flutter_secure_storage` for Tokens (Access + Refresh).
+- **Push**: `firebase_messaging`. Sends FCM token to `/api/profile/device-token` on login.
+- **RevenueCat**: `purchases_flutter` SDK. Shows paywall, manages subscriptions.
 
 ---
 
 ### 🖥️ Web (Next.js)
-- App Router, server components where possible.
+- **Structure**:
+  - `/ (Public)`: Landing Page (Hero, Features, Pricing).
+  - `/app (User)`: Dashboard, Subscriptions, Settings (Requires Login).
+  - `/admin (Admin)`: User Management, System Stats, Logs (Requires Role='Admin').
+- **Tech**: App Router, Server Components, Middleware for Auth/Role protection.
 - Auth: JWT stored httpOnly cookie; refresh flow.
 - i18n: next-i18next.
 - Data fetching: React Query / server actions (careful with cookies).
