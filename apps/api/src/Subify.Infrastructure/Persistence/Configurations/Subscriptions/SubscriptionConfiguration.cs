@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Subscriptions;
 using Subify.Domain.Enums;
+using Subify.Domain.Models.Entities.Subscriptions;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Subscriptions;
 
@@ -39,7 +39,7 @@ public sealed class SubscriptionConfiguration : IEntityTypeConfiguration<Subscri
         builder.Property(s => s.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(s => s.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasOne(s => s.User).WithMany(u => u.Subscriptions).HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(s => s.User).WithMany(u => u.Subscriptions).HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         builder.HasOne(s => s.Category).WithMany(c => c.Subscriptions).HasForeignKey(s => s.CategoryId).OnDelete(DeleteBehavior.SetNull);
         builder.HasOne(s => s.UserCategory).WithMany(uc => uc.Subscriptions).HasForeignKey(s => s.UserCategoryId).OnDelete(DeleteBehavior.ClientSetNull);
         builder.HasIndex(s => new { s.UserId, s.Archived, s.NextRenewalDate }).HasDatabaseName("IX_Subscriptions_UserId_Archived_NextRenewalDate");

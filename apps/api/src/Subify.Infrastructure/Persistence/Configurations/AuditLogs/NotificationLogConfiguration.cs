@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.AuditLogs;
 using Subify.Domain.Enums;
+using Subify.Domain.Models.Entities.AuditLogs;
 
 namespace Subify.Infrastructure.Persistence.Configurations.AuditLogs;
 
@@ -26,7 +26,7 @@ public sealed class NotificationLogConfiguration : IEntityTypeConfiguration<Noti
         builder.Property(nl => nl.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
         builder.HasOne(nl => nl.User).WithMany(u => u.NotificationLogs).HasForeignKey(nl => nl.UserId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
-        builder.HasOne(nl => nl.Subscription).WithMany(s => s.NotificationLogs).HasForeignKey(nl => nl.SubscriptionId).OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(nl => nl.Subscription).WithMany(s => s.NotificationLogs).HasForeignKey(nl => nl.SubscriptionId).OnDelete(DeleteBehavior.NoAction);
         builder.HasIndex(nl => new { nl.UserId, nl.SentAt }).HasDatabaseName("IX_NotificationLogs_UserId_SentAt");
         builder.HasIndex(nl => new { nl.UserId, nl.SubscriptionId, nl.Type, nl.SentAt }).HasDatabaseName("IX_NotificationLogs_DuplicateCheck");
     }

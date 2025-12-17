@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Users;
 using Subify.Domain.Enums;
+using Subify.Domain.Models.Entities.Users;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Users;
 

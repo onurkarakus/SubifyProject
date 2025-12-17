@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Subscriptions;
+using Subify.Domain.Models.Entities.Subscriptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

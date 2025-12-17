@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Subify.Domain.Entities.Auth;
+using Subify.Domain.Models.Entities.Auth;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Auth;
 

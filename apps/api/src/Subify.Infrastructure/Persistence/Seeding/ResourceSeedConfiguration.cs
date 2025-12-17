@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Common;
+using Subify.Domain.Models.Entities.Common;
 
 namespace Subify.Infrastructure.Persistence.Seeding;
 

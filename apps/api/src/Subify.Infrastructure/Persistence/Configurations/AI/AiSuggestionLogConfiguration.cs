@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.AI;
-using Subify.Domain.Entities.Users;
+using Subify.Domain.Models.Entities.AI;
 
 namespace Subify.Infrastructure.Persistence.Configurations.AI;
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Subscriptions;
 using Subify.Domain.Enums;
+using Subify.Domain.Models.Entities.Subscriptions;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Subscriptions;
 

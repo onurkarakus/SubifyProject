@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Subify.Domain.Entities.Notifications;
+using Subify.Domain.Models.Entities.Notifications;
 
 namespace Subify.Infrastructure.Persistence.Configurations.Notifications;
 

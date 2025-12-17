@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Subify.Domain.Abstractions.Common;
-using Subify.Domain.Entities.AI;
-using Subify.Domain.Entities.ApplicationPayments;
-using Subify.Domain.Entities.AuditLogs;
-using Subify.Domain.Entities.Auth;
-using Subify.Domain.Entities.Common;
-using Subify.Domain.Entities.Notifications;
-using Subify.Domain.Entities.Subscriptions;
-using Subify.Domain.Entities.Users;
+using Subify.Domain.Models.Entities.AI;
+using Subify.Domain.Models.Entities.ApplicationPayments;
+using Subify.Domain.Models.Entities.AuditLogs;
+using Subify.Domain.Models.Entities.Auth;
+using Subify.Domain.Models.Entities.Common;
+using Subify.Domain.Models.Entities.Notifications;
+using Subify.Domain.Models.Entities.Subscriptions;
+using Subify.Domain.Models.Entities.Users;
 using System.Reflection;
 
 namespace Subify.Infrastructure.Persistence;
