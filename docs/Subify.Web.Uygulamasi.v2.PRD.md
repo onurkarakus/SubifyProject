@@ -47,6 +47,7 @@ Subify, kullanıcıların tüm aboneliklerini (Netflix, Spotify, HBOMax vb.) tek
 ### 🧭 User Experience (Web & Mobile)
 1) **Onboarding & Account Setup**
    - E-posta ile kayıt / giriş (JWT tabanlı; sosyal giriş sonraya).
+   - **E-posta Doğrulama**: Kayıt sonrası kullanıcıya doğrulama linki gönderilir. Linke tıklandıktan sonra giriş yapılabilir.
    - İlk 3 abonelik ücretsiz.
    - Dashboard yönlendirme.
 2) **Dashboard**
@@ -218,7 +219,9 @@ Indexes:
 Auth: Bearer JWT. All endpoints return RFC 7807 ProblemDetails on errors.
 
 1) **AuthController** (`/api/auth`)
-   - `POST /register`: Yeni kullanıcı kaydı.
+   - `POST /register`: Yeni kullanıcı kaydı (Doğrulama maili gönderir).
+   - `GET /confirm-email`: E-posta doğrulama (Query: userId, code).
+   - `POST /resend-confirmation-email`: Doğrulama mailini tekrar gönder.
    - `POST /login`: Giriş (Access + Refresh Token).
    - `POST /refresh-token`: Token yenileme.
    - `POST /logout`: Çıkış (Refresh token revoke).
@@ -285,7 +288,9 @@ Rate limiting: user-level (e.g., 5/min) + daily quota (e.g., 20/day) for cost co
 ---
 
 ### 🔔 Notifications
-- Email: daily job checks `next_renewal_date <= today + days_before_renewal`; send via SMTP/Resend.
+- Email:
+  - **Auth**: Email Verification, Password Reset (Frontend URL'lerine yönlendiren linkler).
+  - **Reminder**: Daily job checks `next_renewal_date <= today + days_before_renewal`; send via SMTP/Resend.
   - Push: Mobile uses FCM tokens; only premium gets push-enabled; link with RevenueCat entitlement.
 - Locale-aware templates (TR/EN).
 
