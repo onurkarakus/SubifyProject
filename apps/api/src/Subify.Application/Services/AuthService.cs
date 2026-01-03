@@ -16,8 +16,11 @@ namespace Subify.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+
     private readonly ITokenService _tokenService;
+
     private readonly SubifyDbContext _context;
+    
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuthService(
@@ -47,6 +50,8 @@ public class AuthService : IAuthService
             Profile = new Profile { FullName = request.FullName, Email = request.Email }
         };
 
+        var emailValidationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
@@ -71,7 +76,7 @@ public class AuthService : IAuthService
         if (user is null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
             return Result<LoginResponse>.Failure("Invalid credentials");
-        }
+        }        
 
         var generateTokenResult = await GenerateTokensAsync(user);
 

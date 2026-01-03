@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Subify Email Doğrulama</title>
+  <style>
+    /* Genel Resetler */
+    body {
+      background-color: #f4f4f7;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+      line-height: 1.4;
+      margin: 0;
+      padding: 0;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    table {
+      border-collapse: separate;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+      width: 100%;
+    }
+
+    /* Ana Konteyner */
+    .container {
+      display: block;
+      margin: 0 auto !important;
+      max-width: 580px;
+      padding: 10px;
+      width: 580px;
+    }
+
+    /* İçerik Kutusu */
+    .content {
+      box-sizing: border-box;
+      display: block;
+      margin: 0 auto;
+      max-width: 580px;
+      padding: 10px;
+    }
+
+    /* Beyaz Kart Tasarımı */
+    .main {
+      background: #ffffff;
+      border-radius: 8px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .wrapper {
+      box-sizing: border-box;
+      padding: 40px;
+    }
+
+    /* Tipografi */
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    p {
+      font-size: 16px;
+      font-weight: normal;
+      margin: 0;
+      margin-bottom: 20px;
+      color: #555555;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* Buton Tasarımı - Subify için Mor Tonları */
+    .btn {
+      box-sizing: border-box;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .btn > tbody > tr > td {
+      padding-bottom: 15px;
+    }
+
+    .btn table {
+      width: auto;
+    }
+
+    .btn table td {
+      background-color: #ffffff;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .btn a {
+      background-color: #6366f1; /* Subify Ana Rengi (Örnek: İndigo) */
+      border: solid 1px #6366f1;
+      border-radius: 6px;
+      box-sizing: border-box;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+      padding: 12px 25px;
+      text-decoration: none;
+      text-transform: capitalize;
+      transition: background-color 0.3s;
+    }
+
+    .btn a:hover {
+      background-color: #4f46e5 !important;
+      border-color: #4f46e5 !important;
+    }
+
+    /* Footer */
+    .footer {
+      clear: both;
+      margin-top: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .footer td,
+    .footer p,
+    .footer span,
+    .footer a {
+      color: #999999;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .logo-container {
+        text-align: center;
+        padding-bottom: 20px;
+    }
+    
+    .icon-container {
+        text-align: center;
+        padding-bottom: 20px;
+    }
+
+    /* Mobil Uyumluluk */
+    @media only screen and (max-width: 620px) {
+      .main {
+        border-radius: 0;
+      }
+      .container {
+        width: 100% !important;
+        padding: 0 !important;
+      }
+      .wrapper {
+        padding: 20px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+
+          <table role="presentation" class="main">
+
+            <tr>
+              <td class="wrapper">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                  
+                  <tr>
+                    <td class="logo-container">
+                      <h2 style="color: #6366f1; margin:0; font-size: 28px; letter-spacing: -1px;">Subify.</h2>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="icon-container">
+                        <img src="https://cdn-icons-png.flaticon.com/512/646/646094.png" alt="Email Verify" width="80" style="opacity: 0.8;">
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <h1>E-posta Adresini Doğrula</h1>
+                      <p>Selam! Subify'a hoş geldin. 🎉</p>
+                      <p>Hesabını güvenli bir şekilde oluşturabilmemiz ve aboneliklerini yönetmeye başlayabilmen için aşağıdaki butona tıklayarak e-posta adresini doğrulaman gerekiyor.</p>
+                      
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                        <tbody>
+                          <tr>
+                            <td align="center">
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                <tbody>
+                                  <tr>
+                                    <td> <a href="{{VERIFICATION_LINK}}" target="_blank">Hesabımı Doğrula</a> </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      
+                      <p style="font-size: 14px; margin-top: 20px;">Eğer butona tıklayamıyorsan, aşağıdaki bağlantıyı tarayıcına kopyalayabilirsin:</p>
+                      <p style="font-size: 12px; color: #6366f1; word-break: break-all;">{{VERIFICATION_LINK}}</p>
+                      
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            </table>
+          <div class="footer">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td class="content-block">
+                  <span class="apple-link">Subify Inc, İstanbul, Türkiye</span>
+                  <br> Bu işlemi sen yapmadıysan, bu e-postayı görmezden gelebilirsin.
+                </td>
+              </tr>
+            </table>
+          </div>
+          </div>
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</body>
+</html>

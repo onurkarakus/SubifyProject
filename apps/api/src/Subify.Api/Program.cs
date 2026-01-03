@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Resend;
 using Subify.Application.Services;
 using Subify.Domain.Abstractions.Services;
 using Subify.Domain.Models.Entities.Users;
@@ -28,6 +29,12 @@ public class Program
         builder.Services.TryAddTransient<IAuthService, AuthService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
 
+        builder.Services.AddHttpClient<ResendClient>();
+
+        builder.Services.Configure<ResendClientOptions>(o => {
+            o.ApiToken = builder.Configuration["Resend:ApiKey"];
+        });
+
         builder.Services.AddDbContext<SubifyDbContext>(options =>
             options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Subify.Infrastructure")));
 
@@ -39,6 +46,7 @@ public class Program
             options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 8;
+            options.SignIn.RequireConfirmedEmail = true;
         })
             .AddEntityFrameworkStores<SubifyDbContext>()
             .AddDefaultTokenProviders();
@@ -68,7 +76,6 @@ public class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Subify API", Version = "v1" });
 
-            // 1. Kilit sembol�n� tan�ml�yoruz (Bearer Token)
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
@@ -78,7 +85,6 @@ public class Program
                 Scheme = "Bearer"
             });
 
-            // 2. Bu g�venli�i t�m endpoint'lere �art ko�uyoruz
             c.AddSecurityRequirement(new OpenApiSecurityRequirement()
             {
                 {

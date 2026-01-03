@@ -1,0 +1,4 @@
+dotnet ef database update -p ../Subify.Infrastructure -s .
+dotnet ef migrations add InitialMigration -p ../Subify.Infrastructure -s .
+dotnet ef migrations remove -p ../Subify.Infrastructure -s .
+dotnet ef database drop -p ../Subify.Infrastructure -s . --force

@@ -14,6 +14,8 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
 
     public Guid? UserCategoryId { get; set; }
 
+    public Guid? ProviderId { get; set; }
+
     /// <summary>
     /// Subscription name. Examples: 'Netflix', 'Spotify Premium'
     /// </summary>
@@ -79,8 +81,13 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
 
     // Navigation
     public ApplicationUser User { get; set; } = null!;
+
     public Category? Category { get; set; }
+
     public UserCategory? UserCategory { get; set; }
+
+    public Provider? Provider { get; set; }
+
     public ICollection<SubscriptionPaymentRecord> PaymentRecords { get; set; } = [];
     public ICollection<NotificationLog> NotificationLogs { get; set; } = [];
 }

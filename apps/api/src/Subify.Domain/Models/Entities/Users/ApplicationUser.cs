@@ -12,16 +12,24 @@ namespace Subify.Domain.Models.Entities.Users;
 public class ApplicationUser : IdentityUser<Guid>, ISoftDeletable
 {
     public string? FullName { get; set; }
+
     public string? AvatarUrl { get; set; }
-    public bool IsActive { get; set; } = true;
-    public DateTimeOffset? LastLoginAt { get; set; }
+
+    public bool IsActive { get; set; } = true;    
+
+    public string? ReferralCode { get; set; }
+
+    public bool MarketingOptIn { get; set; }
 
     // Audit fields (manual)
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     // Navigation
     public Profile? Profile { get; set; }
@@ -41,4 +49,6 @@ public class ApplicationUser : IdentityUser<Guid>, ISoftDeletable
     public ICollection<EntitlementCache> Entitlements { get; set; } = [];
 
     public ICollection<UserCategory> UserCategories { get; set; } = [];
+
+    public ICollection<ActivityLog> ActivityLogs { get; set; } = [];
 }

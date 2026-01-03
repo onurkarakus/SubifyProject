@@ -11,10 +11,12 @@ public sealed class ExchangeRateSnapshot : BaseEntity
     /// </summary>
     public string BaseCurrency { get; set; } = null!;
 
+    public string TargetCurrency { get; set; } = null!;
+
     /// <summary>
     /// JSON object with rates: { "USD": 0.029, "EUR": 0.027, "GBP": 0.023 }
     /// </summary>
-    public string Rates { get; set; } = null!;
+    public string Rate { get; set; } = null!;
 
     /// <summary>
     /// API source identifier.

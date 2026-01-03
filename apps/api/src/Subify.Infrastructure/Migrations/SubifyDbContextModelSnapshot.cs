@@ -345,6 +345,74 @@ namespace Subify.Infrastructure.Migrations
                     b.ToTable("EntitlementCaches", (string)null);
                 });
 
+            modelBuilder.Entity("Subify.Domain.Models.Entities.AuditLogs.ActivityLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("NewValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt")
+                        .HasDatabaseName("IX_ActivityLogs_UserId_CreatedAt");
+
+                    b.ToTable("ActivityLogs", (string)null);
+                });
+
             modelBuilder.Entity("Subify.Domain.Models.Entities.AuditLogs.NotificationLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -485,6 +553,72 @@ namespace Subify.Infrastructure.Migrations
                     b.ToTable("RefreshTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Subify.Domain.Models.Entities.Common.EmailTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("EmailTemplates", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("2121a1c3-f76b-4d07-8f00-e0622ad9a5c6"),
+                            Body = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\r\n  <title>Subify Email Doğrulama</title>\r\n  <style>\r\n    /* Genel Resetler */\r\n    body {\r\n      background-color: #f4f4f7;\r\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\r\n      -webkit-font-smoothing: antialiased;\r\n      font-size: 14px;\r\n      line-height: 1.4;\r\n      margin: 0;\r\n      padding: 0;\r\n      -ms-text-size-adjust: 100%;\r\n      -webkit-text-size-adjust: 100%;\r\n    }\r\n\r\n    table {\r\n      border-collapse: separate;\r\n      mso-table-lspace: 0pt;\r\n      mso-table-rspace: 0pt;\r\n      width: 100%;\r\n    }\r\n\r\n    /* Ana Konteyner */\r\n    .container {\r\n      display: block;\r\n      margin: 0 auto !important;\r\n      max-width: 580px;\r\n      padding: 10px;\r\n      width: 580px;\r\n    }\r\n\r\n    /* İçerik Kutusu */\r\n    .content {\r\n      box-sizing: border-box;\r\n      display: block;\r\n      margin: 0 auto;\r\n      max-width: 580px;\r\n      padding: 10px;\r\n    }\r\n\r\n    /* Beyaz Kart Tasarımı */\r\n    .main {\r\n      background: #ffffff;\r\n      border-radius: 8px;\r\n      width: 100%;\r\n      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);\r\n    }\r\n\r\n    .wrapper {\r\n      box-sizing: border-box;\r\n      padding: 40px;\r\n    }\r\n\r\n    /* Tipografi */\r\n    h1 {\r\n      font-size: 24px;\r\n      font-weight: 700;\r\n      margin: 0;\r\n      margin-bottom: 20px;\r\n      color: #1a1a1a;\r\n      text-align: center;\r\n    }\r\n\r\n    p {\r\n      font-size: 16px;\r\n      font-weight: normal;\r\n      margin: 0;\r\n      margin-bottom: 20px;\r\n      color: #555555;\r\n      line-height: 1.6;\r\n      text-align: center;\r\n    }\r\n\r\n    /* Buton Tasarımı - Subify için Mor Tonları */\r\n    .btn {\r\n      box-sizing: border-box;\r\n      width: 100%;\r\n      margin-bottom: 20px;\r\n    }\r\n\r\n    .btn > tbody > tr > td {\r\n      padding-bottom: 15px;\r\n    }\r\n\r\n    .btn table {\r\n      width: auto;\r\n    }\r\n\r\n    .btn table td {\r\n      background-color: #ffffff;\r\n      border-radius: 5px;\r\n      text-align: center;\r\n    }\r\n\r\n    .btn a {\r\n      background-color: #6366f1; /* Subify Ana Rengi (Örnek: İndigo) */\r\n      border: solid 1px #6366f1;\r\n      border-radius: 6px;\r\n      box-sizing: border-box;\r\n      color: #ffffff;\r\n      cursor: pointer;\r\n      display: inline-block;\r\n      font-size: 16px;\r\n      font-weight: bold;\r\n      margin: 0;\r\n      padding: 12px 25px;\r\n      text-decoration: none;\r\n      text-transform: capitalize;\r\n      transition: background-color 0.3s;\r\n    }\r\n\r\n    .btn a:hover {\r\n      background-color: #4f46e5 !important;\r\n      border-color: #4f46e5 !important;\r\n    }\r\n\r\n    /* Footer */\r\n    .footer {\r\n      clear: both;\r\n      margin-top: 10px;\r\n      text-align: center;\r\n      width: 100%;\r\n    }\r\n\r\n    .footer td,\r\n    .footer p,\r\n    .footer span,\r\n    .footer a {\r\n      color: #999999;\r\n      font-size: 12px;\r\n      text-align: center;\r\n    }\r\n    \r\n    .logo-container {\r\n        text-align: center;\r\n        padding-bottom: 20px;\r\n    }\r\n    \r\n    .icon-container {\r\n        text-align: center;\r\n        padding-bottom: 20px;\r\n    }\r\n\r\n    /* Mobil Uyumluluk */\r\n    @media only screen and (max-width: 620px) {\r\n      .main {\r\n        border-radius: 0;\r\n      }\r\n      .container {\r\n        width: 100% !important;\r\n        padding: 0 !important;\r\n      }\r\n      .wrapper {\r\n        padding: 20px !important;\r\n      }\r\n    }\r\n  </style>\r\n</head>\r\n<body>\r\n  <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"body\">\r\n    <tr>\r\n      <td>&nbsp;</td>\r\n      <td class=\"container\">\r\n        <div class=\"content\">\r\n\r\n          <table role=\"presentation\" class=\"main\">\r\n\r\n            <tr>\r\n              <td class=\"wrapper\">\r\n                <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n                  \r\n                  <tr>\r\n                    <td class=\"logo-container\">\r\n                      <h2 style=\"color: #6366f1; margin:0; font-size: 28px; letter-spacing: -1px;\">Subify.</h2>\r\n                    </td>\r\n                  </tr>\r\n\r\n                  <tr>\r\n                    <td class=\"icon-container\">\r\n                        <img src=\"https://cdn-icons-png.flaticon.com/512/646/646094.png\" alt=\"Email Verify\" width=\"80\" style=\"opacity: 0.8;\">\r\n                    </td>\r\n                  </tr>\r\n\r\n                  <tr>\r\n                    <td>\r\n                      <h1>E-posta Adresini Doğrula</h1>\r\n                      <p>Selam! Subify'a hoş geldin. 🎉</p>\r\n                      <p>Hesabını güvenli bir şekilde oluşturabilmemiz ve aboneliklerini yönetmeye başlayabilmen için aşağıdaki butona tıklayarak e-posta adresini doğrulaman gerekiyor.</p>\r\n                      \r\n                      <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"btn btn-primary\">\r\n                        <tbody>\r\n                          <tr>\r\n                            <td align=\"center\">\r\n                              <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n                                <tbody>\r\n                                  <tr>\r\n                                    <td> <a href=\"{{VERIFICATION_LINK}}\" target=\"_blank\">Hesabımı Doğrula</a> </td>\r\n                                  </tr>\r\n                                </tbody>\r\n                              </table>\r\n                            </td>\r\n                          </tr>\r\n                        </tbody>\r\n                      </table>\r\n                      \r\n                      <p style=\"font-size: 14px; margin-top: 20px;\">Eğer butona tıklayamıyorsan, aşağıdaki bağlantıyı tarayıcına kopyalayabilirsin:</p>\r\n                      <p style=\"font-size: 12px; color: #6366f1; word-break: break-all;\">{{VERIFICATION_LINK}}</p>\r\n                      \r\n                    </td>\r\n                  </tr>\r\n                </table>\r\n              </td>\r\n            </tr>\r\n            </table>\r\n          <div class=\"footer\">\r\n            <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n              <tr>\r\n                <td class=\"content-block\">\r\n                  <span class=\"apple-link\">Subify Inc, İstanbul, Türkiye</span>\r\n                  <br> Bu işlemi sen yapmadıysan, bu e-postayı görmezden gelebilirsin.\r\n                </td>\r\n              </tr>\r\n            </table>\r\n          </div>\r\n          </div>\r\n      </td>\r\n      <td>&nbsp;</td>\r\n    </tr>\r\n  </table>\r\n</body>\r\n</html>",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            LanguageCode = "en",
+                            Name = "VerifyEmail",
+                            Subject = "Verify Your Email",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("a323b8af-d5fe-402f-a35b-2f1fff3a2aa2"),
+                            Body = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\r\n  <title>Subify Email Verification</title>\r\n  <style>\r\n    /* Genel Resetler */\r\n    body {\r\n      background-color: #f4f4f7;\r\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\r\n      -webkit-font-smoothing: antialiased;\r\n      font-size: 14px;\r\n      line-height: 1.4;\r\n      margin: 0;\r\n      padding: 0;\r\n      -ms-text-size-adjust: 100%;\r\n      -webkit-text-size-adjust: 100%;\r\n    }\r\n\r\n    table {\r\n      border-collapse: separate;\r\n      mso-table-lspace: 0pt;\r\n      mso-table-rspace: 0pt;\r\n      width: 100%;\r\n    }\r\n\r\n    /* Ana Konteyner */\r\n    .container {\r\n      display: block;\r\n      margin: 0 auto !important;\r\n      max-width: 580px;\r\n      padding: 10px;\r\n      width: 580px;\r\n    }\r\n\r\n    /* İçerik Kutusu */\r\n    .content {\r\n      box-sizing: border-box;\r\n      display: block;\r\n      margin: 0 auto;\r\n      max-width: 580px;\r\n      padding: 10px;\r\n    }\r\n\r\n    /* Beyaz Kart Tasarımı */\r\n    .main {\r\n      background: #ffffff;\r\n      border-radius: 8px;\r\n      width: 100%;\r\n      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);\r\n    }\r\n\r\n    .wrapper {\r\n      box-sizing: border-box;\r\n      padding: 40px;\r\n    }\r\n\r\n    /* Tipografi */\r\n    h1 {\r\n      font-size: 24px;\r\n      font-weight: 700;\r\n      margin: 0;\r\n      margin-bottom: 20px;\r\n      color: #1a1a1a;\r\n      text-align: center;\r\n    }\r\n\r\n    p {\r\n      font-size: 16px;\r\n      font-weight: normal;\r\n      margin: 0;\r\n      margin-bottom: 20px;\r\n      color: #555555;\r\n      line-height: 1.6;\r\n      text-align: center;\r\n    }\r\n\r\n    /* Buton Tasarımı - Subify için Mor Tonları */\r\n    .btn {\r\n      box-sizing: border-box;\r\n      width: 100%;\r\n      margin-bottom: 20px;\r\n    }\r\n\r\n    .btn > tbody > tr > td {\r\n      padding-bottom: 15px;\r\n    }\r\n\r\n    .btn table {\r\n      width: auto;\r\n    }\r\n\r\n    .btn table td {\r\n      background-color: #ffffff;\r\n      border-radius: 5px;\r\n      text-align: center;\r\n    }\r\n\r\n    .btn a {\r\n      background-color: #6366f1; /* Subify Brand Color */\r\n      border: solid 1px #6366f1;\r\n      border-radius: 6px;\r\n      box-sizing: border-box;\r\n      color: #ffffff;\r\n      cursor: pointer;\r\n      display: inline-block;\r\n      font-size: 16px;\r\n      font-weight: bold;\r\n      margin: 0;\r\n      padding: 12px 25px;\r\n      text-decoration: none;\r\n      text-transform: capitalize;\r\n      transition: background-color 0.3s;\r\n    }\r\n\r\n    .btn a:hover {\r\n      background-color: #4f46e5 !important;\r\n      border-color: #4f46e5 !important;\r\n    }\r\n\r\n    /* Footer */\r\n    .footer {\r\n      clear: both;\r\n      margin-top: 10px;\r\n      text-align: center;\r\n      width: 100%;\r\n    }\r\n\r\n    .footer td,\r\n    .footer p,\r\n    .footer span,\r\n    .footer a {\r\n      color: #999999;\r\n      font-size: 12px;\r\n      text-align: center;\r\n    }\r\n    \r\n    .logo-container {\r\n        text-align: center;\r\n        padding-bottom: 20px;\r\n    }\r\n    \r\n    .icon-container {\r\n        text-align: center;\r\n        padding-bottom: 20px;\r\n    }\r\n\r\n    /* Mobil Uyumluluk */\r\n    @media only screen and (max-width: 620px) {\r\n      .main {\r\n        border-radius: 0;\r\n      }\r\n      .container {\r\n        width: 100% !important;\r\n        padding: 0 !important;\r\n      }\r\n      .wrapper {\r\n        padding: 20px !important;\r\n      }\r\n    }\r\n  </style>\r\n</head>\r\n<body>\r\n  <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"body\">\r\n    <tr>\r\n      <td>&nbsp;</td>\r\n      <td class=\"container\">\r\n        <div class=\"content\">\r\n\r\n          <table role=\"presentation\" class=\"main\">\r\n\r\n            <tr>\r\n              <td class=\"wrapper\">\r\n                <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n                  \r\n                  <tr>\r\n                    <td class=\"logo-container\">\r\n                      <h2 style=\"color: #6366f1; margin:0; font-size: 28px; letter-spacing: -1px;\">Subify.</h2>\r\n                    </td>\r\n                  </tr>\r\n\r\n                  <tr>\r\n                    <td class=\"icon-container\">\r\n                        <img src=\"https://cdn-icons-png.flaticon.com/512/646/646094.png\" alt=\"Verify Email\" width=\"80\" style=\"opacity: 0.8;\">\r\n                    </td>\r\n                  </tr>\r\n\r\n                  <tr>\r\n                    <td>\r\n                      <h1>Verify Your Email Address</h1>\r\n                      <p>Hi there! Welcome to Subify. 🎉</p>\r\n                      <p>To start managing your subscriptions securely, please verify your email address by clicking the button below.</p>\r\n                      \r\n                      <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"btn btn-primary\">\r\n                        <tbody>\r\n                          <tr>\r\n                            <td align=\"center\">\r\n                              <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n                                <tbody>\r\n                                  <tr>\r\n                                    <td> <a href=\"{{VERIFICATION_LINK}}\" target=\"_blank\">Verify My Account</a> </td>\r\n                                  </tr>\r\n                                </tbody>\r\n                              </table>\r\n                            </td>\r\n                          </tr>\r\n                        </tbody>\r\n                      </table>\r\n                      \r\n                      <p style=\"font-size: 14px; margin-top: 20px;\">If the button doesn't work, copy and paste the link below into your browser:</p>\r\n                      <p style=\"font-size: 12px; color: #6366f1; word-break: break-all;\">{{VERIFICATION_LINK}}</p>\r\n                      \r\n                    </td>\r\n                  </tr>\r\n                </table>\r\n              </td>\r\n            </tr>\r\n            </table>\r\n          <div class=\"footer\">\r\n            <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\r\n              <tr>\r\n                <td class=\"content-block\">\r\n                  <span class=\"apple-link\">Subify Inc, Istanbul, Turkey</span>\r\n                  <br> If you didn't create this account, you can safely ignore this email.\r\n                </td>\r\n              </tr>\r\n            </table>\r\n          </div>\r\n          </div>\r\n      </td>\r\n      <td>&nbsp;</td>\r\n    </tr>\r\n  </table>\r\n</body>\r\n</html>",
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            LanguageCode = "tr",
+                            Name = "VerifyEmail",
+                            Subject = "E-postanızı Doğrulayın",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
             modelBuilder.Entity("Subify.Domain.Models.Entities.Common.ExchangeRateSnapshot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -507,7 +641,7 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-                    b.Property<string>("Rates")
+                    b.Property<string>("Rate")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -518,6 +652,11 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasDefaultValue("exchangerate-api. com");
 
+                    b.Property<string>("TargetCurrency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
@@ -525,8 +664,8 @@ namespace Subify.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BaseCurrency", "FetchedAt")
-                        .HasDatabaseName("IX_ExchangeRateSnapshots_BaseCurrency_FetchedAt");
+                    b.HasIndex("BaseCurrency", "TargetCurrency", "FetchedAt")
+                        .HasDatabaseName("IX_ExchangeRateSnapshots_BaseCurrency_TargetCurrency_FetchedAt");
 
                     b.ToTable("ExchangeRateSnapshots", (string)null);
                 });
@@ -2545,6 +2684,9 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -2576,111 +2718,263 @@ namespace Subify.Infrastructure.Migrations
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000001"),
                             Color = "#E50914",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8644), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9753), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "play-circle",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "streaming",
                             SortOrder = 1,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8647), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9754), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000002"),
                             Color = "#1DB954",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8665), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9758), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "music",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "music",
                             SortOrder = 2,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8669), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9758), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000003"),
                             Color = "#0078D4",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8686), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9761), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "briefcase",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "productivity",
                             SortOrder = 3,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8689), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9762), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000004"),
                             Color = "#9147FF",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8702), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9765), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "gamepad-2",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "gaming",
                             SortOrder = 4,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8704), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9765), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000005"),
                             Color = "#0066FF",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8722), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9768), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "cloud",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "cloud-storage",
                             SortOrder = 5,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8724), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9769), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000006"),
                             Color = "#FF6B00",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8737), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9772), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "newspaper",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "news-magazines",
                             SortOrder = 6,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8738), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9772), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000007"),
                             Color = "#FF2D55",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8758), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9775), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "heart-pulse",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "fitness-health",
                             SortOrder = 7,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8760), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9776), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000008"),
                             Color = "#5856D6",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8805), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9779), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "graduation-cap",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "education",
                             SortOrder = 8,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8810), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9779), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000009"),
                             Color = "#8E8E93",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8821), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9782), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "wrench",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "utilities",
                             SortOrder = 9,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8823), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9783), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-00000000000a"),
                             Color = "#636366",
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8848), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9786), new TimeSpan(0, 0, 0, 0, 0)),
                             Icon = "folder",
                             IsActive = true,
+                            IsDefault = false,
                             Slug = "other",
                             SortOrder = 99,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 12, 17, 21, 15, 52, 449, DateTimeKind.Unspecified).AddTicks(8849), new TimeSpan(0, 0, 0, 0, 0))
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 625, DateTimeKind.Unspecified).AddTicks(9786), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
+            modelBuilder.Entity("Subify.Domain.Models.Entities.Subscriptions.Provider", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("BillingCycle")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Monthly");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("TRY");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTimeOffset>("LastVerifiedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("LogoUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<float?>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("PriceBefore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasDefaultValue("Global");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SourceUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Providers_IsActive");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Providers_Slug_Unique");
+
+                    b.ToTable("Providers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
+                            BillingCycle = "Monthly",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(398), new TimeSpan(0, 0, 0, 0, 0)),
+                            Currency = "TRY",
+                            IsActive = true,
+                            LastVerifiedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(394), new TimeSpan(0, 0, 0, 0, 0)),
+                            LogoUrl = "https://example.com/logos/netflix.png",
+                            Name = "Netflix",
+                            Price = 299.99f,
+                            PriceBefore = 349.99f,
+                            Region = "TR",
+                            Slug = "netflix",
+                            SourceUrl = "https://www.netflix.com/tr/",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(399), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
+                            BillingCycle = "Monthly",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(405), new TimeSpan(0, 0, 0, 0, 0)),
+                            Currency = "TRY",
+                            IsActive = true,
+                            LastVerifiedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(403), new TimeSpan(0, 0, 0, 0, 0)),
+                            LogoUrl = "https://example.com/logos/spotify.png",
+                            Name = "Spotify",
+                            Price = 299.99f,
+                            PriceBefore = 349.99f,
+                            Region = "TR",
+                            Slug = "spotify",
+                            SourceUrl = "https://www.spotify.com/tr/",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(405), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
+                            BillingCycle = "Monthly",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(410), new TimeSpan(0, 0, 0, 0, 0)),
+                            Currency = "TRY",
+                            IsActive = true,
+                            LastVerifiedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(408), new TimeSpan(0, 0, 0, 0, 0)),
+                            LogoUrl = "https://example.com/logos/adobe.png",
+                            Name = "Adobe Creative Cloud",
+                            Price = 499.99f,
+                            PriceBefore = 599.99f,
+                            Region = "TR",
+                            Slug = "adobe-creative-cloud",
+                            SourceUrl = "https://www.adobe.com/tr/creativecloud.html",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 2, 22, 32, 59, 626, DateTimeKind.Unspecified).AddTicks(410), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -2738,6 +3032,9 @@ namespace Subify.Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<Guid?>("ProviderId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("SharedWithCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -2763,11 +3060,14 @@ namespace Subify.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("IX_Subscriptions_CategoryId");
 
                     b.HasIndex("DeletedAt")
                         .HasDatabaseName("IX_Subscriptions_DeletedAt_Active")
                         .HasFilter("[DeletedAt] IS NULL");
+
+                    b.HasIndex("ProviderId");
 
                     b.HasIndex("UserCategoryId");
 
@@ -2794,6 +3094,9 @@ namespace Subify.Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<Guid?>("BillingSessionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
@@ -2806,16 +3109,37 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("nvarchar(10)")
                         .HasDefaultValue("TRY");
 
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRefunded")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<DateOnly>("PaymentDate")
-                        .HasColumnType("date");
+                    b.Property<DateTimeOffset>("PaymentDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PaymentMethod")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Provider")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProviderPayload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProviderSessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProviderTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("RefundedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2837,6 +3161,8 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BillingSessionId");
 
                     b.HasIndex("SubscriptionId", "PaymentDate")
                         .HasDatabaseName("IX_SubscriptionPaymentRecords_SubscriptionId_PaymentDate");
@@ -2958,6 +3284,9 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<bool>("MarketingOptIn")
+                        .HasColumnType("bit");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -2974,6 +3303,9 @@ namespace Subify.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ReferralCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -3204,6 +3536,16 @@ namespace Subify.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Subify.Domain.Models.Entities.AuditLogs.ActivityLog", b =>
+                {
+                    b.HasOne("Subify.Domain.Models.Entities.Users.ApplicationUser", "User")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Subify.Domain.Models.Entities.AuditLogs.NotificationLog", b =>
                 {
                     b.HasOne("Subify.Domain.Models.Entities.Subscriptions.Subscription", "Subscription")
@@ -3248,6 +3590,10 @@ namespace Subify.Infrastructure.Migrations
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Subify.Domain.Models.Entities.Subscriptions.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId");
+
                     b.HasOne("Subify.Domain.Models.Entities.Subscriptions.UserCategory", "UserCategory")
                         .WithMany("Subscriptions")
                         .HasForeignKey("UserCategoryId");
@@ -3259,6 +3605,8 @@ namespace Subify.Infrastructure.Migrations
 
                     b.Navigation("Category");
 
+                    b.Navigation("Provider");
+
                     b.Navigation("User");
 
                     b.Navigation("UserCategory");
@@ -3266,6 +3614,10 @@ namespace Subify.Infrastructure.Migrations
 
             modelBuilder.Entity("Subify.Domain.Models.Entities.Subscriptions.SubscriptionPaymentRecord", b =>
                 {
+                    b.HasOne("Subify.Domain.Models.Entities.ApplicationPayments.BillingSession", "BillingSession")
+                        .WithMany()
+                        .HasForeignKey("BillingSessionId");
+
                     b.HasOne("Subify.Domain.Models.Entities.Subscriptions.Subscription", "Subscription")
                         .WithMany("PaymentRecords")
                         .HasForeignKey("SubscriptionId")
@@ -3275,6 +3627,8 @@ namespace Subify.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("BillingSession");
 
                     b.Navigation("Subscription");
 
@@ -3331,6 +3685,8 @@ namespace Subify.Infrastructure.Migrations
 
             modelBuilder.Entity("Subify.Domain.Models.Entities.Users.ApplicationUser", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("AiSuggestionLogs");
 
                     b.Navigation("BillingSessions");

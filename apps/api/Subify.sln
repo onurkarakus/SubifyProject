@@ -19,6 +19,42 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subify.UnitTests", "tests\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subify.IntegrationTests", "tests\Subify.IntegrationTests\Subify.IntegrationTests.csproj", "{76506A4D-3BD5-495E-B3D8-BCE28D801751}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{9C8DAF32-F640-43B3-955B-C60D3CEDE34E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\docs\ADR.md = ..\..\docs\ADR.md
+		..\..\docs\API_CONTRACTS.md = ..\..\docs\API_CONTRACTS.md
+		..\..\docs\DATA_MODEL.md = ..\..\docs\DATA_MODEL.md
+		..\..\docs\ERROR_CODES.md = ..\..\docs\ERROR_CODES.md
+		..\..\docs\LOGGING_MONITORING.md = ..\..\docs\LOGGING_MONITORING.md
+		..\..\docs\REVENUECAT_CONFIG.md = ..\..\docs\REVENUECAT_CONFIG.md
+		..\..\docs\SEED_DATA.md = ..\..\docs\SEED_DATA.md
+		..\..\docs\Subify.Web.Uygulamasi.v2.PRD.md = ..\..\docs\Subify.Web.Uygulamasi.v2.PRD.md
+		..\..\docs\SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md = ..\..\docs\SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md
+		..\..\docs\TESTING_STRATEGY.md = ..\..\docs\TESTING_STRATEGY.md
+		..\..\docs\UI_MOCKUPS.md = ..\..\docs\UI_MOCKUPS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagrams", "Diagrams", "{3AC59F28-AD02-4039-A244-A8C4FC3EE496}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\docs\diagrams\COMPONENT_DIAGRAM.md = ..\..\docs\diagrams\COMPONENT_DIAGRAM.md
+		..\..\docs\diagrams\DEPLOYMENT_DIAGRAM.md = ..\..\docs\diagrams\DEPLOYMENT_DIAGRAM.md
+		..\..\docs\diagrams\ERD.md = ..\..\docs\diagrams\ERD.md
+		..\..\docs\diagrams\SEQUENCE_DIAGRAMS.md = ..\..\docs\diagrams\SEQUENCE_DIAGRAMS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mockups", "Mockups", "{57B16692-A1E7-4FA4-8BD1-425C7DE1DC24}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\docs\mockups\mobile_add_subscription_1767296784160.png = ..\..\docs\mockups\mobile_add_subscription_1767296784160.png
+		..\..\docs\mockups\mobile_ai_suggestions_1767296816523.png = ..\..\docs\mockups\mobile_ai_suggestions_1767296816523.png
+		..\..\docs\mockups\mobile_dashboard_1767296742406.png = ..\..\docs\mockups\mobile_dashboard_1767296742406.png
+		..\..\docs\mockups\mobile_paywall_1767296858838.png = ..\..\docs\mockups\mobile_paywall_1767296858838.png
+		..\..\docs\mockups\mobile_reports_1767296838549.png = ..\..\docs\mockups\mobile_reports_1767296838549.png
+		..\..\docs\mockups\mobile_subscriptions_list_1767296764205.png = ..\..\docs\mockups\mobile_subscriptions_list_1767296764205.png
+		..\..\docs\mockups\web_admin_panel_1767296949324.png = ..\..\docs\mockups\web_admin_panel_1767296949324.png
+		..\..\docs\mockups\web_dashboard_1767296929064.png = ..\..\docs\mockups\web_dashboard_1767296929064.png
+		..\..\docs\mockups\web_landing_page_1767296900295.png = ..\..\docs\mockups\web_landing_page_1767296900295.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +96,8 @@ Global
 		{3EF0E0E1-BC87-412E-ADDF-D27591A96CD8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{E3EF8273-35F7-4658-8238-4CFBB80F2BDD} = {69F5D4BC-BA12-4E0D-99A0-D9392820BA38}
 		{76506A4D-3BD5-495E-B3D8-BCE28D801751} = {69F5D4BC-BA12-4E0D-99A0-D9392820BA38}
+		{3AC59F28-AD02-4039-A244-A8C4FC3EE496} = {9C8DAF32-F640-43B3-955B-C60D3CEDE34E}
+		{57B16692-A1E7-4FA4-8BD1-425C7DE1DC24} = {9C8DAF32-F640-43B3-955B-C60D3CEDE34E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26923365-9D71-442E-A420-1A2F59BD0EEC}

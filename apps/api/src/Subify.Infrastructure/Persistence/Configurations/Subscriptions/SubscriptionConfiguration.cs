@@ -46,5 +46,6 @@ public sealed class SubscriptionConfiguration : IEntityTypeConfiguration<Subscri
         builder.HasIndex(s => s.DeletedAt).HasFilter("[DeletedAt] IS NULL").HasDatabaseName("IX_Subscriptions_DeletedAt_Active");
         builder.HasIndex(s => new { s.UserId, s.CategoryId }).HasDatabaseName("IX_Subscriptions_UserId_CategoryId");
         builder.HasIndex(s => new { s.NextRenewalDate, s.Archived, s.Status }).HasDatabaseName("IX_Subscriptions_NextRenewalDate_Active");
+        builder.HasIndex(s => s.CategoryId).HasDatabaseName("IX_Subscriptions_CategoryId");
     }
 }

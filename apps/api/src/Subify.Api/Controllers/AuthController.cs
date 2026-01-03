@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Subify.Domain.Abstractions.Services;
-using Subify.Domain.Models.Entities.Users;
 using Subify.Domain.Models.RequestEntities.Auth;
-using Subify.Infrastructure.Persistence;
 
 namespace Subify.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/auth")]
 [ApiController]
 public class AuthController : ControllerBase
 {
@@ -54,7 +50,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = result.ErrorMessage });
         }
-        
+
         return Ok(result.Data);
     }
 }

@@ -11,6 +11,7 @@ namespace Subify.Domain.Models.Entities.AuditLogs;
 public sealed class NotificationLog : BaseEntity
 {
     public Guid? UserId { get; set; }
+    
     public Guid? SubscriptionId { get; set; }
 
     /// <summary>

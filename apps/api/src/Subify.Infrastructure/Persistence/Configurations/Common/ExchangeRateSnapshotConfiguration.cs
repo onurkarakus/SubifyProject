@@ -14,12 +14,13 @@ public sealed class ExchangeRateSnapshotConfiguration : IEntityTypeConfiguration
 
         builder.Property(ers => ers.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
         builder.Property(ers => ers.BaseCurrency).IsRequired().HasMaxLength(10);
-        builder.Property(ers => ers.Rates).IsRequired();
+        builder.Property(ers => ers.TargetCurrency).HasMaxLength(10);
+        builder.Property(ers => ers.Rate).IsRequired();
         builder.Property(ers => ers.Source).IsRequired().HasMaxLength(100).HasDefaultValue("exchangerate-api. com");
         builder.Property(ers => ers.FetchedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(ers => ers.CreatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
         builder.Property(ers => ers.UpdatedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
-        builder.HasIndex(ers => new { ers.BaseCurrency, ers.FetchedAt }).HasDatabaseName("IX_ExchangeRateSnapshots_BaseCurrency_FetchedAt");
+        builder.HasIndex(ers => new { ers.BaseCurrency, ers.TargetCurrency, ers.FetchedAt }).HasDatabaseName("IX_ExchangeRateSnapshots_BaseCurrency_TargetCurrency_FetchedAt");
     }
 }

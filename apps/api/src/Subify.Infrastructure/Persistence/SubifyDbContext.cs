@@ -45,6 +45,7 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     // Common
     public DbSet<Resource> Resources => Set<Resource>();
     public DbSet<ExchangeRateSnapshot> ExchangeRateSnapshots => Set<ExchangeRateSnapshot>();
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
