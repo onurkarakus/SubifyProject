@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Subify.Api.Common.Extensions;
 using Subify.Domain.Abstractions.Services;
+using Subify.Domain.Enums;
 using Subify.Domain.Errors;
 using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Models.Entities.Users;
@@ -18,17 +20,23 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
     private readonly UserManager<ApplicationUser> userManager;
     private readonly SubifyDbContext dbContext;
     private readonly ITokenService tokenService;
+    private readonly IEmailService emailService;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IConfiguration configuration;
 
-    public RegisterHandler(UserManager<ApplicationUser> userManager, 
-        SubifyDbContext dbContext, 
-        ITokenService tokenService, 
-        IHttpContextAccessor httpContextAccessor)
+    public RegisterHandler(UserManager<ApplicationUser> userManager,
+        SubifyDbContext dbContext,
+        ITokenService tokenService,
+        IHttpContextAccessor httpContextAccessor,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         this.userManager = userManager;
         this.dbContext = dbContext;
         this.tokenService = tokenService;
         this.httpContextAccessor = httpContextAccessor;
+        this.emailService = emailService;
+        this.configuration = configuration;
     }
 
     public async Task<Result<RegisterResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -38,35 +46,99 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
             return Result.Failure<RegisterResponse>(DomainErrors.Auth.EmailAlreadyRegistered);
         }
 
-        var user = new ApplicationUser
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        try
         {
-            UserName = request.Email,
-            Email = request.Email,
-            FullName = request.FullName,
-            Profile = new Profile { FullName = request.FullName, Email = request.Email }
-        };
+            var newUser = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FullName = request.FullName,
+                EmailConfirmed = false
+            };
 
-        var emailValidationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var createResult = await userManager.CreateAsync(newUser, request.Password);
 
-        var createResult = await userManager.CreateAsync(user, request.Password);
+            if (!createResult.Succeeded)
+            {
+                return Result.Failure<RegisterResponse>(createResult.GetErrors());
+            }
 
-        if (!createResult.Succeeded)
-        {
-            return Result.Failure<RegisterResponse>(createResult.GetErrors());
+            var profile = new Profile
+            {
+                Id = Guid.NewGuid(),
+                UserId = newUser.Id,
+                FullName = request.FullName,
+                MainCurrency = request.MainCurrency,
+                Locale = request.Locale,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Email = request.Email,
+                DarkTheme = request.UseDarkTheme,
+                MonthlyBudget = request.MonthlyBudget,
+                ApplicationThemeColor = request.ApplicationThemeColor,
+                Plan = PlanType.Free,
+                NotificationSettings = new NotificationSetting
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    DaysBeforeRenewal = request.DaysBeforeRenewal,
+                    EmailEnabled = request.NotificationEmailEnabled,
+                    PushEnabled = request.NotificationPushEnabled,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                }
+            };
+
+            await dbContext.Profiles.AddAsync(profile, cancellationToken);
+
+            var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
+            var encodedToken = System.Web.HttpUtility.UrlEncode(emailConfirmationToken);
+            var userId = newUser.Id.ToString();
+            var frontendUrl = configuration["AppUrl"] ?? "http://localhost:3000";
+            var verificationLink = $"{frontendUrl}/verify-email?userId={userId}&token={encodedToken}";
+
+            var emailTemplate = await dbContext.EmailTemplates
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t=>
+                t.LanguageCode == request.Locale && t.Name == "VerifyEmail", cancellationToken);
+
+            string subject;
+            string body;
+
+            if (emailTemplate != null)
+            {
+                subject = emailTemplate.Subject;
+
+                body = emailTemplate.Body
+                    .Replace("{{FullName}}", request.FullName)
+                    .Replace("{{VerifyLink}}", verificationLink)
+                    .Replace("{{CurrentYear}}", DateTime.Now.Year.ToString());
+            }
+
+            else
+            {
+                subject = "Subify - E-posta Doğrulama";
+                body = $"Merhaba {request.FullName}, <br> Hesabınızı doğrulamak için <a href='{verificationLink}'>tıklayın</a>.";
+            }
+
+            await emailService.SendEmailAsync(newUser.Email!, subject, body);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return Result.Success(new RegisterResponse
+            (
+                Email: newUser.Email!,
+                UserId: newUser.Id.ToString(),
+                Expiration: DateTime.UtcNow.AddMinutes(15),
+                Message: "Kayıt başarılı! Lütfen e-posta adresinizi doğrulayın."
+            ));
         }
-
-        var generateTokenResult = await GenerateTokensAsync(user);
-
-        if (!generateTokenResult.IsSuccess)
+        catch (Exception)
         {
-            return Result.Failure<RegisterResponse>(generateTokenResult.Error);
-        }        
 
-        return Result.Success(new RegisterResponse(
-            user.Email!, 
-            generateTokenResult.Value.AccessToken, 
-            generateTokenResult.Value.RefreshToken, 
-            generateTokenResult.Value.Expiration));
+            throw;
+        }
     }
 
     private async Task<Result<GenerateTokensResponse>> GenerateTokensAsync(ApplicationUser user)

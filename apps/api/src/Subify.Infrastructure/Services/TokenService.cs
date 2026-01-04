@@ -1,6 +1,7 @@
-﻿﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Subify.Domain.Abstractions.Services;
+using Subify.Domain.Models.Auth;
 using Subify.Domain.Models.Entities.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,35 +19,82 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public string CreateToken(ApplicationUser user)
+    public Task<GenerateTokenResponse> GenerateTokenAsync(ApplicationUser user)
     {
-        // 1. Token içine gömülecek bilgiler (Claims)
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+        var secretKey = _configuration["Jwt:Key"]!;
+        var issuer = _configuration["Jwt:Issuer"]!;
+        var audience = _configuration["Jwt:Audience"]!;
+        var expiryMinutes = Convert.ToDouble(_configuration["Jwt:ExpiryMinutes"]!);
 
-        // 2. Güvenlik anahtarı (AppSettings'den gelecek)
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiration = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
-        // 3. Token ayarları (Süre vb.)
-        var expiry = DateTime.UtcNow.AddMinutes(15); // Access Token kısa ömürlü olmalı (Refresh Token var)
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: expiry,
+        var jwtToken = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            },
+            expires: expiration,
             signingCredentials: creds
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);        
+        var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        var refreshToken = GenerateRefreshToken();
+        var hashedRefreshToken = HashToken(refreshToken);
+
+        return Task.FromResult(new GenerateTokenResponse
+        (
+            AccessToken: accessToken,
+            RefreshToken: refreshToken,
+            HashedRefreshToken: hashedRefreshToken,
+            Expiration: expiration
+        ));
+    }    
+
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+            return null;
+
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var secretKey = jwtSettings["Key"]!;
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ValidateLifetime = false // We want to get claims from expired tokens as well
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+            return principal;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    public string GenerateRefreshToken()
+    private string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
@@ -54,26 +102,12 @@ public class TokenService : ITokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+    private static string HashToken(string token)
     {
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)),
-            ValidateLifetime = false // Süresi bitmiş token'ı kabul et
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-
-        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-        {
-            throw new SecurityTokenException("Invalid token");
-        }
-
-        return principal;
+        var bytes = Encoding.UTF8.GetBytes(token);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash);
     }
+
+
 }

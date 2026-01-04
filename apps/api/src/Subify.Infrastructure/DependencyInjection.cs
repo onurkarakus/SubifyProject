@@ -1,15 +1,11 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Subify.Domain.Abstractions.Services;
 using Subify.Domain.Models.Entities.Users;
 using Subify.Infrastructure.Persistence;
 using Subify.Infrastructure.Services;
-using System.Text;
 
 namespace Subify.Infrastructure;
 
