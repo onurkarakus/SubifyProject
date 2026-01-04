@@ -37,36 +37,11 @@ public class AuthService : IAuthService
 
     public async Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request)
     {
-        if (await _userManager.FindByEmailAsync(request.Email) is not null)
-        {
-            return Result<RegisterResponse>.Failure("Email already in use");
-        }
+        
 
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FullName = request.FullName,
-            Profile = new Profile { FullName = request.FullName, Email = request.Email }
-        };
+       
 
-        var emailValidationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-
-        if (!result.Succeeded)
-        {
-            return Result<RegisterResponse>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
-
-        var generateTokenResult = await GenerateTokensAsync(user);
-
-        if (!generateTokenResult.IsSuccess)
-        {
-            return Result<RegisterResponse>.Failure(generateTokenResult.ErrorMessage);
-        }
-
-        return Result<RegisterResponse>.Success(new RegisterResponse(user.Email!, generateTokenResult.Data.AccessToken, generateTokenResult.Data.RefreshToken, generateTokenResult.Data.Expiration));
+        
     }
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)

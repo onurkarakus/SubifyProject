@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Subify.Api\Subify.Api.csproj" />
-    <ProjectReference Include="..\..\src\Subify.Application\Subify.Application.csproj" />
     <ProjectReference Include="..\..\src\Subify.Domain\Subify.Domain.csproj" />
     <ProjectReference Include="..\..\src\Subify.Infrastructure\Subify.Infrastructure.csproj" />
   </ItemGroup>

@@ -1,16 +1,12 @@
-
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Resend;
-using Subify.Application.Services;
-using Subify.Domain.Abstractions.Services;
-using Subify.Domain.Models.Entities.Users;
-using Subify.Infrastructure.Persistence;
-using Subify.Infrastructure.Services;
+using Subify.Api.Common.Behaviors;
+using Subify.Infrastructure;
+using System.Reflection;
 using System.Text;
 
 namespace Subify.Api;
@@ -21,13 +17,11 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        builder.Services.AddInfrastructure(builder.Configuration);
 
-
-        // Add services to the container.
-
-        builder.Services.TryAddTransient<IAuthService, AuthService>();
-        builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         builder.Services.AddHttpClient<ResendClient>();
 
@@ -35,21 +29,8 @@ public class Program
             o.ApiToken = builder.Configuration["Resend:ApiKey"];
         });
 
-        builder.Services.AddDbContext<SubifyDbContext>(options =>
-            options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Subify.Infrastructure")));
-
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-        {
-            options.User.RequireUniqueEmail = true;
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 8;
-            options.SignIn.RequireConfirmedEmail = true;
-        })
-            .AddEntityFrameworkStores<SubifyDbContext>()
-            .AddDefaultTokenProviders();
+        var jwtSettings = builder.Configuration.GetSection("Jwt");
+        var secretKey = jwtSettings["Key"];
 
         builder.Services.AddAuthentication(options =>
         {
@@ -64,11 +45,13 @@ public class Program
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
                 };
             });
+
+        builder.Services.AddAuthorization();
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -105,6 +88,9 @@ public class Program
         });
 
         var app = builder.Build();
+
+        app.UseExceptionHandler();
+        app.UseStatusCodePages();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
