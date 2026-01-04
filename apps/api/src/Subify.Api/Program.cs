@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Resend;
 using Subify.Api.Common.Behaviors;
+using Subify.Api.Common.Extensions;
 using Subify.Infrastructure;
 using System.Reflection;
 using System.Text;
@@ -87,6 +88,8 @@ public class Program
             });
         });
 
+        builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+
         var app = builder.Build();
 
         app.UseExceptionHandler();
@@ -105,6 +108,8 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.MapEndpoints();
 
         app.Run();
     }
