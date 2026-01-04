@@ -11,7 +11,7 @@ using Subify.Infrastructure.Persistence;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Subify.Api.Features.Authorization.Register;
+namespace Subify.Api.Features.Auth.Register;
 
 public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
 {
@@ -60,9 +60,9 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
         if (!generateTokenResult.IsSuccess)
         {
             return Result.Failure<RegisterResponse>(generateTokenResult.Error);
-        }
+        }        
 
-        return Result<RegisterResponse>.Success(new RegisterResponse(
+        return Result.Success(new RegisterResponse(
             user.Email!, 
             generateTokenResult.Value.AccessToken, 
             generateTokenResult.Value.RefreshToken, 

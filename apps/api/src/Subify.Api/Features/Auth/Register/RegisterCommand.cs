@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Subify.Domain.Shared;
 
-namespace Subify.Api.Features.Authorization.Register;
+namespace Subify.Api.Features.Auth.Register;
 
 public record RegisterCommand(string Email, string Password, string FullName): IRequest<Result<RegisterResponse>>
 {

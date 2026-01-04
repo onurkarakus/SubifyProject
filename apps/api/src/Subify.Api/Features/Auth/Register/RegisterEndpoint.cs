@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
 
-namespace Subify.Api.Features.Authorization.Register;
+namespace Subify.Api.Features.Auth.Register;
 
 public class RegisterEndpoint : IEndpoint
 {

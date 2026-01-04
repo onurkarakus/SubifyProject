@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Subify.Api.Features.Authorization.Register;
+namespace Subify.Api.Features.Auth.Register;
 
 public class RegisterValidator: AbstractValidator<RegisterCommand>
 {
