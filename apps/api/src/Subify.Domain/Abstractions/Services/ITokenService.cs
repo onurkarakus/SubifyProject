@@ -1,6 +1,5 @@
 ﻿using Subify.Domain.Models.Auth;
 using Subify.Domain.Models.Entities.Users;
-using Subify.Domain.Models.ResponseEntities.Auth;
 using System.Security.Claims;
 
 namespace Subify.Domain.Abstractions.Services;

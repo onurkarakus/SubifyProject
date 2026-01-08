@@ -86,6 +86,7 @@ public class TokenService : ITokenService
             {
                 return null;
             }
+
             return principal;
         }
         catch

@@ -4,5 +4,4 @@ public record GenerateTokenResponse(
     string AccessToken,
     string RefreshToken,
     string HashedRefreshToken,
-    DateTime Expiration
-);
+    DateTime Expiration);

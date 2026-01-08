@@ -5,13 +5,9 @@ using Subify.Api.Common.Extensions;
 using Subify.Domain.Abstractions.Services;
 using Subify.Domain.Enums;
 using Subify.Domain.Errors;
-using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Models.Entities.Users;
-using Subify.Domain.Models.RequestEntities.Auth;
 using Subify.Domain.Shared;
 using Subify.Infrastructure.Persistence;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Subify.Api.Features.Auth.Register;
 
@@ -141,51 +137,5 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
         }
     }
 
-    private async Task<Result<GenerateTokensResponse>> GenerateTokensAsync(ApplicationUser user)
-    {
-        var accessToken = tokenService.CreateToken(user);
-        var refreshToken = tokenService.GenerateRefreshToken();
-
-        var http = httpContextAccessor.HttpContext;
-
-        var forwarded = http?.Request?.Headers["X-Forwarded-For"].FirstOrDefault();
-        var ipAddress = !string.IsNullOrWhiteSpace(forwarded)
-            ? forwarded.Split(',', StringSplitOptions.RemoveEmptyEntries)[0].Trim()
-            : http?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
-
-        var userAgent = http?.Request?.Headers.UserAgent.ToString();
-
-        var tokenHash = HashToken(refreshToken);
-
-        var now = DateTime.UtcNow;
-
-        var expiresAt = now.AddDays(7);
-
-        var refreshTokenEntity = new RefreshToken
-        {
-            UserId = user.Id,
-            TokenHash = tokenHash,
-            ExpiresAt = expiresAt,
-            IsRevoked = false,
-            RevokedReason = null,
-            RevokedAt = null,
-            CreatedAt = now,
-            IpAddress = ipAddress,
-            UserAgent = userAgent
-        };
-
-        await dbContext.RefreshTokens.AddAsync(refreshTokenEntity);
-        await dbContext.SaveChangesAsync();
-
-        var response = new GenerateTokensResponse(accessToken, tokenHash, DateTime.UtcNow.AddMinutes(15));
-
-        return Result.Success(response);
-    }
-
-    private static string HashToken(string token)
-    {
-        var bytes = Encoding.UTF8.GetBytes(token);
-        var hash = SHA256.HashData(bytes);
-        return Convert.ToHexString(hash);
-    }
+    
 }
