@@ -3,26 +3,33 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Subify.Domain.Abstractions.Services;
 using Subify.Domain.Errors;
+using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Shared;
 
 namespace Subify.Api.Features.Auth.RefreshTokens;
 
 public class RefreshTokensHandler: IRequestHandler<RefreshTokensCommand, Result<RefreshTokensResponse>>
 {
-    private readonly ITokenService tokenService;
+    private readonly ITokenService _tokenService;
     private readonly UserManager<Domain.Models.Entities.Users.ApplicationUser> _userManager;
     private readonly Subify.Infrastructure.Persistence.SubifyDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public RefreshTokensHandler(ITokenService tokenService, UserManager<Domain.Models.Entities.Users.ApplicationUser> userManager, Infrastructure.Persistence.SubifyDbContext context)
+    public RefreshTokensHandler(
+        ITokenService tokenService, 
+        UserManager<Domain.Models.Entities.Users.ApplicationUser> userManager, 
+        Infrastructure.Persistence.SubifyDbContext context,
+        IHttpContextAccessor httpContextAccessor)
     {
-        this.tokenService = tokenService;
+        _tokenService = tokenService;
         _userManager = userManager;
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<RefreshTokensResponse>> Handle(RefreshTokensCommand request, CancellationToken cancellationToken)
-    {        
-        var principal = tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
+    {
+        var principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
         var userId = principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
         if (userId is null)
@@ -31,32 +38,56 @@ public class RefreshTokensHandler: IRequestHandler<RefreshTokensCommand, Result<
         }
 
         var user = await _userManager.FindByIdAsync(userId);
-
         if (user is null)
         {
             return Result.Failure<RefreshTokensResponse>(DomainErrors.Auth.InvalidCredentials);
         }
 
-        // 2. Veritabanındaki Refresh Token'ı kontrol et
         var storedRefreshToken = await _context.RefreshTokens
-                    .FirstOrDefaultAsync(x => x.TokenHash == request.RefreshToken && x.UserId == user.Id);
+                    .FirstOrDefaultAsync(x => x.TokenHash == request.RefreshToken && x.UserId == user.Id, cancellationToken);
 
         if (storedRefreshToken is null || storedRefreshToken.ExpiresAt < DateTime.UtcNow || storedRefreshToken.RevokedAt != null)
         {
             return Result.Failure<RefreshTokensResponse>(DomainErrors.Auth.InvalidRefreshToken);
         }
 
-        // 3. Eski token'ı iptal et (Revoke)
+        var generateTokenResult = await _tokenService.GenerateTokenAsync(user);
+
         storedRefreshToken.RevokedAt = DateTime.UtcNow;
         storedRefreshToken.RevokedReason = "Token rotation";
         storedRefreshToken.IsRevoked = true;
-        storedRefreshToken.ReplacedByTokenId = storedRefreshToken.Id;
+        storedRefreshToken.ReplacedByToken = generateTokenResult.HashedRefreshToken;
 
         _context.RefreshTokens.Update(storedRefreshToken);
-        await _context.SaveChangesAsync();
 
-        var generateTokenResult = await tokenService.GenerateTokenAsync(user);
+        var http = _httpContextAccessor.HttpContext;
+        var forwarded = http?.Request?.Headers["X-Forwarded-For"].FirstOrDefault();
+        var ipAddress = !string.IsNullOrWhiteSpace(forwarded)
+            ? forwarded.Split(',', StringSplitOptions.RemoveEmptyEntries)[0].Trim()
+            : http?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
+        var userAgent = http?.Request?.Headers.UserAgent.ToString();
 
-        return Result.Success(new RefreshTokensResponse(user.Email!, generateTokenResult.AccessToken, generateTokenResult.HashedRefreshToken, generateTokenResult.Expiration));
+        var newRefreshTokenEntity = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TokenHash = generateTokenResult.HashedRefreshToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IsRevoked = false,
+            CreatedAt = DateTime.UtcNow,
+            IpAddress = ipAddress,
+            UserAgent = userAgent
+        };
+
+        await _context.RefreshTokens.AddAsync(newRefreshTokenEntity, cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(new RefreshTokensResponse(
+            user.Email!,
+            generateTokenResult.AccessToken,
+            generateTokenResult.HashedRefreshToken,
+            generateTokenResult.Expiration
+        ));
     }
 }

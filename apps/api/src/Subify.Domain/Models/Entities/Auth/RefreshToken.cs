@@ -43,7 +43,7 @@ public sealed class RefreshToken : BaseEntity
     /// <summary>
     /// The token that replaced this one (for rotation tracking).
     /// </summary>
-    public Guid? ReplacedByTokenId { get; set; }
+    public string ReplacedByToken { get; set; }
 
     /// <summary>
     /// Device/client identifier.

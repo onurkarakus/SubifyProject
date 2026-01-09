@@ -23,6 +23,7 @@ public static class DomainErrors
         public static readonly Error EmailAlreadyRegistered = Error.Conflict("AUTH_008", "Email Already Registered", "The email address is already associated with another account.");
         public static readonly Error InvalidResetCode = Error.Failure("AUTH_009", "Invalid Reset Code", "The password reset code is invalid or has expired.");
         public static readonly Error InvalidVerificationCode = Error.Failure("AUTH_010", "Invalid Verification Code", "The email verification code is invalid or has expired.");    
+        public static readonly Error SessionExpired = Error.Unauthorized("AUTH_011", "Session Expired", "Your session has expired. Please log in again.");
     }
 
     public static class Subscription
@@ -101,5 +102,11 @@ public static class DomainErrors
         public static readonly Error InvalidFormat = Error.Validation("VAL_003", "Invalid Format", "The field '{field}' has an invalid format.");
         public static readonly Error MaxLengthExceeded = Error.Validation("VAL_004", "Max Length Exceeded", "The field '{field}' exceeds maximum length of {max}.");
         public static readonly Error MinLengthRequired = Error.Validation("VAL_005", "Min Length Required", "The field '{field}' must be at least {min} characters.");
+    }
+
+    public static class User
+    {
+        public static readonly Error NotFound = Error.NotFound("USER_001", "User Not Found", "The user was not found.");
+        public static readonly Error AccessDenied = Error.Forbidden("USER_002", "User Access Denied", "You do not have permission to access this user.");
     }
 }

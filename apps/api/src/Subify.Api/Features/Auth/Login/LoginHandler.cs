@@ -7,6 +7,7 @@ using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Models.Entities.Users;
 using Subify.Domain.Shared;
 using Subify.Infrastructure.Persistence;
+using System.ComponentModel;
 
 namespace Subify.Api.Features.Auth.Login;
 
@@ -39,7 +40,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
         if (!generateTokenResult.IsSuccess)
         {
             return Result.Failure<LoginResponse>(generateTokenResult.Errors);
-        }
+        }       
 
         return Result.Success(new LoginResponse
         (
