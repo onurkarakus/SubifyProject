@@ -7,7 +7,6 @@ using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Models.Entities.Users;
 using Subify.Domain.Shared;
 using Subify.Infrastructure.Persistence;
-using System.ComponentModel;
 
 namespace Subify.Api.Features.Auth.Login;
 

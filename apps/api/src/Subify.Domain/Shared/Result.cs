@@ -41,11 +41,8 @@ public class Result
 
     public static Result<T> Success<T>(T value) => new(value, true, Error.None);
 
-    // Başarısız (Tekil Hata ile - T tipi için)
-    // DİKKAT: Senin istediğin Result<RegisterResponse>.Failure(...) yapısı burada
     public static Result<T> Failure<T>(Error error) => new(default, false, error);
 
-    // Başarısız (Çoklu Hata ile - T tipi için)
     public static Result<T> Failure<T>(IEnumerable<Error> errors)
     {
         var errorList = errors.ToArray();
@@ -67,9 +64,7 @@ public class Result<T> : Result
         ? _value!
         : throw new InvalidOperationException("Başarısız işlemin değerine erişilemez.");
 
-    // Implicit Operators (Kolaylıklar)
     public static implicit operator Result<T>(T? value) => value is not null ? Success(value) : Failure<T>(Error.NullValue);
 
-    // Error'dan direkt Result<T>'ye dönüşüm (Return Result.Failure yerine return error diyebilmek için)
     public static implicit operator Result<T>(Error error) => Failure<T>(error);
 }

@@ -15,22 +15,16 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
 {
     private readonly UserManager<ApplicationUser> userManager;
     private readonly SubifyDbContext dbContext;
-    private readonly ITokenService tokenService;
     private readonly IEmailService emailService;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IConfiguration configuration;
 
     public RegisterHandler(UserManager<ApplicationUser> userManager,
         SubifyDbContext dbContext,
-        ITokenService tokenService,
-        IHttpContextAccessor httpContextAccessor,
         IEmailService emailService,
         IConfiguration configuration)
     {
         this.userManager = userManager;
         this.dbContext = dbContext;
-        this.tokenService = tokenService;
-        this.httpContextAccessor = httpContextAccessor;
         this.emailService = emailService;
         this.configuration = configuration;
     }

@@ -285,13 +285,14 @@ Auth: Bearer JWT. All endpoints return RFC 7807 ProblemDetails on errors.
 1. **AuthController** (`/api/auth`)
 
    - `POST /register`: Yeni kullanıcı kaydı (Doğrulama maili gönderir).
-   - `GET /confirm-email`: E-posta doğrulama (Query: userId, code).
+   - `GET /verify-email`: E-posta doğrulama (Query: userId, code).
    - `POST /resend-confirmation-email`: Doğrulama mailini tekrar gönder.
    - `POST /login`: Giriş (Access + Refresh Token).
    - `POST /refresh-token`: Token yenileme.
    - `POST /logout`: Çıkış (Refresh token revoke).
    - `POST /forgot-password`: Şifre sıfırlama isteği.
    - `POST /reset-password`: Şifre sıfırlama işlemi.
+   - `GET /me`: Mevcut kullanıcı bilgilerini getirir.
 
 2. **SubscriptionsController** (`/api/subscriptions`)
 
