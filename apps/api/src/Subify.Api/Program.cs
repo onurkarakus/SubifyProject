@@ -1,12 +1,15 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Resend;
 using Subify.Api.Common.Behaviors;
 using Subify.Api.Common.Extensions;
+using Subify.Domain.Models.Entities.Users;
 using Subify.Infrastructure;
+using Subify.Infrastructure.Persistence;
 using System.Reflection;
 using System.Text;
 
@@ -14,7 +17,7 @@ namespace Subify.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -92,6 +95,13 @@ public class Program
 
         var app = builder.Build();
 
+        // Seed admin user
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            await SeedAdminUser(services);
+        }
+
         app.UseExceptionHandler();
         app.UseStatusCodePages();
 
@@ -112,5 +122,55 @@ public class Program
         app.MapEndpoints();
 
         app.Run();
+    }
+
+    public static async Task SeedAdminUser(IServiceProvider services)
+    {
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+        // Rolleri oluþtur
+        string[] roles = { "Admin", "User" };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
+        }
+
+        // Admin kullanýcýsýný oluþtur
+        var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "admin@subify.app";
+        var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "SecureAdminP@ss123";
+
+        var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+        if (existingAdmin == null)
+        {
+            var admin = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(admin, adminPassword);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+
+                // Profile oluþtur
+                var context = services.GetRequiredService<SubifyDbContext>();
+                context.Profiles.Add(new Profile
+                {
+                    Id = admin.Id,
+                    Email = adminEmail,
+                    FullName = "System Admin",
+                    Locale = "tr",
+                    Plan = Domain.Enums.PlanType.Premium,
+                    MainCurrency = "TRY"
+                });
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Web;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Subify.Domain.Abstractions.Services;
@@ -35,20 +34,18 @@ public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand, Resu
         if (user is null) return Result.Success();
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var encodedToken = HttpUtility.UrlEncode(token);
 
-        var frontendUrl = _configuration["AppUrl"] ?? "http://localhost:3000";
-        var resetLink = $"{frontendUrl}/reset-password?email={request.Email}&token={encodedToken}";
-
-        var template = await _dbContext.EmailTemplates
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == "ForgotPassword" && t.LanguageCode == "tr-TR", cancellationToken);
-
-        string subject = template?.Subject ?? "Şifre Sıfırlama";
-        string body = template?.Body.Replace("{{ResetLink}}", resetLink)
-                      ?? $"Şifrenizi sıfırlamak için tıklayın: {resetLink}";
-
-        await _emailService.SendEmailAsync(user.Email!, subject, body);
+        await _emailService.GetEmailTemplateAndSendAsync(
+            emailType: Domain.Enums.EmailType.ForgotPassword,
+            token: token,
+            locale: (await _dbContext.Profiles.FirstOrDefaultAsync(up => up.Email == request.Email, cancellationToken))?.Locale ?? "en",
+            userId: user.Id.ToString(),
+            to: user?.Email,
+            replacements: new Dictionary<string, string>
+            {
+                { "USER_NAME", user?.UserName ?? "User" }
+            }
+        );
 
         return Result.Success();
     }

@@ -10,19 +10,17 @@ namespace Subify.Api.Features.Auth.GetCurrentUser
     public class GetCurrentUserHandler : IRequestHandler<GetCurrentUserQuery, Result<GetCurrentUserResponse>>
     {
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly SubifyDbContext dbContext;
 
-        public GetCurrentUserHandler(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, SubifyDbContext dbContext)
+        public GetCurrentUserHandler(UserManager<ApplicationUser> userManager, SubifyDbContext dbContext)
         {
             this.userManager = userManager;
-            this.httpContextAccessor = httpContextAccessor;
             this.dbContext = dbContext;
         }
 
         public async Task<Result<GetCurrentUserResponse>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
         {
-            var userInformation = await userManager.GetUserAsync(httpContextAccessor.HttpContext!.User);
+            var userInformation = await userManager.FindByIdAsync(request.UserId);
             var userProfile = await dbContext.Profiles.FindAsync(userInformation!.Id, cancellationToken);
 
             if (userInformation == null || userProfile == null)

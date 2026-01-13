@@ -81,37 +81,13 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
 
             await dbContext.Profiles.AddAsync(profile, cancellationToken);
 
-            var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var encodedToken = System.Web.HttpUtility.UrlEncode(emailConfirmationToken);
-            var userId = newUser.Id.ToString();
-            var frontendUrl = configuration["AppUrl"] ?? "http://localhost:3000";
-            var verificationLink = $"{frontendUrl}/verify-email?userId={userId}&token={encodedToken}";
-
-            var emailTemplate = await dbContext.EmailTemplates
-                .AsNoTracking()
-                .FirstOrDefaultAsync(t=>
-                t.LanguageCode == request.Locale && t.Name == "VerifyEmail", cancellationToken);
-
-            string subject;
-            string body;
-
-            if (emailTemplate != null)
+            var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);            
+            
+            await emailService.GetEmailTemplateAndSendAsync(EmailType.VerifyEmail, emailConfirmationToken, request.Locale, newUser.Id.ToString(), newUser.Email!, new Dictionary<string, string>
             {
-                subject = emailTemplate.Subject;
-
-                body = emailTemplate.Body
-                    .Replace("{{FullName}}", request.FullName)
-                    .Replace("{{VerifyLink}}", verificationLink)
-                    .Replace("{{CurrentYear}}", DateTime.Now.Year.ToString());
-            }
-
-            else
-            {
-                subject = "Subify - E-posta Doğrulama";
-                body = $"Merhaba {request.FullName}, <br> Hesabınızı doğrulamak için <a href='{verificationLink}'>tıklayın</a>.";
-            }
-
-            await emailService.SendEmailAsync(newUser.Email!, subject, body);
+                { "{{FullName}}", request.FullName },
+                { "{{CurrentYear}}", DateTime.Now.Year.ToString() }
+            });
 
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
