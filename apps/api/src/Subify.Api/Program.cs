@@ -92,7 +92,7 @@ public class Program
         });
 
         builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
-
+        builder.Services.AddProblemDetails();
         var app = builder.Build();
 
         // Seed admin user

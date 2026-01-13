@@ -19,7 +19,7 @@ public class AuditLog: BaseEntity
 
     public string? ErrorMessage { get; set; }
 
-    public DateTimeOffset OccurredAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset OccurredAt { get; set; }
 
     // Navigation
     public ApplicationUser? User { get; set; }

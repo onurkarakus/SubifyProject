@@ -26,5 +26,5 @@ public sealed class ExchangeRateSnapshot : BaseEntity
     /// <summary>
     /// When rates were fetched from external API.
     /// </summary>
-    public DateTimeOffset FetchedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset FetchedAt { get; set; }
 }

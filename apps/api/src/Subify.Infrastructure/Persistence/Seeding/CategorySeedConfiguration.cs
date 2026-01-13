@@ -8,6 +8,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
+        var baseTime = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
         builder.HasData(
              new Category
              {
@@ -17,8 +19,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#E50914",
                  SortOrder = 1,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -28,8 +30,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#1DB954",
                  SortOrder = 2,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -39,8 +41,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#0078D4",
                  SortOrder = 3,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -50,8 +52,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#9147FF",
                  SortOrder = 4,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -61,8 +63,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#0066FF",
                  SortOrder = 5,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -72,8 +74,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#FF6B00",
                  SortOrder = 6,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -83,8 +85,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#FF2D55",
                  SortOrder = 7,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -94,8 +96,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#5856D6",
                  SortOrder = 8,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -105,8 +107,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#8E8E93",
                  SortOrder = 9,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Category
              {
@@ -116,8 +118,8 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#636366",
                  SortOrder = 99,
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              }
          );
     }

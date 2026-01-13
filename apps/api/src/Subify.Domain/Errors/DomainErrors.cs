@@ -25,6 +25,7 @@ public static class DomainErrors
         public static readonly Error InvalidVerificationCode = Error.Failure("AUTH_010", "Invalid Verification Code", "The email verification code is invalid or has expired.");    
         public static readonly Error SessionExpired = Error.Unauthorized("AUTH_011", "Session Expired", "Your session has expired. Please log in again.");
         public static readonly Error EmailAlreadyConfirmed = Error.Failure("AUTH_012", "Email Already Confirmed", "The email address has already been confirmed.");
+        public static readonly Error EmailNotConfirmed = Error.Failure("AUTH_013", "Email Not Confirmed", "The email address is not confirmed.");
     }
 
     public static class Subscription

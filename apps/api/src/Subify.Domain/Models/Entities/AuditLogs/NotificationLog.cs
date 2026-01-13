@@ -47,7 +47,7 @@ public sealed class NotificationLog : BaseEntity
     /// <summary>
     /// When the notification was sent.
     /// </summary>
-    public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset SentAt { get; set; }
 
     // Navigation
     public ApplicationUser? User { get; set; } = null!;

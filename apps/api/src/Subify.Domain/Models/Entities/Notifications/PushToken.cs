@@ -46,7 +46,7 @@ public sealed class PushToken : BaseEntity
     /// <summary>
     /// Last successful push delivery or registration.
     /// </summary>
-    public DateTimeOffset LastUsedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset LastUsedAt { get; set; }
 
     // Navigation
     public ApplicationUser? User { get; set; } = null!;

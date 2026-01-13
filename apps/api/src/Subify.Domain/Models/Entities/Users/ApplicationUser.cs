@@ -22,9 +22,9 @@ public class ApplicationUser : IdentityUser<Guid>, ISoftDeletable
     public bool MarketingOptIn { get; set; }
 
     // Audit fields (manual)
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; }
 
     // ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }

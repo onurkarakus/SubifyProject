@@ -13,6 +13,8 @@ internal class ProviderSeedConfiguration : IEntityTypeConfiguration<Provider>
 {
     public void Configure(EntityTypeBuilder<Provider> builder)
     {
+        var baseTime = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
         builder.HasData(
              new Provider
              {
@@ -21,15 +23,15 @@ internal class ProviderSeedConfiguration : IEntityTypeConfiguration<Provider>
                  Slug = "netflix",
                  BillingCycle = "Monthly",
                  Currency = "TRY",
-                 LastVerifiedAt = DateTimeOffset.UtcNow,
+                 LastVerifiedAt = baseTime,
                  LogoUrl = "https://example.com/logos/netflix.png",
                  Price = 299.99f,
                  PriceBefore = 349.99f,
                  Region = "TR",
                  SourceUrl = "https://www.netflix.com/tr/",
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Provider
              {
@@ -38,15 +40,15 @@ internal class ProviderSeedConfiguration : IEntityTypeConfiguration<Provider>
                  Slug = "spotify",
                  BillingCycle = "Monthly",
                  Currency = "TRY",
-                 LastVerifiedAt = DateTimeOffset.UtcNow,
+                 LastVerifiedAt = baseTime,
                  LogoUrl = "https://example.com/logos/spotify.png",
                  Price = 299.99f,
                  PriceBefore = 349.99f,
                  Region = "TR",
                  SourceUrl = "https://www.spotify.com/tr/",
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              },
              new Provider
              {
@@ -55,15 +57,15 @@ internal class ProviderSeedConfiguration : IEntityTypeConfiguration<Provider>
                  Slug = "adobe-creative-cloud",
                  BillingCycle = "Monthly",
                  Currency = "TRY",
-                 LastVerifiedAt = DateTimeOffset.UtcNow,
+                 LastVerifiedAt = baseTime,
                  LogoUrl = "https://example.com/logos/adobe.png",
                  Price = 499.99f,
                  PriceBefore = 599.99f,
                  Region = "TR",
                  SourceUrl = "https://www.adobe.com/tr/creativecloud.html",
                  IsActive = true,
-                 CreatedAt = DateTimeOffset.UtcNow,
-                 UpdatedAt = DateTimeOffset.UtcNow
+                 CreatedAt = baseTime,
+                 UpdatedAt = baseTime
              }
         );
     }

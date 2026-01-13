@@ -29,9 +29,19 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
     {
         var user = await userManager.FindByEmailAsync(request.Email);
 
-        if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
+        if (user == null)
+        {
+            return Result.Failure<LoginResponse>(DomainErrors.User.NotFound);
+        }
+
+        if (!await userManager.CheckPasswordAsync(user, request.Password))
         {
             return Result.Failure<LoginResponse>(DomainErrors.Auth.InvalidCredentials);
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            return Result.Failure<LoginResponse>(DomainErrors.Auth.EmailNotConfirmed);
         }
 
         var generateTokenResult = await GenerateTokensAsync(user);
@@ -39,7 +49,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
         if (!generateTokenResult.IsSuccess)
         {
             return Result.Failure<LoginResponse>(generateTokenResult.Errors);
-        }       
+        }
 
         return Result.Success(new LoginResponse
         (
@@ -77,7 +87,12 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
             RevokedAt = null,
             CreatedAt = now,
             IpAddress = ipAddress,
-            UserAgent = userAgent
+            UserAgent = userAgent,
+            ReplacedByToken = string.Empty,
+            RevokedByIp = string.Empty,
+            DeviceId = string.Empty,
+            Id = Guid.NewGuid(),
+            UpdatedAt = now
         };
 
         await dbContext.RefreshTokens.AddAsync(refreshTokenEntity);

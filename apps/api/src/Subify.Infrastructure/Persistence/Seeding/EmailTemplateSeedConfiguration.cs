@@ -13,7 +13,7 @@ internal class EmailTemplateSeedConfiguration : IEntityTypeConfiguration<EmailTe
         builder.HasData(
             new EmailTemplate
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("10000000-0000-0000-0000-000000000001"),
                 Name = "VerifyEmail",
                 LanguageCode = "en-US",
                 Subject = "Verify Your Email",
@@ -23,7 +23,7 @@ internal class EmailTemplateSeedConfiguration : IEntityTypeConfiguration<EmailTe
             },
             new EmailTemplate
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("10000000-0000-0000-0000-000000000002"),
                 Name = "VerifyEmail",
                 LanguageCode = "tr-TR",
                 Subject = "E-postanızı Doğrulayın",
@@ -33,7 +33,7 @@ internal class EmailTemplateSeedConfiguration : IEntityTypeConfiguration<EmailTe
             },
             new EmailTemplate
             {
-                Id = Guid.NewGuid(),
+                Id = new Guid("10000000-0000-0000-0000-000000000003"),
                 Name = "ForgotPassword",
                 LanguageCode = "tr-TR",
                 Subject = "Subify Şifre Sıfırlama İsteği",
@@ -43,7 +43,7 @@ internal class EmailTemplateSeedConfiguration : IEntityTypeConfiguration<EmailTe
             },
              new EmailTemplate
              {
-                 Id = Guid.NewGuid(),
+                 Id = new Guid("10000000-0000-0000-0000-000000000004"),
                  Name = "ForgotPassword",
                  LanguageCode = "en-US",
                  Subject = "Subify Şifre Sıfırlama İsteği",

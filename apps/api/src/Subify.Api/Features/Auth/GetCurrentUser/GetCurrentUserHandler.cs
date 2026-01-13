@@ -32,7 +32,7 @@ namespace Subify.Api.Features.Auth.GetCurrentUser
             (
                 Id : userInformation.Id,
                 CreatedAt : userInformation.CreatedAt,
-                LastLoginAt : userInformation.LastLoginAt!.Value,
+                LastLoginAt : (userInformation.LastLoginAt != null)? userInformation.LastLoginAt!.Value: new DateTimeOffset(),
                 Plan : userProfile.Plan.ToString(),
                 DarkTheme : userProfile.DarkTheme,
                 ApplicationThemeColor : userProfile.ApplicationThemeColor,

@@ -57,7 +57,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
 
             var profile = new Profile
             {
-                Id = Guid.NewGuid(),
+                Id = newUser.Id,
                 UserId = newUser.Id,
                 FullName = request.FullName,
                 MainCurrency = request.MainCurrency,
