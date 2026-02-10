@@ -17,7 +17,7 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         builder.Property(p => p.Email).IsRequired().HasMaxLength(320);
         builder.Property(p => p.FullName).IsRequired().HasMaxLength(100);
         builder.Property(p => p.FullName).HasMaxLength(200);
-        builder.Property(p => p.Locale).IsRequired().HasMaxLength(5).HasDefaultValue("tr");
+        builder.Property(p => p.Locale).IsRequired().HasMaxLength(5).HasDefaultValue("tr-TR");
         builder.Property(p => p.ApplicationThemeColor).IsRequired().HasMaxLength(50).HasDefaultValue("Royal Purple");
         builder.Property(p => p.DarkTheme).HasDefaultValue(false);
         builder.Property(p => p.MainCurrency).IsRequired().HasMaxLength(10).HasDefaultValue("TRY");

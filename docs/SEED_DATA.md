@@ -470,7 +470,7 @@ public static async Task SeedAdminUser(IServiceProvider services)
                 Id = admin.Id,
                 Email = adminEmail,
                 FullName = "System Admin",
-                Locale = "tr",
+                Locale = "tr-TR",
                 Plan = "premium",
                 MainCurrency = "TRY"
             });

@@ -19,6 +19,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#E50914",
                  SortOrder = 1,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -30,6 +31,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#1DB954",
                  SortOrder = 2,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -41,6 +43,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#0078D4",
                  SortOrder = 3,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -52,6 +55,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#9147FF",
                  SortOrder = 4,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -63,6 +67,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#0066FF",
                  SortOrder = 5,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -74,6 +79,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#FF6B00",
                  SortOrder = 6,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -85,6 +91,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#FF2D55",
                  SortOrder = 7,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -96,6 +103,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#5856D6",
                  SortOrder = 8,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -107,6 +115,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#8E8E93",
                  SortOrder = 9,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              },
@@ -118,6 +127,7 @@ internal class CategorySeedConfiguration : IEntityTypeConfiguration<Category>
                  Color = "#636366",
                  SortOrder = 99,
                  IsActive = true,
+                 IsSystemDefined = true,
                  CreatedAt = baseTime,
                  UpdatedAt = baseTime
              }

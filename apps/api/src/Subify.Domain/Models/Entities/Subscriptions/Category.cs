@@ -34,7 +34,9 @@ public sealed class Category : BaseEntity, ISoftDeletable
     /// </summary>
     public bool IsActive { get; set; } = true;
 
-    public bool IsDefault { get; set; } = false;
+    public bool IsDefault { get; set; }
+
+    public bool IsSystemDefined { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
 

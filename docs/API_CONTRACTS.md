@@ -74,7 +74,7 @@ Yeni kullanıcı kaydı.
   "email": "user@example.com",
   "password": "SecureP@ss123",
   "fullName": "Ahmet Yılmaz",
-  "locale": "tr"
+  "locale": "tr-TR"
 }
 ```
 
@@ -142,7 +142,7 @@ Kullanıcı girişi.
     "email": "user@example.com",
     "fullName": "Ahmet Yılmaz",
     "plan": "free",
-    "locale": "tr"
+    "locale": "tr-TR"
   }
 }
 ```
@@ -752,7 +752,7 @@ Profil güncelle.
 ```json
 {
   "fullName": "Ahmet Yılmaz",
-  "locale": "en",
+  "locale": "en-US",
   "mainCurrency": "USD",
   "monthlyBudget": 50.0,
   "applicationThemeColor": "Ocean Blue",
@@ -1249,14 +1249,14 @@ Dashboard metrikleri.
     {
       "id": "tpl-001",
       "name": "VerifyEmail",
-      "languageCode": "tr",
+      "languageCode": "tr-TR",
       "subject": "E-posta Adresinizi Doğrulayın",
       "updatedAt": "2025-12-15T10:00:00Z"
     },
     {
       "id": "tpl-002",
       "name": "VerifyEmail",
-      "languageCode": "en",
+      "languageCode": "en-US",
       "subject": "Verify Your Email Address",
       "updatedAt": "2025-12-15T10:00:00Z"
     }
@@ -1276,7 +1276,7 @@ Dashboard metrikleri.
 {
   "id": "tpl-001",
   "name": "VerifyEmail",
-  "languageCode": "tr",
+  "languageCode": "tr-TR",
   "subject": "E-posta Adresinizi Doğrulayın",
   "body": "<!DOCTYPE html><html>...",
   "variables": ["{{FullName}}", "{{VerificationLink}}"],

@@ -635,7 +635,7 @@ namespace Subify.Infrastructure.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             LanguageCode = "en-US",
                             Name = "ForgotPassword",
-                            Subject = "Subify Şifre Sıfırlama İsteği",
+                            Subject = "Subify Password Reset Request",
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -2708,6 +2708,9 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsSystemDefined")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -2743,6 +2746,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "play-circle",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "streaming",
                             SortOrder = 1,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2755,6 +2759,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "music",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "music",
                             SortOrder = 2,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2767,6 +2772,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "briefcase",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "productivity",
                             SortOrder = 3,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2779,6 +2785,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "gamepad-2",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "gaming",
                             SortOrder = 4,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2791,6 +2798,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "cloud",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "cloud-storage",
                             SortOrder = 5,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2803,6 +2811,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "newspaper",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "news-magazines",
                             SortOrder = 6,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2815,6 +2824,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "heart-pulse",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "fitness-health",
                             SortOrder = 7,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2827,6 +2837,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "graduation-cap",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "education",
                             SortOrder = 8,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2839,6 +2850,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "wrench",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "utilities",
                             SortOrder = 9,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -2851,6 +2863,7 @@ namespace Subify.Infrastructure.Migrations
                             Icon = "folder",
                             IsActive = true,
                             IsDefault = false,
+                            IsSystemDefined = true,
                             Slug = "other",
                             SortOrder = 99,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))

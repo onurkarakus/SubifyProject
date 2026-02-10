@@ -45,7 +45,7 @@ namespace Subify.Api.Features.Auth.ResendConfirmation
             await _emailService.GetEmailTemplateAndSendAsync(
                 emailType: Domain.Enums.EmailType.VerifyEmail,
                 token: emailConfirmationToken,
-                locale: (await _dbContext.Profiles.FirstOrDefaultAsync(up => up.Email == request.Email, cancellationToken))?.Locale ?? "en",
+                locale: (await _dbContext.Profiles.FirstOrDefaultAsync(up => up.Email == request.Email, cancellationToken))?.Locale ?? "en-US",
                 userId: user.Id.ToString(),
                 to: user?.Email,
                 replacements: new Dictionary<string, string>

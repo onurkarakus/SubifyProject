@@ -159,7 +159,7 @@ public class Program
                     Id = admin.Id,
                     Email = adminEmail,
                     FullName = "System Admin",
-                    Locale = "tr",
+                    Locale = "tr-TR",
                     Plan = Domain.Enums.PlanType.Premium,
                     MainCurrency = "TRY"
                 });

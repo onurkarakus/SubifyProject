@@ -4,7 +4,7 @@ public class EmailTemplate: BaseEntity
 {
     public string Name { get; set; } = null!;
 
-    public string LanguageCode { get; set; } = "tr";
+    public string LanguageCode { get; set; } = "tr-TR";
 
     public string Subject { get; set; } = null!;
 

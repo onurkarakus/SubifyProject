@@ -17,7 +17,7 @@ public sealed class Profile : BaseEntity
     /// <summary>
     /// ISO 639-1 language code.  'tr' or 'en'.
     /// </summary>
-    public string Locale { get; set; } = "tr";
+    public string Locale { get; set; } = "tr-TR";
 
     public string ApplicationThemeColor { get; set; } = "Royal Purple";
 

@@ -521,8 +521,15 @@ src/
     │   │   ├── GetUpcomingPayments/
     │   │   └── DeleteSubscription/
     │   ├── Categories/
-    │   │   ├── ListCategories/
-    │   │   └── CreateUserCategory/
+    │   │   ├── GetCategories/
+    │   │   ├── CreateCategories/
+    │   │   ├── UpdateCategories/
+    │   │   └── DeleteCategory/
+    │   ├── UserCategories/
+    │   │   ├── GetUserCategories/
+    │   │   ├── CreateUserCategories/
+    │   │   ├── UpdateUserCategories/
+    │   │   └── DeleteUserCategories/
     │   ├── Reports/
     │   │   ├── GetMonthlySpend/
     │   │   ├── GetCategoryBreakdown/
@@ -574,6 +581,107 @@ src/
     ├── Validators/            # Ortak validatorlar (isteğe bağlı)
     ├── Program.cs
     └── Subify.Api.csproj
+
+---
+
+### 📱 Flutter Dizin Yapısı
+
+lib/
+├── main.dart
+├── app.dart                    # Root widget, router, theme
+├── features/                   # Feature-based modüller
+│   ├── auth/
+│   │   ├── data/               # API, repository, model
+│   │   ├── domain/             # Service, logic
+│   │   ├── presentation/       # Screens, widgets, state
+│   │   └── auth_provider.dart
+│   ├── subscriptions/
+│   │   ├── data/
+│   │   ├── domain/
+│   │   ├── presentation/
+│   │   └── subscription_provider.dart
+│   ├── reports/
+│   ├── ai/
+│   ├── paywall/
+│   ├── notifications/
+│   ├── profile/
+│   ├── admin/
+│   └── ... (diğer feature'lar)
+├── core/                       # Ortak altyapı (network, theme, utils, error)
+│   ├── api/
+│   ├── config/
+│   ├── constants/
+│   ├── exceptions/
+│   ├── theme/
+│   ├── localization/
+│   ├── widgets/                # Ortak UI bileşenleri
+│   └── utils/
+├── l10n/                       # Flutter Intl .arb dosyaları (TR/EN)
+├── routes/                     # GoRouter tanımları
+├── services/                   # Ortak servisler (ör: RevenueCat, FCM)
+└── models/                     # Ortak modeller (isteğe bağlı)
+
+---
+
+### 🌐 Next.js (App Router) Dizin Yapısı
+
+src/
+├── app/                        # Route tabanlı sayfalar (App Router)
+│   ├── layout.tsx
+│   ├── page.tsx                # Landing page
+│   ├── features/               # Public features (tanıtım, pricing vs.)
+│   ├── pricing/
+│   ├── login/
+│   ├── register/
+│   ├── forgot-password/
+│   ├── reset-password/
+│   ├── confirm-email/
+│   ├── app/                    # Protected user area
+│   │   ├── layout.tsx
+│   │   ├── page.tsx            # Dashboard
+│   │   ├── subscriptions/
+│   │   │   ├── page.tsx
+│   │   │   ├── new/
+│   │   │   │   └── page.tsx
+│   │   │   └── [id]/
+│   │   │       └── page.tsx
+│   │   ├── reports/
+│   │   ├── ai/
+│   │   └── settings/
+│   │       ├── profile/
+│   │       ├── notifications/
+│   │       └── billing/
+│   ├── admin/                  # Admin panel (Role: Admin)
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── users/
+│   │   ├── transactions/
+│   │   ├── email-templates/
+│   │   │   ├── page.tsx
+│   │   │   └── [id]/
+│   │   │       └── page.tsx
+│   │   └── logs/
+├── features/                   # Feature-based modüller (UI + logic)
+│   ├── auth/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── api/
+│   │   └── utils/
+│   ├── subscriptions/
+│   ├── reports/
+│   ├── ai/
+│   ├── paywall/
+│   ├── notifications/
+│   ├── admin/
+│   └── ... (diğer feature'lar)
+├── components/                 # Ortak UI bileşenleri (Button, Modal, vs.)
+├── lib/                        # Ortak yardımcı fonksiyonlar, API client, config
+├── hooks/                      # Ortak custom hooks
+├── store/                      # Global state (isteğe bağlı, ör: Zustand)
+├── styles/                     # Global ve tema stilleri
+├── locales/                    # next-i18next JSON dosyaları (TR/EN)
+├── types/                      # Ortak TypeScript tipleri
+└── utils/                      # Ortak yardımcı fonksiyonlar
 
 ---
 
