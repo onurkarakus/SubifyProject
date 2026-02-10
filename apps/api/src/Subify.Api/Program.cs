@@ -26,13 +26,7 @@ public class Program
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
-        builder.Services.AddHttpClient<ResendClient>();
-
-        builder.Services.Configure<ResendClientOptions>(o => {
-            o.ApiToken = builder.Configuration["Resend:ApiKey"];
-        });
-
+        
         var jwtSettings = builder.Configuration.GetSection("Jwt");
         var secretKey = jwtSettings["Key"];
 

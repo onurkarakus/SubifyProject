@@ -383,6 +383,200 @@ Auth: Bearer JWT. All endpoints return RFC 7807 ProblemDetails on errors.
 
 ---
 
+### 📋 Subify Feature Listesi
+1. Authentication & Account
+•	E-posta ile kayıt (JWT tabanlı)
+•	E-posta ile giriş (JWT tabanlı)
+•	E-posta doğrulama (kayıt sonrası zorunlu)
+•	Şifre sıfırlama (e-posta ile)
+•	Refresh token ile oturum yenileme
+•	Çıkış (refresh token revoke)
+•	Profil bilgileri görüntüleme ve güncelleme
+•	Kullanıcı dil tercihi (locale)
+•	Tema rengi ve dark mode tercihi (application_theme_color, dark_theme)
+•	Ana para birimi ve aylık bütçe limiti
+---
+2. Abonelik Yönetimi (Subscriptions)
+•	Abonelik ekleme (provider seçimi veya serbest isim)
+•	Abonelik güncelleme
+•	Abonelik arşivleme (soft delete)
+•	Abonelik silme (opsiyonel, MVP’de arşivleme)
+•	Abonelik detaylarını görüntüleme
+•	Abonelik listesi (aktif/arsivlenmiş filtreleriyle)
+•	Yaklaşan ödemeler listesi
+•	Paylaşımlı abonelik desteği (shared_with_count)
+•	Kullanıcı başına freemium limiti (max 3 aktif abonelik, premiumda limitsiz)
+•	Kategoriye göre filtreleme
+•	Kategori ve sağlayıcıya göre abonelik ekleme
+•	Not ekleme ve güncelleme
+•	Son kullanım tarihi takibi (last_used_at)
+---
+3. Kategori Yönetimi
+•	Sistem kategorileri (slug, icon, color, sort)
+•	Kategori isimlerinin çoklu dil desteği (resource tablosu üzerinden)
+•	Kullanıcı tanımlı özel kategoriler (user_categories)
+•	Kategoriye göre raporlama ve filtreleme
+---
+4. Raporlama & Analiz
+•	Aylık/yıllık toplam harcama raporu
+•	Kategori bazlı harcama dağılımı (premium)
+•	Para birimi dağılımı
+•	Yaklaşan ödemeler raporu
+•	Dashboard’da özet ve grafikler
+•	Premium kullanıcılar için detaylı raporlar (blur/CTA ile gating)
+---
+5. AI Destekli Analiz (Premium)
+•	AI ile abonelik harcama analizi ve öneriler
+•	Kullanıcıya özel özet ve tasarruf önerileri
+•	Kategori ve kullanım sıklığına göre öneriler
+•	AI öneri geçmişi görüntüleme
+•	AI önerilerine geri bildirim gönderme
+•	Rate limit ve günlük kota kontrolü
+---
+6. Bildirimler
+•	E-posta ile ödeme hatırlatıcıları (tüm kullanıcılar)
+•	Mobil push bildirimleri (sadece premium)
+•	Bildirim tercihleri yönetimi (e-posta/push, gün sayısı)
+•	E-posta şablonlarının admin panelinden yönetimi ve çoklu dil desteği
+•	Test e-postası gönderme ve şablon önizleme (admin)
+---
+7. Ödeme & Premium Yönetimi
+•	RevenueCat entegrasyonu (web: Stripe, mobil: Store IAP)
+•	Premium plan satın alma ve entitlement kontrolü
+•	Web paywall (Stripe checkout, RevenueCat hosted)
+•	Mobil paywall (RevenueCat SDK)
+•	Premium plan yenileme, iptal ve downgrade işlemleri (webhook ile)
+•	Premium avantajlarının gating’i (rapor, AI, push, limitsiz abonelik)
+•	Premium durumunun API ve cache üzerinden kontrolü
+---
+8. Admin Paneli
+•	Kullanıcı yönetimi (listeleme, arama, sayfalama)
+•	Sistem metrikleri ve dashboard (toplam kullanıcı, aktif abonelik, gelir)
+•	Sistem logları ve hata geçmişi
+•	Ödeme geçmişi ve transaction listesi
+•	AI öneri geri bildirimleri
+•	E-posta şablon yönetimi (CRUD, dil bazlı)
+•	Kategori, sağlayıcı, resource yönetimi (opsiyonel)
+•	Sadece admin rolüne sahip kullanıcılar erişebilir
+---
+9. Sistem & Altyapı
+•	Sağlayıcı yönetimi (aktif sağlayıcılar, fiyat, döngü, bölge, logo)
+•	Döviz kuru yönetimi ve cache (exchange rates)
+•	Resource tabanlı lokalizasyon (TR/EN, delta sync, Redis cache)
+•	Health check endpointleri
+•	Rate limiting (IP ve kullanıcı bazlı)
+•	OpenTelemetry ile izleme ve loglama
+•	Hangfire/Quartz ile background job’lar (yenileme uyarısı, entitlement sync, AI log cleanup)
+•	Docker Compose ile dağıtım, reverse proxy, TLS, otomatik migration
+---
+10. Web & Mobile UX
+•	Web: Next.js, App Router, i18n, paywall, dashboard, admin panel
+•	Mobil: Flutter, Riverpod, Dio, push, paywall, AI, raporlar, profil yönetimi
+•	Responsive ve mobile-first tasarım
+•	Free/Premium feature gating (blur + CTA)
+•	Çoklu dil desteği (TR/EN), backend ve frontend uyumlu
+---
+11. Güvenlik & Uyumluluk
+•	JWT tabanlı kimlik doğrulama, refresh token rotation
+•	Role/claim-based authorization (admin, premium)
+•	Input validation (FluentValidation)
+•	CORS, HTTPS, output encoding, PII loglama koruması
+•	Webhook signature validation (RevenueCat)
+•	DB backup, environment secrets, least privilege
+---
+12. Diğer
+•	Aktivite logları (dashboard’da son işlemler)
+•	Exchange rate snapshot’ları ve cache
+•	Test stratejisi (unit, integration, contract, E2E)
+•	CDN/static asset desteği (opsiyonel)
+•	App Store update gerektirmeden lokalizasyon güncelleme
+---
+
+### 📂 Proje Dizini Yapısı (Backend)
+
+src/
+└── Subify.Api/
+    ├── Common/                # Ortak yardımcılar, base sınıflar, extensionlar
+    ├── Features/
+    │   ├── Auth/
+    │   │   ├── Register/
+    │   │   │   ├── RegisterEndpoint.cs
+    │   │   │   ├── RegisterCommand.cs
+    │   │   │   ├── RegisterHandler.cs
+    │   │   │   └── RegisterValidator.cs
+    │   │   ├── Login/
+    │   │   ├── Logout/
+    │   │   ├── RefreshTokens/
+    │   │   ├── ForgotPassword/
+    │   │   ├── ResetPassword/
+    │   │   ├── VerifyEmail/
+    │   │   ├── ResendConfirmation/
+    │   │   └── GetCurrentUser/
+    │   ├── Subscriptions/
+    │   │   ├── CreateSubscription/
+    │   │   ├── UpdateSubscription/
+    │   │   ├── ArchiveSubscription/
+    │   │   ├── GetSubscription/
+    │   │   ├── ListSubscriptions/
+    │   │   ├── GetUpcomingPayments/
+    │   │   └── DeleteSubscription/
+    │   ├── Categories/
+    │   │   ├── ListCategories/
+    │   │   └── CreateUserCategory/
+    │   ├── Reports/
+    │   │   ├── GetMonthlySpend/
+    │   │   ├── GetCategoryBreakdown/
+    │   │   └── GetCurrencyDistribution/
+    │   ├── Ai/
+    │   │   ├── Analyze/
+    │   │   ├── GetHistory/
+    │   │   └── Feedback/
+    │   ├── Profile/
+    │   │   ├── GetProfile/
+    │   │   ├── UpdateProfile/
+    │   │   ├── UpdateNotifications/
+    │   │   └── RegisterDeviceToken/
+    │   ├── Payments/
+    │   │   ├── GetStatus/
+    │   │   └── Billing/
+    │   │       ├── Checkout/
+    │   │       └── Webhooks/
+    │   ├── System/
+    │   │   ├── GetCurrencies/
+    │   │   └── Health/
+    │   ├── Admin/
+    │   │   ├── ListUsers/
+    │   │   ├── GetStats/
+    │   │   ├── GetLogs/
+    │   │   ├── GetTransactions/
+    │   │   └── GetFeedback/
+    │   ├── EmailTemplates/
+    │   │   ├── ListTemplates/
+    │   │   ├── GetTemplate/
+    │   │   ├── CreateTemplate/
+    │   │   ├── UpdateTemplate/
+    │   │   └── DeleteTemplate/
+    │   ├── Providers/
+    │   │   ├── ListProviders/
+    │   │   ├── GetProvider/
+    │   │   └── GetPricingHistory/
+    │   ├── Resources/
+    │   │   └── ListResources/
+    │   ├── ExchangeRates/
+    │   │   └── ListExchangeRates/
+    │   └── Activity/
+    │       └── ListActivity/
+    ├── Middleware/
+    ├── Persistence/           # DbContext, Migrations, Repository
+    ├── Services/              # Domain servisleri, dış servis adapterları
+    ├── BackgroundJobs/        # Hangfire/Quartz job tanımları
+    ├── DTOs/                  # Ortak DTO'lar (isteğe bağlı)
+    ├── Validators/            # Ortak validatorlar (isteğe bağlı)
+    ├── Program.cs
+    └── Subify.Api.csproj
+
+---
+
 ### 🤖 AI Prompting (Server-side)
 
 System prompt (en/tr selectable), user prompt template with:

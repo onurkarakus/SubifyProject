@@ -1,6 +1,109 @@
 @Subify.Api_HostAddress = http://localhost:5102
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+@refreshToken = YOUR_REFRESH_TOKEN_HERE
 
-GET {{Subify.Api_HostAddress}}/weatherforecast/
+### ============================================
+### AUTH ENDPOINTS
+### ============================================
+
+### Register - Yeni kullanýcý kaydý
+POST {{Subify.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "onurkarakus2103@gmail.com",
+  "password": "P@ssw0rd",
+  "fullName": "Onur Karakuþ",
+  "mainCurrency": "TL",
+  "locale": "tr-TR",
+  "useDarkTheme": true,
+  "monthlyBudget": 100,
+  "applicationThemeColor": "blue",
+  "daysBeforeRenewal": 3,
+  "notificationEmailEnabled": true,
+  "notificationPushEnabled": true
+}
+
+###
+
+### Login - Kullanýcý giriþi
+POST {{Subify.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "onurkarakus2103@gmail.com",
+  "password": "P@ssw0rd"
+}
+###
+
+### Logout - Kullanýcý çýkýþý
+POST {{Subify.Api_HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+### Refresh Tokens - Token yenileme
+POST {{Subify.Api_HostAddress}}/api/auth/refreshTokens
+Content-Type: application/json
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+### Get Current User - Mevcut kullanýcý bilgisi
+GET {{Subify.Api_HostAddress}}/api/auth/me
+Authorization: Bearer {{accessToken}}
 Accept: application/json
+
+###
+
+### Verify Email - E-posta doðrulama
+POST {{Subify.Api_HostAddress}}/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "userId": "USER_ID_HERE",
+  "token": "VERIFICATION_TOKEN_HERE"
+}
+
+###
+
+### Resend Confirmation - Doðrulama e-postasýný yeniden gönder
+POST {{Subify.Api_HostAddress}}/api/auth/resend-confirmation
+Content-Type: application/json
+
+{
+  "email": "onurkarakus2103@gmail.com",
+  "locale": "tr-TR"
+}
+
+###
+
+### Forgot Password - Þifremi unuttum
+POST {{Subify.Api_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+### Reset Password - Þifre sýfýrlama
+POST {{Subify.Api_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "onurkarakus2103@gmail.com",
+  "token": "RESET_TOKEN_HERE",
+  "newPassword": "NewP@ssw0rd123"
+}
 
 ###

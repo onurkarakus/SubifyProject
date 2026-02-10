@@ -10,7 +10,7 @@ namespace Subify.Api.Features.Auth.ForgotPassword
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/auth/forgot-password", async (ISender sender, [FromBody] LogoutCommand command) =>
+            app.MapPost("/api/auth/forgot-password", async (ISender sender, [FromBody] ForgotPasswordCommand command) =>
             {
                 var result = await sender.Send(command);
 

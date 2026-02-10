@@ -24,7 +24,9 @@ public class VerifyEmailHandler : IRequestHandler<VerifyEmailCommand, Result>
             return Result.Failure(DomainErrors.User.NotFound);
         }
 
-        var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+        var decodedToken = System.Web.HttpUtility.UrlDecode(request.Token);
+
+        var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
         if (!result.Succeeded)
         {
