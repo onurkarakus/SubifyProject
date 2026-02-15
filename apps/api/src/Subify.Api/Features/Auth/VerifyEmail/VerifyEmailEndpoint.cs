@@ -13,12 +13,10 @@ public class VerifyEmailEndpoint : IEndpoint
         {
             var result = await sender.Send(command);
 
-            if (result.IsFailure)
-            {
-                return result.ToProblemDetail();
-            }
-
-            return Results.Ok(new { message = "E-posta başarıyla doğrulandı." });
+            return result.MapResult(
+                onSuccess: () => Results.Ok(new { message = "E-posta başarıyla doğrulandı." }),
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
         .WithTags("Auth")
         .WithName("VerifyEmail")

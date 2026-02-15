@@ -12,11 +12,10 @@ public class ResendConfirmationEndpoint : IEndpoint
         app.MapPost("/api/auth/resend-confirmation", async ([FromBody] ResendConfirmationCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
-            if (result.IsFailure)
-            {
-                return result.ToProblemDetail();
-            }
-            return Results.Ok();
+            return result.MapResult(
+                onSuccess: () => Results.Ok(new { message = "E-posta doğrulama linki tekrar gönderildi." }), // Assuming a success message
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
             .WithTags("Auth")
             .WithName("ResendConfirmation")

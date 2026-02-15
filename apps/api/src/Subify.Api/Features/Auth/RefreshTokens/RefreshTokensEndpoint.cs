@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
-using Subify.Api.Features.Auth.Login;
 
 namespace Subify.Api.Features.Auth.RefreshTokens;
 
@@ -14,18 +13,16 @@ public class RefreshTokensEndpoint: IEndpoint
         {
             var result = await mediator.Send(command);
 
-            if (result.IsFailure)
-            {
-                return result.ToProblemDetail();
-            }
-
-            return Results.Ok(result.Value);
+            return result.MapResult(
+                onSuccess: refreshTokensResponse => Results.Ok(refreshTokensResponse),
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
             .WithTags("Auth")
             .WithName("RefreshToken")
             .WithSummary("Refresh authentication tokens.")
             .WithDescription("Refreshes the access and refresh tokens using the provided tokens.")
-            .Produces<LoginResponse>(StatusCodes.Status200OK)
+            .Produces<RefreshTokensResponse>(StatusCodes.Status200OK) // Changed to RefreshTokensResponse
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithOpenApi();
     }

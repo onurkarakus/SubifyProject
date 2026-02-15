@@ -13,12 +13,10 @@ public class LoginEndpoint: IEndpoint
         {
             var result = await mediator.Send(command);
 
-            if (result.IsFailure)
-            {
-                return result.ToProblemDetail();
-            }
-
-            return Results.Ok(result.Value);
+            return result.MapResult(
+                onSuccess: loginResponse => Results.Ok(loginResponse),
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
             .WithTags("Auth")
             .WithName("Login")

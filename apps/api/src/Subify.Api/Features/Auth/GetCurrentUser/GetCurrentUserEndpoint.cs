@@ -21,7 +21,10 @@ public class GetCurrentUserEndpoint : IEndpoint
             var command = new GetCurrentUserQuery(userId);
             var result = await sender.Send(command);
 
-            return result.IsSuccess ? Results.Ok(result.Value) : result.ToProblemDetail();
+            return result.MapResult(
+                onSuccess: currentUser => Results.Ok(currentUser),
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
             .WithTags("Auth")
             .WithName("GetCurrentUser")

@@ -12,20 +12,18 @@ public class GetCategoriesEndpoint : IEndpoint
         {
             var result = await sender.Send(new GetCategoriesQuery());
 
-            if (result.IsFailure)
-            {
-                return result.ToProblemDetail();
-            }
-            
-            return Results.Ok(result.Value);
+            return result.MapResult(
+                onSuccess: categories => Results.Ok(categories),
+                onFailure: result => Results.Problem(result.ToProblemDetails())
+            );
         })
             .WithTags("Categories")
-        .WithName("GetCurrentCategories")
-        .WithSummary("Get all categories.")
-        .WithDescription("Retrieves the list of categories.")
-        .Produces<List<GetCategoriesResponse>>(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization()
-        .WithOpenApi();
+            .WithName("GetCurrentCategories")
+            .WithSummary("Get all categories.")
+            .WithDescription("Retrieves the list of categories.")
+            .Produces<List<GetCategoriesResponse>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization()
+            .WithOpenApi();
     }
 }

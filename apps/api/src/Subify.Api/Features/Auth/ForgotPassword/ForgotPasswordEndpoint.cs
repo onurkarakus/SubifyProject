@@ -14,7 +14,10 @@ namespace Subify.Api.Features.Auth.ForgotPassword
             {
                 var result = await sender.Send(command);
 
-                return result.IsFailure ? result.ToProblemDetail() : Results.Ok();
+                return result.MapResult(
+                    onSuccess: () => Results.Ok(new { message = "Şifre sıfırlama linki e-posta adresinize gönderildi." }), // Assuming a success message is desired
+                    onFailure: result => Results.Problem(result.ToProblemDetails())
+                );
             })
             .WithTags("Auth")
             .WithName("ForgotPassword")
