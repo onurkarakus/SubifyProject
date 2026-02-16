@@ -78,6 +78,18 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
                 }
             }
 
+            if (entry.State == EntityState.Deleted && entry.Entity is ISoftDeletable softDeleteEntity)
+            {
+                entry.State = EntityState.Modified;
+
+                softDeleteEntity.DeletedAt = now;
+
+                if (entry.Entity is BaseEntity updatedBaseEntity)
+                {
+                    updatedBaseEntity.UpdatedAt = now;
+                }
+            }
+
             if (entry.Entity is ApplicationUser user)
             {
                 switch (entry.State)

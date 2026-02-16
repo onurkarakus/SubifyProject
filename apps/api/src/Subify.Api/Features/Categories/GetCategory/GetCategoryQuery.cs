@@ -3,4 +3,4 @@ using Subify.Domain.Shared;
 
 namespace Subify.Api.Features.Categories.GetCategories;
 
-public record GetCategoriesQuery(): IRequest<Result<List<GetCategoriesResponse>>>;
+public record GetCategoryQuery(): IRequest<Result<List<GetCategoryResponse>>>;

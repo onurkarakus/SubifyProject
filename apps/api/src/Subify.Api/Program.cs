@@ -49,7 +49,11 @@ public class Program
                 };
             });
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+            // options.AddPolicy("Premium", policy => policy.RequireClaim("subscription_type", "premium"));
+        });
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();

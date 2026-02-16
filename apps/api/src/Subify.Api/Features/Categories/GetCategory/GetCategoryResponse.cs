@@ -2,7 +2,7 @@
 
 namespace Subify.Api.Features.Categories.GetCategories;
 
-public record GetCategoriesResponse(
+public record GetCategoryResponse(
     Guid Id,
     string Name,
     string Slug,

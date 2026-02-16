@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Features\Categories\UpdateCategory\UpdateCategoryEndpoint.cs~RF4491d5.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
 
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">

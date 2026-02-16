@@ -1,25 +1,32 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Subify.Domain.Abstractions.Services;
 using Subify.Domain.Models.Auth;
 using Subify.Domain.Models.Entities.Users;
+using Subify.Infrastructure.Persistence;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace Subify.Infrastructure.Services;
 
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
+    private readonly UserManager<ApplicationUser> userManager;
+    private readonly SubifyDbContext dbContext;
 
-    public TokenService(IConfiguration configuration)
+    public TokenService(IConfiguration configuration, UserManager<ApplicationUser> userManager, SubifyDbContext dbContext)
     {
         _configuration = configuration;
+        this.userManager = userManager;
+        this.dbContext = dbContext;
     }
 
-    public Task<GenerateTokenResponse> GenerateTokenAsync(ApplicationUser user)
+    public async Task<GenerateTokenResponse> GenerateTokenAsync(ApplicationUser user)
     {
         var secretKey = _configuration["Jwt:Key"]!;
         var issuer = _configuration["Jwt:Issuer"]!;
@@ -30,16 +37,27 @@ public class TokenService : ITokenService
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiration = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
+        var userProfile = await dbContext.Profiles.FindAsync(user!.Id);
+
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Locale, userProfile!.Locale)
+        };
+
+        var roles = await userManager.GetRolesAsync(user);
+
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
         var jwtToken = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
-            claims: new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Locale, "en-US")
-            },
+            claims: claims,
             expires: expiration,
             signingCredentials: creds
         );
@@ -48,14 +66,14 @@ public class TokenService : ITokenService
         var refreshToken = GenerateRefreshToken();
         var hashedRefreshToken = HashToken(refreshToken);
 
-        return Task.FromResult(new GenerateTokenResponse
+        return new GenerateTokenResponse
         (
             AccessToken: accessToken,
             RefreshToken: refreshToken,
             HashedRefreshToken: hashedRefreshToken,
             Expiration: expiration
-        ));
-    }    
+        );
+    }
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {

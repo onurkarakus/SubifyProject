@@ -8,6 +8,6 @@ public record CreateCategoryCommand(
     string Icon,
     string Color,
     int SortOrder,
-    string NameTR, // Localized name for Turkish
-    string NameEN  // Localized name for English
+    string NameTR,
+    string NameEN
 ) : IRequest<Result<CreateCategoryResponse>>;
