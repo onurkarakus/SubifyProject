@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
 

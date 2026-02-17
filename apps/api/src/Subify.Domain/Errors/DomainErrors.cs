@@ -110,6 +110,7 @@ public static class DomainErrors
     {
         public static readonly Error NotFound = Error.NotFound("USER_001", "User Not Found", "The user was not found.");
         public static readonly Error AccessDenied = Error.Forbidden("USER_002", "User Access Denied", "You do not have permission to access this user.");
+        public static readonly Error UnAuthorized = Error.Unauthorized("USER_003", "User Not Authorized", "You must be logged in to access this user.");
     }
 
     public static class Category
@@ -118,5 +119,16 @@ public static class DomainErrors
         public static readonly Error CannotDeleteSystemCategory = Error.Forbidden("CAT_002", "Cannot Delete System Category", "System-defined categories cannot be deleted.");
         public static readonly Error HasActiveSubscriptions = Error.Conflict("CAT_003", "Has Active Subscriptions", "Cannot delete a category that has active subscriptions.");
         public static readonly Error DuplicateSlug = Error.Conflict("CAT_004", "Duplicate Slug", "A category with this slug already exists.");
+    }
+
+    public static class UserCategory
+    {
+        public static readonly Error NotFound = Error.NotFound("UCAT_001", "User Category Not Found", "The user category was not found.");
+        public static readonly Error HasActiveSubscriptions = Error.Conflict("UCAT_003", "Has Active Subscriptions", "Cannot delete a category that has active subscriptions.");
+        public static readonly Error DuplicateSlug = Error.Conflict("UCAT_004", "Duplicate Slug", "A category with this slug already exists.");
+
+
+
+
     }
 }
