@@ -28,7 +28,7 @@ public class CreateCategoryHandler : IRequestHandler<CreateCategoryCommand, Resu
         // Check for duplicate slug
         if (await _context.Categories.AnyAsync(c => c.Slug == request.Slug, cancellationToken))
         {
-            return Result.Failure<CreateCategoryResponse>(DomainErrors.Category.DuplicateSlug);
+            return Result.Failure<CreateCategoryResponse>(DomainErrors.CategoryErrors.DuplicateSlug);
         }
 
         var category = new Category

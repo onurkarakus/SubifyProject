@@ -24,7 +24,7 @@ public class CreateUserCategoryHandler : IRequestHandler<CreateUserCategoryComma
 
         if (!Guid.TryParse(userIdString, out var userId))
         {
-            return Result.Failure<Guid>(DomainErrors.User.UnAuthorized);
+            return Result.Failure<Guid>(DomainErrors.UserErrors.UnAuthorized);
         }
 
         var userCategory = new UserCategory

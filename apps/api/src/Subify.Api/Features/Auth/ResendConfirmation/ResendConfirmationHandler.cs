@@ -29,7 +29,7 @@ namespace Subify.Api.Features.Auth.ResendConfirmation
 
             if (user == null)
             {
-                return Result.Failure(Domain.Errors.DomainErrors.User.NotFound);
+                return Result.Failure(Domain.Errors.DomainErrors.UserErrors.NotFound);
             }
 
             if (user.EmailConfirmed)

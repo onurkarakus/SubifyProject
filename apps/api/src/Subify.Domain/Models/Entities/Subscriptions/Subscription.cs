@@ -2,6 +2,7 @@
 using Subify.Domain.Enums;
 using Subify.Domain.Models.Entities.AuditLogs;
 using Subify.Domain.Models.Entities.Common;
+using Subify.Domain.Models.Entities.Providers;
 using Subify.Domain.Models.Entities.Users;
 
 namespace Subify.Domain.Models.Entities.Subscriptions;

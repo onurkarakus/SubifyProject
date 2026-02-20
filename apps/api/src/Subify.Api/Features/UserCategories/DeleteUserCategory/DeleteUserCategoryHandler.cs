@@ -21,14 +21,14 @@ public class DeleteUserCategoryHandler : IRequestHandler<DeleteUserCategoryComma
     public async Task<Result> Handle(DeleteUserCategoryCommand request, CancellationToken cancellationToken)
     {
         var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdString, out var userId)) return Result.Failure(DomainErrors.User.UnAuthorized);
+        if (!Guid.TryParse(userIdString, out var userId)) return Result.Failure(DomainErrors.UserErrors.UnAuthorized);
 
         var userCategory = await _context.UserCategories
             .FirstOrDefaultAsync(uc => uc.Id == request.Id && uc.UserId == userId, cancellationToken);
 
         if (userCategory is null)
         {
-            return Result.Failure(DomainErrors.UserCategory.NotFound);
+            return Result.Failure(DomainErrors.UserCategoryErrors.NotFound);
         }
 
         _context.UserCategories.Remove(userCategory);

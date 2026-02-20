@@ -25,7 +25,7 @@ namespace Subify.Api.Features.Auth.GetCurrentUser
 
             if (userInformation == null || userProfile == null)
             {
-                return Result.Failure<GetCurrentUserResponse>(DomainErrors.User.NotFound);
+                return Result.Failure<GetCurrentUserResponse>(DomainErrors.UserErrors.NotFound);
             }
 
             return Result.Success(new GetCurrentUserResponse

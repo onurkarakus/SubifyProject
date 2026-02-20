@@ -8,6 +8,7 @@ using Subify.Domain.Models.Entities.AuditLogs;
 using Subify.Domain.Models.Entities.Auth;
 using Subify.Domain.Models.Entities.Common;
 using Subify.Domain.Models.Entities.Notifications;
+using Subify.Domain.Models.Entities.Providers;
 using Subify.Domain.Models.Entities.Subscriptions;
 using Subify.Domain.Models.Entities.Users;
 using System.Reflection;
@@ -31,6 +32,9 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserCategory> UserCategories => Set<UserCategory>();
     public DbSet<SubscriptionPaymentRecord> SubscriptionPaymentRecords => Set<SubscriptionPaymentRecord>();
+
+    //Providers
+    public DbSet<Provider> Providers => Set<Provider>();
 
     // AI
     public DbSet<AiSuggestionLog> AIRequestLogs => Set<AiSuggestionLog>();

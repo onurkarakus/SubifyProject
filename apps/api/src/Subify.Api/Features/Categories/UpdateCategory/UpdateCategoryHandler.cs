@@ -25,7 +25,7 @@ public class UpdateCategoryHandler : IRequestHandler<UpdateCategoryCommand, Resu
 
         if (category is null)
         {
-            return Result.Failure(DomainErrors.Category.NotFound);
+            return Result.Failure(DomainErrors.CategoryErrors.NotFound);
         }
 
         category.Icon = request.Icon;

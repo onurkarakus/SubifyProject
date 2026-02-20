@@ -23,7 +23,7 @@ public class GetUserCategoriesHandler : IRequestHandler<GetUserCategoriesQuery, 
         var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdString, out var userId))
         {
-            return Result.Failure<List<GetUserCategoryResponse>>(DomainErrors.User.UnAuthorized);
+            return Result.Failure<List<GetUserCategoryResponse>>(DomainErrors.UserErrors.UnAuthorized);
         }
 
         var categories = await _context.UserCategories

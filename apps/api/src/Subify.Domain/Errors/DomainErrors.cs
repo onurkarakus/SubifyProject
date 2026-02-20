@@ -22,7 +22,7 @@ public static class DomainErrors
         public static readonly Error InvalidEmailFormat = Error.Failure("AUTH_007", "Invalid Email Format", "The email address provided is not in a valid format.");
         public static readonly Error EmailAlreadyRegistered = Error.Conflict("AUTH_008", "Email Already Registered", "The email address is already associated with another account.");
         public static readonly Error InvalidResetCode = Error.Failure("AUTH_009", "Invalid Reset Code", "The password reset code is invalid or has expired.");
-        public static readonly Error InvalidVerificationCode = Error.Failure("AUTH_010", "Invalid Verification Code", "The email verification code is invalid or has expired.");    
+        public static readonly Error InvalidVerificationCode = Error.Failure("AUTH_010", "Invalid Verification Code", "The email verification code is invalid or has expired.");
         public static readonly Error SessionExpired = Error.Unauthorized("AUTH_011", "Session Expired", "Your session has expired. Please log in again.");
         public static readonly Error EmailAlreadyConfirmed = Error.Failure("AUTH_012", "Email Already Confirmed", "The email address has already been confirmed.");
         public static readonly Error EmailNotConfirmed = Error.Failure("AUTH_013", "Email Not Confirmed", "The email address is not confirmed.");
@@ -52,7 +52,7 @@ public static class DomainErrors
         public static readonly Error InsufficientData = Error.Failure("AI_006", "Insufficient Data", "You need at least 1 subscription for AI analysis.");
     }
 
-    public static class PaymnetErrors
+    public static class PaymentErrors
     {
         public static readonly Error InvalidPlan = Error.Failure("PAY_001", "Invalid Plan", "The selected plan is not valid.");
         public static readonly Error CheckoutCreationFailed = Error.Failure("PAY_002", "Checkout Creation Failed", "Failed to create checkout session.");
@@ -106,14 +106,14 @@ public static class DomainErrors
         public static readonly Error MinLengthRequired = Error.Validation("VAL_005", "Min Length Required", "The field '{field}' must be at least {min} characters.");
     }
 
-    public static class User
+    public static class UserErrors
     {
         public static readonly Error NotFound = Error.NotFound("USER_001", "User Not Found", "The user was not found.");
         public static readonly Error AccessDenied = Error.Forbidden("USER_002", "User Access Denied", "You do not have permission to access this user.");
         public static readonly Error UnAuthorized = Error.Unauthorized("USER_003", "User Not Authorized", "You must be logged in to access this user.");
     }
 
-    public static class Category
+    public static class CategoryErrors
     {
         public static readonly Error NotFound = Error.NotFound("CAT_001", "Category Not Found", "The category was not found.");
         public static readonly Error CannotDeleteSystemCategory = Error.Forbidden("CAT_002", "Cannot Delete System Category", "System-defined categories cannot be deleted.");
@@ -121,14 +121,19 @@ public static class DomainErrors
         public static readonly Error DuplicateSlug = Error.Conflict("CAT_004", "Duplicate Slug", "A category with this slug already exists.");
     }
 
-    public static class UserCategory
+    public static class UserCategoryErrors
     {
         public static readonly Error NotFound = Error.NotFound("UCAT_001", "User Category Not Found", "The user category was not found.");
         public static readonly Error HasActiveSubscriptions = Error.Conflict("UCAT_003", "Has Active Subscriptions", "Cannot delete a category that has active subscriptions.");
         public static readonly Error DuplicateSlug = Error.Conflict("UCAT_004", "Duplicate Slug", "A category with this slug already exists.");
+    }
 
-
-
-
+    public static class ProviderErrors
+    {
+        public static readonly Error NotFound = Error.NotFound("PROV_001", "Provider Not Found", "The provider was not found.");
+        public static readonly Error DuplicateName = Error.Conflict("PROV_002", "Duplicate Name", "A provider with the same name already exists.");
+        public static readonly Error DuplicateSlug = Error.Conflict("PROV_003", "Duplicate Slug", "A provider with the same slug already exists.");
+        public static readonly Error InactiveProvider = Error.Failure("PROV_004", "Inactive Provider", "The selected provider is not active.");
+        public static readonly Error HasActiveSubscriptions = Error.Conflict("PROV_005", "Has Active Subscriptions", "Cannot delete a provider that has active subscriptions.");
     }
 }

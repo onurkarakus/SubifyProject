@@ -24,7 +24,7 @@ public class UpdateUserCategoryHandler : IRequestHandler<UpdateUserCategoryComma
 
         if (!Guid.TryParse(userIdString, out var userId))
         {
-            return Result.Failure(DomainErrors.User.UnAuthorized);
+            return Result.Failure(DomainErrors.UserErrors.UnAuthorized);
         }
 
         var userCategory = await _context.UserCategories
@@ -32,7 +32,7 @@ public class UpdateUserCategoryHandler : IRequestHandler<UpdateUserCategoryComma
 
         if (userCategory is null)
         {
-            return Result.Failure(DomainErrors.UserCategory.NotFound);
+            return Result.Failure(DomainErrors.UserCategoryErrors.NotFound);
         }
 
         userCategory.Name = request.Name;

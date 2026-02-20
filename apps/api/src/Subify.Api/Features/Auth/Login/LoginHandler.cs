@@ -31,7 +31,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 
         if (user == null)
         {
-            return Result.Failure<LoginResponse>(DomainErrors.User.NotFound);
+            return Result.Failure<LoginResponse>(DomainErrors.UserErrors.NotFound);
         }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))

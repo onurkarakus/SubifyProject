@@ -22,7 +22,7 @@ public class ResetPasswordHandler : IRequestHandler<ResetPasswordCommand, Result
 
         if (user is null)
         {
-            return Result.Failure(DomainErrors.User.NotFound);
+            return Result.Failure(DomainErrors.UserErrors.NotFound);
         }
 
         var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);

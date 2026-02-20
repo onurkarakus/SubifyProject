@@ -21,7 +21,7 @@ public class VerifyEmailHandler : IRequestHandler<VerifyEmailCommand, Result>
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user is null)
         {
-            return Result.Failure(DomainErrors.User.NotFound);
+            return Result.Failure(DomainErrors.UserErrors.NotFound);
         }
 
         var decodedToken = System.Web.HttpUtility.UrlDecode(request.Token);

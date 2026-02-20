@@ -22,14 +22,14 @@ public class DeleteCategoryHandler : IRequestHandler<DeleteCategoryCommand, Resu
 
         if (category is null)
         {
-            return Result.Failure(DomainErrors.Category.NotFound);
+            return Result.Failure(DomainErrors.CategoryErrors.NotFound);
         }
 
         var isUsed = await _context.Subscriptions.AnyAsync(s => s.CategoryId == request.Id);
 
         if (isUsed)
         {
-            return Result.Failure(DomainErrors.Category.HasActiveSubscriptions);
+            return Result.Failure(DomainErrors.CategoryErrors.HasActiveSubscriptions);
         }
 
         category.DeletedAt = DateTime.UtcNow;
