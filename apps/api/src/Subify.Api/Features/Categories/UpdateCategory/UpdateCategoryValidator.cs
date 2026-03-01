@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Subify.Api.Features.Categories.UpdateCategories;
+namespace Subify.Api.Features.Categories.UpdateCategory;
 
 public class UpdateCategoryValidator : AbstractValidator<UpdateCategoryCommand>
 {

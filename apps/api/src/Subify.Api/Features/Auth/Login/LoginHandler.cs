@@ -53,10 +53,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 
         return Result.Success(new LoginResponse
         (
-            email: user.Email,
-            accessToken: generateTokenResult.Value.AccessToken,
-            refreshToken: generateTokenResult.Value.HashedRefreshToken,
-            expiration: generateTokenResult.Value.Expiration
+            Email: user.Email,
+            AccessToken: generateTokenResult.Value.AccessToken,
+            RefreshToken: generateTokenResult.Value.HashedRefreshToken,
+            Expiration: generateTokenResult.Value.Expiration
         ));
     }
 

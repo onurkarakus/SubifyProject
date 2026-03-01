@@ -11,21 +11,27 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
 {
     public Guid UserId { get; set; }
 
+    public Guid? ProviderId { get; set; }
+
     public Guid? CategoryId { get; set; }
 
     public Guid? UserCategoryId { get; set; }
-
-    public Guid? ProviderId { get; set; }
-
+    
     /// <summary>
     /// Subscription name. Examples: 'Netflix', 'Spotify Premium'
     /// </summary>
-    public string Name { get; set; } = null!;
+    public string Name { get; set; } = string.Empty;
+
+    public string Description { get; set; }= string.Empty;
+
+    public string? Icon { get; set; }
+
+    public string? Color { get; set; }
 
     /// <summary>
-    /// Price per billing cycle. 
+    /// Amount per billing cycle. 
     /// </summary>
-    public decimal Price { get; set; }
+    public decimal Amount { get; set; }
 
     /// <summary>
     /// ISO 4217 currency code.
@@ -37,21 +43,16 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
     /// </summary>
     public BillingCycle BillingCycle { get; set; } = BillingCycle.Monthly;
 
+    public DateTime StartDate { get; set; }
+
     /// <summary>
     /// Next payment/renewal date.
     /// </summary>
-    public DateOnly NextRenewalDate { get; set; }
+    public DateOnly NextPaymentDate { get; set; }
 
-    /// <summary>
-    /// Last time user actively used this subscription.
-    /// Used for AI "unused subscription" detection.
-    /// </summary>
-    public DateOnly? LastUsedAt { get; set; }
+    public bool RemindMe { get; set; } = true;
 
-    /// <summary>
-    /// User notes about the subscription.
-    /// </summary>
-    public string? Notes { get; set; }
+    public int ReminderDaysBefore { get; set; } = 1;
 
     /// <summary>
     /// Current status of the subscription.
@@ -61,21 +62,7 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
     /// <summary>
     /// Soft archive flag (UI hide, not delete).
     /// </summary>
-    public bool Archived { get; set; }
-
-    /// <summary>
-    /// Total number of people sharing this subscription (including the user).
-    /// 1 = not shared (user pays full price)
-    /// 3 = shared with 2 others (user pays Price / 3)
-    /// </summary>
-    public int SharedWithCount { get; set; } = 1;
-
-    /// <summary>
-    /// Calculated: User's actual payment amount.
-    /// Formula: Price / SharedWithCount
-    /// This is a computed property, not stored in DB.
-    /// </summary>
-    public decimal UserShare => SharedWithCount > 0 ? Price / SharedWithCount : Price;
+    public bool Archived { get; set; }    
 
     // ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }
@@ -90,5 +77,6 @@ public sealed class Subscription : BaseEntity, ISoftDeletable
     public Provider? Provider { get; set; }
 
     public ICollection<SubscriptionPaymentRecord> PaymentRecords { get; set; } = [];
+
     public ICollection<NotificationLog> NotificationLogs { get; set; } = [];
 }

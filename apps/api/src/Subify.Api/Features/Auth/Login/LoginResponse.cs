@@ -1,3 +1,3 @@
 ﻿namespace Subify.Api.Features.Auth.Login;
 
-public record LoginResponse(string email, string accessToken, string refreshToken, DateTime expiration);
+public record LoginResponse(string Email, string AccessToken, string RefreshToken, DateTime Expiration);

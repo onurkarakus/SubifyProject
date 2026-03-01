@@ -1,7 +1,6 @@
-namespace Subify.Api.Features.Categories.CreateCategories;
+namespace Subify.Api.Features.Categories.CreateCategory;
 
 using FluentValidation;
-using Subify.Api.Common.Extensions; // Assuming ErrorCode extension is here
 
 public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
 {

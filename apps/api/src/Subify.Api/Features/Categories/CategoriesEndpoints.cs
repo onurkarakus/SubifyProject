@@ -1,13 +1,11 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
-using Subify.Api.Features.Categories.CreateCategories;
+using Subify.Api.Features.Categories.CreateCategory;
 using Subify.Api.Features.Categories.DeleteCategory;
-using Subify.Api.Features.Categories.GetCategories;
-using Subify.Api.Features.Categories.UpdateCategories;
-using Subify.Domain.Shared;
+using Subify.Api.Features.Categories.GetCategory;
+using Subify.Api.Features.Categories.UpdateCategory;
 
 namespace Subify.Api.Features.Categories;
 

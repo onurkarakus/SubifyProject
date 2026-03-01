@@ -5,7 +5,7 @@ using Subify.Domain.Models.Entities.Common;
 using Subify.Domain.Shared;
 using Subify.Infrastructure.Persistence;
 
-namespace Subify.Api.Features.Categories.UpdateCategories;
+namespace Subify.Api.Features.Categories.UpdateCategory;
 
 public class UpdateCategoryHandler : IRequestHandler<UpdateCategoryCommand, Result>
 {

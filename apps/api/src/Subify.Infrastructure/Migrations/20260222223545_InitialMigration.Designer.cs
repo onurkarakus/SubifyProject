@@ -12,7 +12,7 @@ using Subify.Infrastructure.Persistence;
 namespace Subify.Infrastructure.Migrations
 {
     [DbContext(typeof(SubifyDbContext))]
-    [Migration("20260218231846_InitialMigration")]
+    [Migration("20260222223545_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -2680,6 +2680,104 @@ namespace Subify.Infrastructure.Migrations
                     b.ToTable("PushTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Subify.Domain.Models.Entities.Providers.Provider", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("Website")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Providers_IsActive");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Providers_Slug_Unique");
+
+                    b.ToTable("Providers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsActive = true,
+                            IsPopular = false,
+                            LogoUrl = "https://example.com/logos/netflix.png",
+                            Name = "Netflix",
+                            Slug = "netflix",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Website = "https://www.netflix.com/tr/"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsActive = true,
+                            IsPopular = false,
+                            LogoUrl = "https://example.com/logos/spotify.png",
+                            Name = "Spotify",
+                            Slug = "spotify",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Website = "https://www.spotify.com/tr/"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsActive = true,
+                            IsPopular = false,
+                            LogoUrl = "https://example.com/logos/adobe.png",
+                            Name = "Adobe Creative Cloud",
+                            Slug = "adobe-creative-cloud",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Website = "https://www.adobe.com/tr/creativecloud.html"
+                        });
+                });
+
             modelBuilder.Entity("Subify.Domain.Models.Entities.Subscriptions.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2873,110 +2971,16 @@ namespace Subify.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Subify.Domain.Models.Entities.Subscriptions.Provider", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsPopular")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LogoUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("Website")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_Providers_IsActive");
-
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Providers_Slug_Unique");
-
-                    b.ToTable("Providers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsActive = true,
-                            IsPopular = false,
-                            LogoUrl = "https://example.com/logos/netflix.png",
-                            Name = "Netflix",
-                            Slug = "netflix",
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Website = "https://www.netflix.com/tr/"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsActive = true,
-                            IsPopular = false,
-                            LogoUrl = "https://example.com/logos/spotify.png",
-                            Name = "Spotify",
-                            Slug = "spotify",
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Website = "https://www.spotify.com/tr/"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsActive = true,
-                            IsPopular = false,
-                            LogoUrl = "https://example.com/logos/adobe.png",
-                            Name = "Adobe Creative Cloud",
-                            Slug = "adobe-creative-cloud",
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Website = "https://www.adobe.com/tr/creativecloud.html"
-                        });
-                });
-
             modelBuilder.Entity("Subify.Domain.Models.Entities.Subscriptions.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<bool>("Archived")
                         .ValueGeneratedOnAdd()
@@ -2990,6 +2994,9 @@ namespace Subify.Infrastructure.Migrations
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -3006,32 +3013,33 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateOnly?>("LastUsedAt")
-                        .HasColumnType("date");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<DateOnly>("NextRenewalDate")
+                    b.Property<DateOnly>("NextPaymentDate")
                         .HasColumnType("date");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
 
                     b.Property<Guid?>("ProviderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("SharedWithCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
+                    b.Property<bool>("RemindMe")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ReminderDaysBefore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -3067,11 +3075,11 @@ namespace Subify.Infrastructure.Migrations
                     b.HasIndex("UserId", "CategoryId")
                         .HasDatabaseName("IX_Subscriptions_UserId_CategoryId");
 
-                    b.HasIndex("NextRenewalDate", "Archived", "Status")
-                        .HasDatabaseName("IX_Subscriptions_NextRenewalDate_Active");
+                    b.HasIndex("NextPaymentDate", "Archived", "Status")
+                        .HasDatabaseName("IX_Subscriptions_NextPaymentDate_Active");
 
-                    b.HasIndex("UserId", "Archived", "NextRenewalDate")
-                        .HasDatabaseName("IX_Subscriptions_UserId_Archived_NextRenewalDate");
+                    b.HasIndex("UserId", "Archived", "NextPaymentDate")
+                        .HasDatabaseName("IX_Subscriptions_UserId_Archived_NextPaymentDate");
 
                     b.ToTable("Subscriptions", (string)null);
                 });
@@ -3582,7 +3590,7 @@ namespace Subify.Infrastructure.Migrations
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Subify.Domain.Models.Entities.Subscriptions.Provider", "Provider")
+                    b.HasOne("Subify.Domain.Models.Entities.Providers.Provider", "Provider")
                         .WithMany()
                         .HasForeignKey("ProviderId");
 

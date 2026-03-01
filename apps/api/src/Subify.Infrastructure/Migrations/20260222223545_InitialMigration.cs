@@ -510,19 +510,22 @@ namespace Subify.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UserCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ProviderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Icon = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Amount = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false, defaultValue: "TRY"),
                     BillingCycle = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    NextRenewalDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    LastUsedAt = table.Column<DateOnly>(type: "date", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NextPaymentDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    RemindMe = table.Column<bool>(type: "bit", nullable: false),
+                    ReminderDaysBefore = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Active"),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    SharedWithCount = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()")
@@ -1047,9 +1050,9 @@ namespace Subify.Infrastructure.Migrations
                 filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_NextRenewalDate_Active",
+                name: "IX_Subscriptions_NextPaymentDate_Active",
                 table: "Subscriptions",
-                columns: new[] { "NextRenewalDate", "Archived", "Status" });
+                columns: new[] { "NextPaymentDate", "Archived", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_ProviderId",
@@ -1062,9 +1065,9 @@ namespace Subify.Infrastructure.Migrations
                 column: "UserCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_UserId_Archived_NextRenewalDate",
+                name: "IX_Subscriptions_UserId_Archived_NextPaymentDate",
                 table: "Subscriptions",
-                columns: new[] { "UserId", "Archived", "NextRenewalDate" });
+                columns: new[] { "UserId", "Archived", "NextPaymentDate" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_UserId_CategoryId",

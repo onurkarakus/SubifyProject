@@ -1,4 +1,4 @@
-namespace Subify.Api.Features.Categories.CreateCategories;
+namespace Subify.Api.Features.Categories.CreateCategory;
 
 using Subify.Domain.Models.Entities.Common;
 using MediatR;
