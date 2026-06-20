@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Subify.Api/Subify.Api.csproj" />
+  <Project Path="Subify.Application/Subify.Application.csproj" />
+  <Project Path="Subify.Domain/Subify.Domain.csproj" />
+  <Project Path="Subify.Infrastructure/Subify.Infrastructure.csproj" />
+</Solution>
