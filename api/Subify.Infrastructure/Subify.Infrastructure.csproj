@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="../Subify.Domain/Subify.Domain.csproj" />
     <ProjectReference Include="..\Subify.Application\Subify.Application.csproj" />
   </ItemGroup>
 
