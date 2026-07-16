@@ -1,4 +1,6 @@
 
+using Subify.Infrastructure;
+
 namespace Subify.Api;
 
 public class Program
@@ -8,9 +10,11 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-
+        builder.Services.AddInfrastructureServices(builder.Configuration);
+        
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
@@ -23,6 +27,8 @@ public class Program
 
         app.UseHttpsRedirection();
 
+
+        app.UseAuthentication();
         app.UseAuthorization();
 
 

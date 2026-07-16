@@ -1,6 +1,8 @@
+using Subify.Domain.Common;
+
 namespace Subify.Domain.Entities;
 
-public class SystemSettings
+public class SystemSettings: BaseEntity
 {
     public string? AIApiKey { get; private set; }
     public string? SmtpHost { get; private set; }

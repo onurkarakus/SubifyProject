@@ -26,6 +26,7 @@ Thumbs.db
 # ASP.NET Core / Visual Studio
 **/bin/
 **/obj/
+**/bin\\*/
 **/out/
 **/PublishProfiles/
 *.sln
