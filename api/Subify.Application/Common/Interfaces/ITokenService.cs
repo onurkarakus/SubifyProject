@@ -1,9 +1,9 @@
 using Subify.Domain.Entities;
+using Subify.Domain.Models.Auth;
 
 namespace Subify.Application.Common.Interfaces;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(ApplicationUser user, IList<string> roles);
-    string GenerateRefreshToken();
+    Task<GenerateTokenResponse> GenerateAccessToken(ApplicationUser user);    
 }

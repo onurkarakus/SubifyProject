@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Subify.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Subify.Infrastructure.Persistence;
 namespace Subify.Infrastructure.Migrations
 {
     [DbContext(typeof(SubifyDbContext))]
-    partial class SubifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260721163806_UpdateRefreshTokenEntity")]
+    partial class UpdateRefreshTokenEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

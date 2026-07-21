@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Subify.Application.Common.Interfaces;
 using Subify.Domain.Common;
 using Subify.Domain.Entities;
 
 namespace Subify.Infrastructure.Persistence;
 
-public class SubifyDbContext: IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public class SubifyDbContext: IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, ISubifyDbContext
 {
     public SubifyDbContext(DbContextOptions<SubifyDbContext> options):base(options)
     {
@@ -66,5 +63,11 @@ public class SubifyDbContext: IdentityDbContext<ApplicationUser, IdentityRole<Gu
         }
 
         return base.SaveChangesAsync(cancellationToken);
-    }    
+    }
+
+    public async Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+    {
+        await RefreshTokens.AddAsync(refreshToken, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+    }
 }

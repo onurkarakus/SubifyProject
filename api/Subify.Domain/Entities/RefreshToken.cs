@@ -5,31 +5,35 @@ namespace Subify.Domain.Entities;
 public class RefreshToken : BaseEntity
 {
     public Guid UserId { get; private set; }
-    public string Token { get; private set; } = string.Empty;
-    public DateTimeOffset Expiresat { get; private set; }
+    public string TokenHash { get; private set; }
     public string CreatedByIp { get; private set; } = string.Empty;
+    public DateTimeOffset? ExpiresAt { get; private set; }
     public DateTimeOffset? RevokeAt { get; private set; }
+    public string? RevokedReason { get; private set; }
     public string? RevokeByIp { get; private set; }
     public string? ReplacedByToken { get; private set; }
-    public string? ReasonRevoked { get; private set; }
-
+    public string? DeviceId {get; private set;}    
+    public string? UserAgent {get; private set; }
+    
     public ApplicationUser User { get; private set; } = null!;
 
     protected RefreshToken() { }
 
-    public RefreshToken(Guid userId, string token, DateTimeOffset expiresAt, string createdByIp)
+    public RefreshToken(Guid userId, string tokenHash, string createdByIp, DateTimeOffset? expiresAt, string? deviceId, string? userAgent)
     {
         UserId = userId;
-        Token = token;
-        Expiresat = expiresAt;
+        TokenHash = tokenHash;
         CreatedByIp = createdByIp;
+        ExpiresAt = expiresAt;
+        DeviceId = deviceId;
+        UserAgent = userAgent;        
     }
 
-    public void Revoke(string ipAddress, string reason, string? replacedByToken = null)
+    public void Revoke(DateTimeOffset? revokeAt, string revokedByIp, string? revokedReason, string? replacedByToken = null)
     {
         RevokeAt = DateTimeOffset.UtcNow;
-        RevokeByIp = ipAddress;
-        ReasonRevoked = reason;
+        RevokeByIp = revokedByIp;
+        RevokedReason = revokedReason;
         ReplacedByToken = replacedByToken;
     }
 }

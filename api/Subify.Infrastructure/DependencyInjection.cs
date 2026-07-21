@@ -32,6 +32,7 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
 
         services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ISubifyDbContext>(provider => provider.GetRequiredService<SubifyDbContext>());
 
         var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
 
