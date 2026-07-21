@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Npgsql.Replication;
+using Microsoft.IdentityModel.Tokens;
+using Subify.Application.Common.Interfaces;
 using Subify.Domain.Entities;
+using Subify.Infrastructure.Authentication;
 using Subify.Infrastructure.Persistence;
 
 namespace Subify.Infrastructure;
@@ -30,6 +29,36 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
         })
         .AddEntityFrameworkStores<SubifyDbContext>()
         .AddDefaultTokenProviders();
+
+        services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+        services.AddScoped<ITokenService, TokenService>();
+
+        var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidAudience = jwtOptions?.Audience,
+                ValidIssuer = jwtOptions?.Issuer,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? string.Empty))
+            };
+        });
+
+        
+
 
         return services;
     }
