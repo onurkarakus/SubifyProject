@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +11,7 @@ using Subify.Application.Common.Interfaces;
 using Subify.Domain.Entities;
 using Subify.Infrastructure.Authentication;
 using Subify.Infrastructure.Persistence;
+using Subify.Infrastructure.Persistence.Seeding;
 
 namespace Subify.Infrastructure;
 
@@ -17,6 +20,9 @@ public static class DependencyInjection
 public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)    
 {
         services.AddDbContext<SubifyDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        // Task 2.3.3: IDataSeeder implementations (auto-discovered in this assembly)
+        services.AddDataSeeders();
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
         {
@@ -32,6 +38,7 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
 
         services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<ISubifyDbContext>(provider => provider.GetRequiredService<SubifyDbContext>());
 
         var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
@@ -46,6 +53,8 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
         {
             options.SaveToken = true;
             options.RequireHttpsMetadata = false;
+            // Keep JWT claim names as issued (sub, email) so CurrentUserService can resolve them consistently
+            options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -54,7 +63,9 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
                 ValidateIssuerSigningKey = true,
                 ValidAudience = jwtOptions?.Audience,
                 ValidIssuer = jwtOptions?.Issuer,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? string.Empty))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? string.Empty)),
+                NameClaimType = JwtRegisteredClaimNames.Sub,
+                RoleClaimType = ClaimTypes.Role
             };
         });
 

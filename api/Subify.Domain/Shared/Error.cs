@@ -28,4 +28,5 @@ public record Error
     public static Error TooManyRequest(string code, string title, string description) => new(code, title, description, ErrorType.TooManyRequest);
     public static Error ServiceUnavailable(string code, string title, string description) => new(code, title, description, ErrorType.ServiceUnavailable);
     public static Error InternalServerError(string code, string title, string description) => new(code, title, description, ErrorType.InternalServerError);
+    public static Error GatewayTimeout(string code, string title, string description) => new(code, title, description, ErrorType.GatewayTimeout);
 }

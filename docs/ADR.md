@@ -321,35 +321,86 @@ if (user.MonthlyBudget > 0 && monthlyTotal > user.MonthlyBudget)
 ## ADR-010: GUID Generation Strategy
 
 **Tarih:** 2025-12-07  
-**Durum:** Beklemede (Implementation Required)
+**Güncelleme:** 2026-03-22 (Subify OS — Postgres)  
+**Durum:** Kabul Edildi (Implemented)
 
 ### Bağlam
 
-`BaseEntity. Id = Guid.NewGuid()` default assignment, her entity instantiation'da gereksiz allocation yaratıyor.
+Eski SaaS notu SQL Server `NEWSEQUENTIALID()` öneriyordu. Subify OS **PostgreSQL** kullanır; property default `Guid.NewGuid()` (v4) hem rastgele dağılır hem de her `new` için gereksiz allocation üretir.
 
-### Karar
+### Karar (OS)
 
-Default assignment kaldırılacak, GUID generation EF Core configuration'da yapılacak:
+**Uygulama tarafında UUID v7** üretimi:
 
 ```csharp
-// BaseEntity - No default
+// Domain
+public static class GuidGenerator
+{
+    public static Guid NewId() => Guid.CreateVersion7();
+}
+
+// BaseEntity — Id default yok
 public Guid Id { get; set; }
 
-// EF Core Configuration
-builder.Property(e => e.Id)
-    .HasDefaultValueSql("NEWSEQUENTIALID()");
+// SaveChanges: boş Id → GuidGenerator.NewId()
+// EF: BaseEntity.Id → ValueGeneratedNever() (client-generated)
 ```
 
-### Gerekçe
+Factory'ler (`RefreshToken.Create`, `UserInvite.Create`, …) de `GuidGenerator.NewId()` kullanır.
 
-- **NEWSEQUENTIALID():** Clustered index fragmentation'ı minimize eder
-- **No runtime allocation:** EF Core materialization sırasında gereksiz GUID üretilmez
+### Alternatifler
+
+| Alternatif | Değerlendirme |
+| ---------- | ------------- |
+| `Guid.NewGuid()` (v4) | Random; index locality zayıf |
+| `gen_random_uuid()` (Postgres) | DB-side v4; unit test / offline insert zor |
+| SQL Server `NEWSEQUENTIALID()` | OS’ta yok (Postgres) |
+| **UUID v7 (app)** | Time-ordered; test-friendly; EF client value |
 
 ### Sonuçlar
 
-- Insert performance iyileşir
-- Index maintenance maliyeti düşer
-- Unit test'lerde entity'lere manuel ID atanması gerekir
+- Insert’lerde daha iyi sıralılık (v7)
+- Unit test’te DB default gerekmez
+- Ham SQL insert’lerde Id vermek gerekir (veya ad-hoc `gen_random_uuid()`)
+
+**Kod:** `Subify.Domain/Common/GuidGenerator.cs`, `GuidIdGenerationExtensions`, `SubifyDbContext.SaveChanges*`
+
+---
+
+## ADR-011: Database Naming Convention (PascalCase)
+
+**Tarih:** 2026-07-22  
+**Durum:** Kabul Edildi (Implemented)  
+**Task:** 2.2.9
+
+### Bağlam
+
+PostgreSQL ekosisteminde snake_case (`asp_net_users`, `next_renewal_date`) yaygındır. EF Core varsayılanı ise C# ile aynı **PascalCase**’tir. `EFCore.NamingConventions` paketi ile global snake_case mümkün; Identity tabloları da `asp_net_users` olur.
+
+### Karar
+
+**PascalCase korunur** — tablo ve kolon adları EF / Identity default’ları ile kalır:
+
+| Grup | Örnek |
+| ---- | ----- |
+| Identity | `AspNetUsers`, `AspNetRoles`, `AspNetUserRoles` |
+| Domain | `Subscriptions`, `Categories`, `RefreshTokens` |
+| Columns | `UserId`, `NextRenewalDate`, `LogoUrl` |
+
+`UseSnakeCaseNamingConvention()` **kullanılmaz**.
+
+### Gerekçe
+
+1. ASP.NET Core Identity dökümanı ve tooling `AspNetUsers` bekler
+2. Mevcut migration history zaten PascalCase
+3. Subify OS docs (PRD, DATA_MODEL, ERD) `AspNetUsers` referans eder
+4. snake_case’e geçiş tüm şemayı rename eder — greenfield kararı olmalı, silent refactor değil
+
+### Sonuçlar
+
+- Configs: `ApplicationUserConfiguration` → `ToTable("AspNetUsers")`; Identity claim/role/login/token configs aynı `AspNet*` isimleri
+- README: `Persistence/Configurations/README.md` naming bölümü
+- İleride snake_case istense: major schema break + full re-migration planı gerekir
 
 ---
 
@@ -367,3 +418,5 @@ builder.Property(e => e.Id)
 | 2025-12-07 | ADR-008 | Initial - Exchange Rate Strategy   |
 | 2025-12-07 | ADR-009 | Initial - Profile UI Preferences   |
 | 2025-12-07 | ADR-010 | Initial - GUID Generation Strategy |
+| 2026-03-22 | ADR-010 | OS: UUID v7 app-side (Postgres); NEWSEQUENTIALID dropped |
+| 2026-07-22 | ADR-011 | PascalCase DB naming; no snake_case |
