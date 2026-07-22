@@ -54,11 +54,35 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
-### Auth — Register (3.2.1)
-### Body: RegisterCommand { fullName, email, password }
-### 201 Created → RegisterResponse { userId, email, fullName, message }
-### 409 Conflict → AUTH_008 email already registered
-### EmailConfirmed=true (no confirm mail); role=User
+### Setup — Status (3.3.6 / 3S.1)
+### ---------------------------------------------------------------------------
+# @name setupStatus
+GET {{host}}/api/setup/status
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Setup — Create first SuperAdmin (3.3.1 / 3.3.6)
+### Only while setup incomplete and no SuperAdmin yet
+### ---------------------------------------------------------------------------
+# @name setupAdmin
+POST {{host}}/api/setup/admin
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "fullName": "Super Admin",
+  "email": "admin@test.com",
+  "password": "Password123!"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Register (3.2.1 / 3.3.2) — after setup + AllowPublicRegistration
+### 403 AUTH_017 if setup incomplete (use /api/setup/admin first)
+### 201 → User role only (never SuperAdmin)
 ### ---------------------------------------------------------------------------
 # @name register
 POST {{host}}/api/auth/register

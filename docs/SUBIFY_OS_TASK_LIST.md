@@ -2,9 +2,9 @@
 
 | Alan | Değer |
 | ---- | ----- |
-| **Sürüm** | 1.2 |
+| **Sürüm** | 1.3 |
 | **Durum** | Aktif — uygulama sırası |
-| **Son güncelleme** | 2026-03-22 |
+| **Son güncelleme** | 2026-07-22 |
 | **Kaynak** | [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md), [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) |
 | **Kullanım** | Grok’a görev verirken **task numarasını** yaz (ör. `3.2.4` veya `T-3.2.4`) |
 
@@ -12,34 +12,64 @@
 
 ## Ürün kararları (kapsam & erteleme)
 
+### E-posta modeli (özet — SMTP BYOK)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SuperAdmin (setup veya Settings)                               │
+│    → Email özelliğini AÇ                                        │
+│    → SMTP: Host, Port, User, Password, FromName, FromEmail      │
+│    → Kaydet (SystemSettings)                                    │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+              SmtpEnabled + host/from dolu mu?
+                     │              │
+                    Evet           Hayır
+                     │              │
+              Faz 15 motor    Noop / SET_003
+              gerçek mail     (gönderim yok)
+```
+
+| Aşama | Ne yapılır | Ne zaman |
+| ----- | ---------- | -------- |
+| **A — Ayar saklama** | SMTP alanları setup + SuperAdmin Settings | **Şimdi** (3S.5, 7.3) — entity/API |
+| **B — Gönderim motoru** | `IEmailSender`, test mail, forgot, invite mail, yenileme maili | **Faz 15** (core bitince) |
+| **C — Confirm** | Register e-posta doğrulama | **Yok (iptal)** — SMTP açık olsa bile |
+
 ### Şimdi / MVP
 
 | Konu | Karar |
 | ---- | ----- |
-| **E-posta confirm** | **Yok** — register sonrası hemen login (`EmailConfirmed = true`) |
-| **İlk kurulum (Setup Wizard)** | **Var** — e-ticaret kurulumu gibi; Super Admin → opsiyonel kullanıcılar → opsiyonel SMTP/AI → hazır |
-| **Şifre sıfırlama (şimdi)** | **Oturum içi change-password** + **SuperAdmin kullanıcı şifresini sıfırlar** |
-| **Invite** | Link API/UI’da üretilir; mail ile gönderme **sonra** (Faz 15) |
-| **SMTP / AI ayarları** | Setup + SystemSettings’te **saklanır** (kullanıcı kendi SMTP/AI key’ini girer) |
-| **E-posta gönderim motoru** | **Sonraya** — proje core bitince Faz 15 (`IEmailSender`, test mail, forgot-mail, reminder, invite-mail) |
+| **E-posta confirm** | **Yok (kalıcı)** — register sonrası hemen login (`EmailConfirmed = true`). SMTP açılsa bile confirm **zorunlu akış olmaz**. |
+| **İlk kurulum (Setup Wizard)** | **Var** — Super Admin → opsiyonel kullanıcılar → **opsiyonel SMTP** → opsiyonel AI → Finish |
+| **SMTP ayarları** | Setup’ta veya sonradan SuperAdmin Settings’te girilir/düzenlenir; **sadece kaydedilir** |
+| **E-posta gönderim** | `SmtpEnabled` + geçerli SMTP → mail kullanıcının sunucusundan (Faz 15 motor) |
+| **Şifre (şimdi)** | `change-password` (oturum) + SuperAdmin `reset-password` (mail yok) |
+| **Şifremi unuttum (sonra)** | SMTP açıkken e-posta linki (Faz 15) — kapalıysa yine admin reset |
+| **Invite** | Link UI’da her zaman; **mail ile gönderme** SMTP açıksa (Faz 15) |
 
-### Kapsam dışı (iptal)
+### Kapsam dışı (iptal) — `[-]`
 
-| Konu | Karar |
-| ---- | ----- |
-| **E-posta doğrulama (confirm-email / resend)** | Uygulanmayacak (`[-]`) |
-| **Freemium / premium / ödeme** | Yok |
+| Konu | Karar | Neden |
+| ---- | ----- | ----- |
+| **Confirm-email / resend** | Uygulanmayacak | Self-host: SuperAdmin zaten kullanıcıları bilir; friction + mailbox bağımlılığı istemiyoruz |
+| **Freemium / ödeme** | Yok | Manifesto |
 
-### Ertelenen (Faz 15 — EmailSend, core sonrası)
+> **Confirm ≠ SMTP.** SMTP açılınca “forgot password mail” ve “invite mail” gelir; **hesap e-posta doğrulama (confirm) gelmez**. İleride opsiyonel “mail doğrula” istenir ürün kararı yeniden alınır ve yeni task açılır.
+
+### Ertelenen (Faz 15 — EmailSend, core sonrası) — listede **kalmalı**
+
+Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yapılacak. 3.2’de `[-]` ile unutulmasın diye Faz 15’te `[ ]` olarak dururlar:
 
 | Konu | Not |
 | ---- | --- |
-| `IEmailSender` + SmtpEmailSender | Kullanıcının girdiği SMTP ile |
-| Forgot-password e-posta + token reset | “Şifremi unuttum” → mail link |
-| Invite / yenileme hatırlatma maili | SMTP doluysa |
-| Test SMTP mail | SuperAdmin |
+| `IEmailSender` + `SmtpEmailSender` | SystemSettings SMTP oku; disabled → noop |
+| Test SMTP mail | SuperAdmin “test gönder” |
+| Forgot-password + mail token reset | SMTP kapalı → anlamlı hata; açık → mail |
+| Invite e-posta | SMTP açıksa; değilse sadece kopyalanabilir link |
+| Renewal reminder mail | `daysBeforeRenewal` + SMTP |
 
-**Auth sonucu (şimdi):** Confirm yok. Şifre unutma: admin reset veya (sonra) e-posta ile forgot.
+**Auth sonucu (şimdi):** Confirm yok. Şifre: change + admin reset. Mail: ayar kaydı setup/settings; **gönderim Faz 15**.
 
 ---
 
@@ -450,15 +480,13 @@
   **Açıklama:** ~~Rate limited confirm mail~~  
   **Durum:** **İptal** — e-posta gönderimi yok.
 
-- [-] **3.2.7** `POST /api/auth/forgot-password` (**Faz 15** — e-posta motoru sonrası)  
-  **Açıklama:** Enumeration-safe; SMTP yoksa anlamlı hata (`SET_003` / “e-posta yapılandırılmadı”). Token mail ile gider.  
-  **Öncelik:** P3 · **Bağımlı:** 15.1, 15.2  
-  **Durum:** **Ertelendi / iptal edildi 3.2 kapsamında** — Faz 15’te açılacak.
+- [ ] **3.2.7** `POST /api/auth/forgot-password` → **bkz. Faz 15** (`15.2.x`)  
+  **Açıklama:** Enumeration-safe; SMTP kapalıysa `SET_003`; açıksa reset mail.  
+  **Öncelik:** P3 · **Durum:** Ertelendi (3.2’de implement edilmez; **listede kalsın**, iş Faz 15).
 
-- [-] **3.2.8** `POST /api/auth/reset-password` (token ile; **Faz 15** ile birlikte)  
-  **Açıklama:** Email + code/token + newPassword (forgot-password mail akışı).  
-  **Öncelik:** P3 · **Bağımlı:** 3.2.7, 15.x  
-  **Durum:** **Ertelendi / iptal edildi 3.2 kapsamında** — Faz 15’te açılacak.
+- [ ] **3.2.8** `POST /api/auth/reset-password` (mail token) → **bkz. Faz 15**  
+  **Açıklama:** Email + code/token + newPassword.  
+  **Öncelik:** P3 · **Durum:** Ertelendi (Faz 15; 3.2.14/3.2.15 mail’siz şifre yolu şimdi var).
 
 - [x] **3.2.9** EmailConfirmed / confirm engelini kaldır  
   **Açıklama:** Register’da `EmailConfirmed = true`. LoginHandler’daki `EmailNotConfirmed` kontrolünü **kaldır**.  
@@ -497,43 +525,52 @@
 
 ### 3.3 SuperAdmin bootstrap ve roller
 
-- [ ] **3.3.1** İlk kullanıcı = SuperAdmin  
+- [x] **3.3.1** İlk kullanıcı = SuperAdmin  
   **Açıklama:** Transaction + “herhangi SuperAdmin var mı?”; race-safe.  
-  **Öncelik:** P0 · **Bağımlı:** 2.3.4
+  **Öncelik:** P0 · **Bağımlı:** 2.3.4 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SuperAdminBootstrap.TryAssignFirstSuperAdminAsync` + `POST /api/setup/admin`; concurrent demote → AUTH_019.
 
-- [ ] **3.3.2** Sonraki public register = User rolü  
+- [x] **3.3.2** Sonraki public register = User rolü  
   **Açıklama:**  
-  **Öncelik:** P0 · **Bağımlı:** 3.3.1
+  **Öncelik:** P0 · **Bağımlı:** 3.3.1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `RegisterHandler` her zaman `AppRoles.User` (setup complete + AllowPublicRegistration).
 
-- [ ] **3.3.3** Authorization policies  
+- [x] **3.3.3** Authorization policies  
   **Açıklama:** `RequireSuperAdmin`, `RequireAdminOrAbove`, `RequireAuthenticatedUser`.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `AuthPolicies` + DI `AddAuthorization(AuthPolicies.Configure)`.
 
-- [ ] **3.3.4** `[Authorize]` / `.RequireAuthorization()` endpoint’lerde  
+- [x] **3.3.4** `[Authorize]` / `.RequireAuthorization()` endpoint’lerde  
   **Açıklama:** Auth public; diğerleri protected.  
-  **Öncelik:** P0 · **Bağımlı:** 3.3.3
+  **Öncelik:** P0 · **Bağımlı:** 3.3.3 · **Tamamlandı:** 2026-07-22  
+  **Not:** `FallbackPolicy = RequireAuthenticatedUser`; public: auth/setup/health/docs `AllowAnonymous`.
 
-- [ ] **3.3.5** SuperAdmin transfer (opsiyonel)  
+- [x] **3.3.5** SuperAdmin transfer (opsiyonel)  
   **Açıklama:** v1 dışı bırakılabilir; dokümante et.  
-  **Öncelik:** P3
+  **Öncelik:** P3 · **Tamamlandı:** 2026-07-22  
+  **Not:** v1 dışı — `Authorization/README.md`; implement yok.
 
-- [ ] **3.3.6** İlk kullanıcı yalnızca Setup üzerinden  
+- [x] **3.3.6** İlk kullanıcı yalnızca Setup üzerinden  
   **Açıklama:** `IsSetupComplete == false` iken normal `/register` kapalı veya setup’a yönlendir; SuperAdmin sadece `POST /api/setup/admin`.  
-  **Öncelik:** P0 · **Bağımlı:** 3S.2
+  **Öncelik:** P0 · **Bağımlı:** 3S.2 · **Tamamlandı:** 2026-07-22  
+  **Not:** Register → AUTH_017 SetupRequired; `GET /api/setup/status` + `POST /api/setup/admin`.
 
 ### 3.4 Identity güvenlik ayarları
 
-- [ ] **3.4.1** Password policy  
+- [x] **3.4.1** Password policy  
   **Açıklama:** Min 8, upper/lower/digit (mevcut); dokümante.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `IdentitySecurityDefaults` + `PasswordRuleBuilder` + Identity options; special char zorunlu değil.
 
-- [ ] **3.4.2** Lockout ayarları  
+- [x] **3.4.2** Lockout ayarları  
   **Açıklama:** Max failed attempts, lockout süresi; AUTH_005.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** 5 fail / 15 dk; `IdentityOptionsConfiguration`; login AUTH_005.
 
-- [ ] **3.4.3** Unique email enforce  
+- [x] **3.4.3** Unique email enforce  
   **Açıklama:** Identity + DB.  
-  **Öncelik:** P0 · **Durum:** options mevcut; test et.
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `RequireUniqueEmail`; pre-check + Identity Duplicate* → AUTH_008; tests.
 
 ---
 
@@ -1517,8 +1554,10 @@
 
 # FAZ 15 — EmailSend altyapısı (core ürün bittikten sonra)
 
-> Kullanıcı setup/settings’te **kendi SMTP** bilgilerini girebilir (MVP’de kayıt).  
-> **Gönderim motoru, test mail, forgot-password mail, invite mail, yenileme maili** bu fazda açılır.
+> **Ayar kaydı şimdi (3S.5 / 7.3):** SuperAdmin SMTP host/port/user/password/from + `SmtpEnabled`.  
+> **Gönderim bu fazda:** `SmtpEnabled==true` ve zorunlu alanlar doluysa kullanıcının SMTP’si ile mail; aksi halde noop + net hata.  
+> **Confirm bu faza dahil değil** (iptal kararı).  
+> Ertelenen auth task’ları: `3.2.7`, `3.2.8`, `7.2.4`, reminder job’ları — burada implement edilir.
 
 ### 15.1 Motor
 
@@ -1612,6 +1651,6 @@
 
 ---
 
-*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir (sürüm 1.2).*  
+*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir (sürüm 1.3).*  
 *Çelişkide: (1) Bu listedeki ürün kararları · (2) Manifesto · (3) PRD · (4) legacy docs.*  
-*Özet: **Confirm yok** · **Setup wizard var** · **Şifre: change + admin reset şimdi; forgot-mail Faz 15** · **EmailSend core sonrası**.*
+*Özet: **Confirm yok (kalıcı)** · **SMTP ayar kaydı setup/settings (şimdi)** · **Gönderim motoru Faz 15 (SmtpEnabled)** · **Şifre: change + admin reset şimdi; forgot-mail Faz 15**.*
