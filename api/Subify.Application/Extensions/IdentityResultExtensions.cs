@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Subify.Domain.Shared;
 
 
-namespace Subify.Api.Common.Extensions;
+namespace Subify.Application.Extensions;
 
 public static class IdentityResultExtensions
 {

@@ -58,8 +58,7 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
             };
         });
 
-        
-
+        services.AddAuthorization();
 
         return services;
     }

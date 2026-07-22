@@ -1,105 +1,158 @@
 # ========================================
-# Genel Dosyalar
+# Subify OS — root .gitignore
 # ========================================
+
+# ----------------------------------------
+# OS / editor noise
+# ----------------------------------------
 .DS_Store
 Thumbs.db
-*.log
-*.tmp
-*.temp
-*.bak
+Desktop.ini
 *.swp
 *.swo
-.env
+*~
+*.bak
+*.tmp
+*.temp
 *.cache
 
-# IDE / Editor
-.vscode/
-.idea/
-*.code-workspace
-.vs/
+# ----------------------------------------
+# Secrets & environment
+# ----------------------------------------
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+secrets.json
+**/secrets/
+# ASP.NET user-secrets are usually outside the repo; still ignore local overrides
+appsettings.*.local.json
+appsettings.Local.json
+# Production secrets must never be committed (use env / secret store)
+appsettings.Production.json
 
-# ========================================
-# API - ASP.NET Core Web API
-# ========================================
-!api/.gitignore
-
-# ASP.NET Core / Visual Studio
-**/bin/
-**/obj/
-**/bin\\*/
-**/out/
-**/PublishProfiles/
-*.sln
-*.suo
-*.user
-*.csproj.user
-*.launchSettings.json
-appsettings.*.json
-*.db
-*.sqlite
-*.db-shm
-*.db-wal
-
-# ========================================
-# WEB - Next.js
-# ========================================
-!web/.gitignore
-
-# Node.js / Next.js
-**/node_modules/
-**/.next/
-**/out/
-**/build/
-**/dist/
-**/.env.local
-**/.env.development.local
-**/.env.test.local
-**/.env.production.local
-**/.vercel
-**/.swc
+# ----------------------------------------
+# Logs
+# ----------------------------------------
+*.log
+logs/
+**/logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# ========================================
-# MOBILE - Flutter
-# ========================================
-!mobile/.gitignore
+# ----------------------------------------
+# IDE / editors
+# ----------------------------------------
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.code-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.User
+*.rsuser
 
-# Flutter / Dart
-**/build/
-**/.dart_tool/
-**/.pub-cache/
-**/.metadata
-**/.flutter-plugins
-**/.flutter-plugins-dependencies
-**/pubspec.lock
+# ----------------------------------------
+# .NET / ASP.NET Core
+# ----------------------------------------
+**/bin/
+**/obj/
+**/out/
+**/publish/
+**/PublishProfiles/
+*.dll
+*.exe
+*.pdb
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+TestResults/
+**/TestResults/
+coverage/
+**/coverage/
+*.coverage
+*.coveragexml
+# Local tool restore
+.dotnet/
+.packages/
 
-# Flutter iOS/Android
-**/ios/Pods/
-**/ios/Podfile.lock
-**/ios/.symlinks/
-**/android/app/debug/
-**/android/app/profile/
-**/android/app/release/
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
 
-# ========================================
-# DOCS
-# ========================================
-!docs/.gitignore
+# ----------------------------------------
+# Node / Next.js (web/)
+# ----------------------------------------
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/.vercel
+**/.swc
+**/*.tsbuildinfo
+web/next-env.d.ts
 
-# Docs klasörü (dokümantasyon)
-**/node_modules
-**/.env
-docs/.vitepress/cache
-docs/.vitepress/dist
+# ----------------------------------------
+# Flutter / Dart (mobile/)
+# ----------------------------------------
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/**/doc/api/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/app.flx
+mobile/ios/Flutter/app.zip
+mobile/ios/Flutter/flutter_assets/
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/ios/ServiceDefinitions.json
+mobile/ios/Runner/GeneratedPluginRegistrant.*
+mobile/android/.gradle/
+mobile/android/captures/
+mobile/android/local.properties
+mobile/android/**/GeneratedPluginRegistrant.java
+mobile/android/key.properties
+# App projects usually commit pubspec.lock — do not ignore it
 
-# ========================================
-# Diğer
-# ========================================
+# ----------------------------------------
+# Docker / local data
+# ----------------------------------------
+docker/data/
+**/postgres_data/
+*.sql.gz
+
+# ----------------------------------------
+# Misc
+# ----------------------------------------
 coverage/
 temp/
 tmp/
 *.pid
 *.seed
+.turbo/
+.cache/
+
+# ----------------------------------------
+# Explicitly tracked (do NOT ignore)
+# ----------------------------------------
+# *.sln / *.slnx — solution files are committed
+# Properties/launchSettings.json — local ports; committed for team defaults
+# appsettings.json / appsettings.Development.json — non-secret defaults only
+# !.env.example — sample env for self-host
