@@ -10,9 +10,10 @@ public sealed class NotificationSettingConfiguration : IEntityTypeConfiguration<
     {
         builder.ToTable("NotificationSettings");
 
+        // OS default: email off until SMTP + EmailSend (Faz 15) — task 3.2.11
         builder.Property(n => n.EmailEnabled)
             .IsRequired()
-            .HasDefaultValue(true);
+            .HasDefaultValue(false);
 
         builder.Property(n => n.PushEnabled)
             .IsRequired()

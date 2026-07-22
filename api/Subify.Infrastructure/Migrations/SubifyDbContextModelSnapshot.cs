@@ -486,7 +486,7 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<bool>("EmailEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("PushEnabled")
                         .ValueGeneratedOnAdd()

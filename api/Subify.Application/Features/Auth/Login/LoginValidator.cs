@@ -2,15 +2,15 @@ using FluentValidation;
 
 namespace Subify.Application.Features.Auth.Login;
 
-public class LoginValidator : AbstractValidator<LoginCommand>
+public sealed class LoginValidator : AbstractValidator<LoginCommand>
 {
     public LoginValidator()
     {
         RuleFor(x => x.Email)
-        .NotEmpty().WithMessage("Email alanı zorunludur.")
-        .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.");
+            .NotEmpty().WithMessage("Email is required.")
+            .EmailAddress().WithMessage("Email format is invalid.");
 
         RuleFor(x => x.Password)
-        .NotEmpty().WithMessage("Şifre alanı zorunludur.");
+            .NotEmpty().WithMessage("Password is required.");
     }
 }

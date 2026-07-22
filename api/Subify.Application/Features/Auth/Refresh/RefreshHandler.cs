@@ -10,7 +10,7 @@ using Subify.Domain.Shared;
 namespace Subify.Application.Features.Auth.Refresh;
 
 /// <summary>
-/// Rotates refresh tokens (task 3.1.3):
+/// Rotates refresh tokens (tasks 3.1.3 / 3.2.3 — <c>POST /api/auth/refresh-token</c>):
 /// active token → revoke as <c>replaced</c> + issue new pair;
 /// revoked/reused token → <c>theft_detected</c> and revoke all user sessions.
 /// </summary>

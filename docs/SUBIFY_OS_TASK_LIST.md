@@ -422,21 +422,25 @@
 
 ### 3.2 Auth endpoint’leri
 
-- [~] **3.2.1** `POST /api/auth/register`  
+- [x] **3.2.1** `POST /api/auth/register`  
   **Açıklama:** FullName, Email, Password; validation; duplicate email 409. Register’da `EmailConfirmed = true` (confirm yok).  
-  **Durum:** Mevcut handler; SuperAdmin yok (3.3.x).
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** User rolü atanır; SuperAdmin setup’ta (3.3/3S); FullName max 200; AUTH_008 Conflict; `RegisterHandlerTests`.
 
-- [~] **3.2.2** `POST /api/auth/login`  
+- [x] **3.2.2** `POST /api/auth/login`  
   **Açıklama:** Email/password; tokens; lockout. **EmailConfirmed kontrolü yapılmaz / her zaman geçer.**  
-  **Durum:** Mevcut; 3.2.9 ile confirm engeli kaldırılacak.
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Anti-enumeration AUTH_001; lockout 5/15dk AUTH_005; refresh hash persist; `LoginHandlerTests`.
 
-- [ ] **3.2.3** `POST /api/auth/refresh-token`  
+- [x] **3.2.3** `POST /api/auth/refresh-token`  
   **Açıklama:** Body refreshToken → yeni access+refresh.  
-  **Öncelik:** P0 · **Bağımlı:** 3.1.3
+  **Öncelik:** P0 · **Bağımlı:** 3.1.3 · **Tamamlandı:** 2026-07-22  
+  **Not:** `POST /api/auth/refresh-token` (+ alias `/refresh`); `RefreshHandler` rotation; `.http` örnekleri; tests 3.1.3.
 
-- [ ] **3.2.4** `POST /api/auth/logout`  
+- [x] **3.2.4** `POST /api/auth/logout`  
   **Açıklama:** Refresh revoke; reason `logout`.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `{ refreshToken }` ve/veya `allSessions`; reason `logout`; idempotent.
 
 - [-] **3.2.5** `GET /api/auth/confirm-email`  
   **Açıklama:** ~~userId + code; Identity confirm~~  
@@ -446,43 +450,50 @@
   **Açıklama:** ~~Rate limited confirm mail~~  
   **Durum:** **İptal** — e-posta gönderimi yok.
 
-- [ ] **3.2.7** `POST /api/auth/forgot-password` (**Faz 15** — e-posta motoru sonrası)  
+- [-] **3.2.7** `POST /api/auth/forgot-password` (**Faz 15** — e-posta motoru sonrası)  
   **Açıklama:** Enumeration-safe; SMTP yoksa anlamlı hata (`SET_003` / “e-posta yapılandırılmadı”). Token mail ile gider.  
   **Öncelik:** P3 · **Bağımlı:** 15.1, 15.2  
-  **Durum:** Ertelendi (EmailSend core sonrası).
+  **Durum:** **Ertelendi / iptal edildi 3.2 kapsamında** — Faz 15’te açılacak.
 
-- [ ] **3.2.8** `POST /api/auth/reset-password` (token ile; **Faz 15** ile birlikte)  
+- [-] **3.2.8** `POST /api/auth/reset-password` (token ile; **Faz 15** ile birlikte)  
   **Açıklama:** Email + code/token + newPassword (forgot-password mail akışı).  
   **Öncelik:** P3 · **Bağımlı:** 3.2.7, 15.x  
-  **Durum:** Ertelendi.
+  **Durum:** **Ertelendi / iptal edildi 3.2 kapsamında** — Faz 15’te açılacak.
 
-- [ ] **3.2.9** EmailConfirmed / confirm engelini kaldır  
+- [x] **3.2.9** EmailConfirmed / confirm engelini kaldır  
   **Açıklama:** Register’da `EmailConfirmed = true`. LoginHandler’daki `EmailNotConfirmed` kontrolünü **kaldır**.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Register zaten confirmed; Login’de confirm kontrolü yok; Identity `RequireConfirmedEmail=false`.
 
-- [ ] **3.2.10** Login response’a user özeti ekle  
+- [x] **3.2.10** Login response’a user özeti ekle  
   **Açıklama:** id, email, fullName, locale, roles (plan yok); opsiyonel `isSetupComplete`.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `LoginUserSummary` + roles + `isSetupComplete`.
 
-- [ ] **3.2.11** Register sonrası otomatik NotificationSettings satırı  
+- [x] **3.2.11** Register sonrası otomatik NotificationSettings satırı  
   **Açıklama:** defaults: `emailEnabled=false` (mail motoru yokken), `daysBeforeRenewal` in-app için.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `NotificationSetting.CreateDefaults`; email=false, days=3.
 
-- [ ] **3.2.12** Auth endpoint OpenAPI örnekleri / Produces düzelt  
+- [x] **3.2.12** Auth endpoint OpenAPI örnekleri / Produces düzelt  
   **Açıklama:** Status kodları doğru.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** Login/register/refresh/logout/change-password/admin-reset Produces + descriptions.
 
-- [ ] **3.2.13** Public registration flag  
+- [x] **3.2.13** Public registration flag  
   **Açıklama:** SystemSettings `AllowPublicRegistration` (setup’ta seçilir; env override opsiyonel). Setup tamamlanmadan public reg kapalı (sadece setup admin oluşturur).  
-  **Öncelik:** P0 · **Bağımlı:** 3S.1, 3.3.1
+  **Öncelik:** P0 · **Bağımlı:** 3S.1, 3.3.1 · **Tamamlandı:** 2026-07-22  
+  **Not:** Setup incomplete → sadece ilk kullanıcı; setup complete → `AllowPublicRegistration` zorunlu.
 
-- [ ] **3.2.14** `POST /api/auth/change-password` (oturum açık)  
+- [x] **3.2.14** `POST /api/auth/change-password` (oturum açık)  
   **Açıklama:** currentPassword + newPassword; kendi şifresini değiştirir.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Auth required; tüm refresh session revoke.
 
-- [ ] **3.2.15** `POST /api/admin/users/{id}/reset-password` (SuperAdmin)  
+- [x] **3.2.15** `POST /api/admin/users/{id}/reset-password` (SuperAdmin)  
   **Açıklama:** Admin başka kullanıcının şifresini yeni şifre ile set eder (mail gerekmez — self-host unutma senaryosu).  
-  **Öncelik:** P0 · **Bağımlı:** 3.3.3
+  **Öncelik:** P0 · **Bağımlı:** 3.3.3 · **Tamamlandı:** 2026-07-22  
+  **Not:** Policy `RequireSuperAdmin`; target session revoke; mail yok.
 
 ### 3.3 SuperAdmin bootstrap ve roller
 

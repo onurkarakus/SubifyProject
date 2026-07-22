@@ -54,10 +54,11 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
-### Auth — Register
+### Auth — Register (3.2.1)
 ### Body: RegisterCommand { fullName, email, password }
-### 201 Created → RegisterResponse { email, message, userId, expiration }
-### 409 Conflict → email already registered
+### 201 Created → RegisterResponse { userId, email, fullName, message }
+### 409 Conflict → AUTH_008 email already registered
+### EmailConfirmed=true (no confirm mail); role=User
 ### ---------------------------------------------------------------------------
 # @name register
 POST {{host}}/api/auth/register
@@ -89,12 +90,9 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
-### Auth — Login
-### Body: LoginCommand { email, password }
-### 200 OK → LoginResponse { email, accessToken, refreshToken, expiration }
-###
-### Note: Login currently requires EmailConfirmed=true on the user.
-### If register left EmailConfirmed=false, confirm in DB or adjust policy (task 3.2.9).
+### Auth — Login (3.2.2 / 3.2.10)
+### 200 → { accessToken, refreshToken, expiration, user: { id, email, fullName, locale, roles, isSetupComplete } }
+### 401 AUTH_001 · 423 AUTH_005
 ### ---------------------------------------------------------------------------
 # @name login
 POST {{host}}/api/auth/login
@@ -140,11 +138,78 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
-### Example: authenticated call (Bearer)
-### Uncomment / add endpoints as they land (profile, subscriptions, …).
-### accessToken is filled from # @name login when using REST Client chain.
+### Auth — Refresh token (3.2.3) — rotate after login
+### Body: { refreshToken }
+### 200 OK → { accessToken, refreshToken, expiration }
+### 401 AUTH_004 invalid / AUTH_016 reuse (theft)
+### Alias: POST /api/auth/refresh (same handler)
 ### ---------------------------------------------------------------------------
-# @name mePlaceholder
-# GET {{host}}/api/profile
-# Authorization: Bearer {{accessToken}}
-# Accept: application/json
+# @name refreshToken
+POST {{host}}/api/auth/refresh-token
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Refresh token alias
+### ---------------------------------------------------------------------------
+# @name refreshTokenAlias
+POST {{host}}/api/auth/refresh
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "refreshToken": "{{refreshToken.response.body.$.refreshToken}}"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Logout (3.2.4)
+### Body: { refreshToken } and/or { allSessions: true }
+### 204 No Content
+### ---------------------------------------------------------------------------
+# @name logout
+POST {{host}}/api/auth/logout
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Change password (3.2.14) — requires Bearer
+### ---------------------------------------------------------------------------
+# @name changePassword
+POST {{host}}/api/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "currentPassword": "Password123!",
+  "newPassword": "Password456!"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Admin — Reset user password (3.2.15) — SuperAdmin only
+### ---------------------------------------------------------------------------
+# @name adminResetPassword
+POST {{host}}/api/admin/users/00000000-0000-0000-0000-000000000000/reset-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "newPassword": "TempPass123!"
+}
