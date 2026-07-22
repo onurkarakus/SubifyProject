@@ -415,9 +415,10 @@
   **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
   **Not:** `JwtOptions` resolve/clamp (access 5–1440, refresh 1–90); appsettings + Development; `Authentication/README.md`; `JwtOptionsExpiryTests`.
 
-- [ ] **3.1.5** JWT validation clock skew  
+- [x] **3.1.5** JWT validation clock skew  
   **Açıklama:** TokenValidationParameters.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** `ClockSkewSeconds` (default 30, max 300); `JwtTokenValidation.CreateParameters`; bearer uses resolved skew (ASP.NET 5dk default yok).
 
 ### 3.2 Auth endpoint’leri
 

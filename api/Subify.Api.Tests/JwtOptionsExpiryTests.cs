@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Subify.Domain.Constants;
 using Subify.Infrastructure.Authentication;
 
 namespace Subify.Api.Tests;
@@ -66,8 +67,49 @@ public class JwtOptionsExpiryTests
         Assert.True(refreshOk);
     }
 
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(30, 30)]
+    [InlineData(300, 300)]
+    public void ResolveClockSkew_accepts_valid_seconds(int configured, int expectedSeconds)
+    {
+        var options = new JwtOptions { ClockSkewSeconds = configured };
+        Assert.Equal(TimeSpan.FromSeconds(expectedSeconds), options.ResolveClockSkew());
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(301)]
+    public void ResolveClockSkew_falls_back_outside_hard_range(int configured)
+    {
+        var options = new JwtOptions { ClockSkewSeconds = configured };
+        Assert.Equal(
+            TimeSpan.FromSeconds(JwtOptions.DefaultClockSkewSeconds),
+            options.ResolveClockSkew());
+    }
+
     [Fact]
-    public void Appsettings_declare_both_expiry_keys()
+    public void CreateParameters_applies_resolved_clock_skew()
+    {
+        var options = new JwtOptions
+        {
+            Issuer = "SubifyOS",
+            Audience = "SubifyOSClient",
+            SecretKey = "SuperSecretKeyForSubifyOsProjectWhichNeedsToBeLongEnough",
+            ClockSkewSeconds = 45
+        };
+
+        var parameters = JwtTokenValidation.CreateParameters(options);
+
+        Assert.Equal(TimeSpan.FromSeconds(45), parameters.ClockSkew);
+        Assert.True(parameters.ValidateLifetime);
+        Assert.True(parameters.RequireExpirationTime);
+        Assert.Equal(AppClaimTypes.Subject, parameters.NameClaimType);
+        Assert.Equal(AppClaimTypes.Role, parameters.RoleClaimType);
+    }
+
+    [Fact]
+    public void Appsettings_declare_expiry_and_clock_skew_keys()
     {
         var root = FindRepoRoot();
         var baseJson = Path.Combine(root, "api", "Subify.Api", "appsettings.json");
@@ -86,8 +128,10 @@ public class JwtOptionsExpiryTests
         var jwt = doc.RootElement.GetProperty("JwtOptions");
         Assert.True(jwt.TryGetProperty("ExpirationInMinutes", out var access));
         Assert.True(jwt.TryGetProperty("RefreshTokenExpirationDays", out var refresh));
+        Assert.True(jwt.TryGetProperty("ClockSkewSeconds", out var skew));
         Assert.InRange(access.GetInt32(), JwtOptions.MinAccessTokenMinutes, JwtOptions.MaxAccessTokenMinutes);
         Assert.InRange(refresh.GetInt32(), JwtOptions.MinRefreshTokenDays, JwtOptions.MaxRefreshTokenDays);
+        Assert.InRange(skew.GetInt32(), JwtOptions.MinClockSkewSeconds, JwtOptions.MaxClockSkewSeconds);
     }
 
     private static string FindRepoRoot()
