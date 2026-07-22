@@ -59,7 +59,8 @@ public class Program
 
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                // FallbackPolicy requires auth; docs stay public (task 3.3.4)
+                app.MapOpenApi().AllowAnonymous();
                 app.MapScalarApiReference(options =>
                 {
                     options
@@ -68,11 +69,12 @@ public class Program
                         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
                         // Prefer HTTP Bearer so Scalar shows a token field (not OAuth client flow)
                         .AddPreferredSecuritySchemes("Bearer");
-                });
+                }).AllowAnonymous();
 
                 // Convenience: open API docs at root in development
                 app.MapGet("/", () => Results.Redirect("/scalar/v1"))
-                    .ExcludeFromDescription();
+                    .ExcludeFromDescription()
+                    .AllowAnonymous();
             }
 
             // Avoid forcing HTTPS redirect when running the local http profile

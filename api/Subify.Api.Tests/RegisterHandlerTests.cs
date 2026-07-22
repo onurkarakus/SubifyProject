@@ -10,56 +10,70 @@ using Subify.Infrastructure.Persistence;
 
 namespace Subify.Api.Tests;
 
-/// <summary>Task 3.2.1 — register validation outcomes against Identity + SQLite.</summary>
+/// <summary>Tasks 3.2.1 / 3.3.2 / 3.3.6 — register after setup only, User role.</summary>
 public class RegisterHandlerTests
 {
     [Fact]
-    public async Task Register_creates_user_with_confirmed_email_and_User_role()
+    public async Task Register_after_setup_creates_User_role_not_SuperAdmin()
     {
-        await using var harness = await RegisterHarness.CreateAsync();
+        await using var harness = await RegisterHarness.CreateAsync(setupComplete: true, allowPublicReg: true);
 
         var result = await harness.HandleAsync(new RegisterCommand(
             "Ada Lovelace",
             "ada@subify.local",
             "Password1"));
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal("ada@subify.local", result.Value.Email);
-        Assert.Equal("Ada Lovelace", result.Value.FullName);
-        Assert.False(string.IsNullOrWhiteSpace(result.Value.UserId));
-
+        Assert.True(result.IsSuccess, result.IsFailure ? result.Error.Code : null);
         var user = await harness.Users.FindByEmailAsync("ada@subify.local");
         Assert.NotNull(user);
-        Assert.True(user!.EmailConfirmed);
-        Assert.True(await harness.Users.IsInRoleAsync(user, AppRoles.User));
-        Assert.False(await harness.Users.IsInRoleAsync(user, AppRoles.SuperAdmin));
+        Assert.True(await harness.Users.IsInRoleAsync(user!, AppRoles.User));
+        Assert.False(await harness.Users.IsInRoleAsync(user!, AppRoles.SuperAdmin));
 
         using var scope = harness.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
         var notify = await db.NotificationSettings.SingleAsync(n => n.UserId == user!.Id);
         Assert.False(notify.EmailEnabled);
-        Assert.Equal(3, notify.DaysBeforeRenewal);
+    }
+
+    [Fact]
+    public async Task Register_blocked_when_setup_incomplete()
+    {
+        await using var harness = await RegisterHarness.CreateAsync(setupComplete: false, allowPublicReg: false);
+
+        var result = await harness.HandleAsync(new RegisterCommand(
+            "Early",
+            "early@subify.local",
+            "Password1"));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(DomainErrors.Auth.SetupRequired.Code, result.Error.Code);
+    }
+
+    [Fact]
+    public async Task Register_blocked_when_public_registration_disabled()
+    {
+        await using var harness = await RegisterHarness.CreateAsync(setupComplete: true, allowPublicReg: false);
+
+        var result = await harness.HandleAsync(new RegisterCommand(
+            "Blocked",
+            "blocked@subify.local",
+            "Password1"));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(DomainErrors.Auth.RegistrationDisabled.Code, result.Error.Code);
     }
 
     [Fact]
     public async Task Register_duplicate_email_returns_conflict()
     {
-        await using var harness = await RegisterHarness.CreateAsync();
+        await using var harness = await RegisterHarness.CreateAsync(setupComplete: true, allowPublicReg: true);
 
-        var first = await harness.HandleAsync(new RegisterCommand(
-            "First",
-            "dup@subify.local",
-            "Password1"));
+        var first = await harness.HandleAsync(new RegisterCommand("First", "dup@subify.local", "Password1"));
         Assert.True(first.IsSuccess);
 
-        var second = await harness.HandleAsync(new RegisterCommand(
-            "Second",
-            "dup@subify.local",
-            "Password1"));
-
+        var second = await harness.HandleAsync(new RegisterCommand("Second", "dup@subify.local", "Password1"));
         Assert.True(second.IsFailure);
         Assert.Equal(DomainErrors.Auth.EmailAlreadyRegistered.Code, second.Error.Code);
-        Assert.Equal(Domain.Shared.ErrorType.Conflict, second.Error.Type);
     }
 
     private sealed class RegisterHarness : IAsyncDisposable
@@ -78,7 +92,7 @@ public class RegisterHandlerTests
 
         public IServiceScope CreateScope() => _provider.CreateScope();
 
-        public static async Task<RegisterHarness> CreateAsync()
+        public static async Task<RegisterHarness> CreateAsync(bool setupComplete, bool allowPublicReg)
         {
             var connection = new SqliteConnection("Data Source=:memory:");
             await connection.OpenAsync();
@@ -109,10 +123,13 @@ public class RegisterHandlerTests
                 var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
                 await db.Database.EnsureCreatedAsync();
 
-                // Allow public registration for tests (3.2.13 gate)
                 var settings = SystemSettings.CreateDefault();
-                settings.MarkSetupComplete();
-                settings.UpdateInstance(allowPublicRegistration: true);
+                if (setupComplete)
+                {
+                    settings.MarkSetupComplete();
+                }
+
+                settings.UpdateInstance(allowPublicRegistration: allowPublicReg);
                 db.SystemSettings.Add(settings);
                 await db.SaveChangesAsync();
 

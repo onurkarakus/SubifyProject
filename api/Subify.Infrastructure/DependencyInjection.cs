@@ -7,6 +7,7 @@ using Subify.Application.Common.Interfaces;
 using Subify.Domain.Entities;
 using Subify.Infrastructure.Authentication;
 using Subify.Infrastructure.Authorization;
+using Subify.Infrastructure.Identity;
 using Subify.Infrastructure.Persistence;
 using Subify.Infrastructure.Persistence.Seeding;
 
@@ -21,24 +22,8 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
         // Task 2.3.3: IDataSeeder implementations (auto-discovered in this assembly)
         services.AddDataSeeders();
 
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-        {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 8;
-            options.User.RequireUniqueEmail = true;
-
-            // Task 3.2.2 — brute-force lockout (no email confirm gate)
-            options.Lockout.AllowedForNewUsers = true;
-            options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-
-            // OS: confirm flow yok; Identity still tracks the flag (register sets true)
-            options.SignIn.RequireConfirmedEmail = false;
-            options.SignIn.RequireConfirmedAccount = false;
-        })
+        // Task 3.4 — password, lockout, unique email (see IdentitySecurityDefaults)
+        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(IdentityOptionsConfiguration.Apply)
         .AddEntityFrameworkStores<SubifyDbContext>()
         .AddDefaultTokenProviders();
 

@@ -1,10 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Subify.Application.Common.Identity;
 using Subify.Application.Common.Interfaces;
 using Subify.Application.Extensions;
 using Subify.Domain.Common;
-using Subify.Domain.Constants;
 using Subify.Domain.Entities;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
@@ -12,8 +12,8 @@ using Subify.Domain.Shared;
 namespace Subify.Application.Features.Auth.Register;
 
 /// <summary>
-/// Public registration (tasks 3.2.1 / 3.2.11 / 3.2.13).
-/// Assigns User role + default NotificationSettings.
+/// Public registration (3.2.x / 3.3.2 / 3.3.6).
+/// Always assigns <c>User</c> after setup. Blocked while setup incomplete (use setup admin).
 /// </summary>
 public sealed class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
 {
@@ -62,16 +62,14 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, Result<Re
             return Result.Failure<RegisterResponse>(createResult.GetErrors());
         }
 
-        var roleResult = await _userManager.AddToRoleAsync(user, AppRoles.User);
-        if (!roleResult.Succeeded)
+        // Task 3.3.2 — public register is always User (never SuperAdmin)
+        var roleResult = await SuperAdminBootstrap.AssignUserRoleAsync(_userManager, user);
+        if (roleResult.IsFailure)
         {
-            return Result.Failure<RegisterResponse>(roleResult.GetErrors());
+            return Result.Failure<RegisterResponse>(roleResult.Error);
         }
 
-        // Task 3.2.11 — notification defaults
-        var hasSettings = await _db.NotificationSettings
-            .AnyAsync(n => n.UserId == user.Id, cancellationToken);
-        if (!hasSettings)
+        if (!await _db.NotificationSettings.AnyAsync(n => n.UserId == user.Id, cancellationToken))
         {
             await _db.NotificationSettings.AddAsync(
                 NotificationSetting.CreateDefaults(user.Id),
@@ -87,9 +85,8 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, Result<Re
     }
 
     /// <summary>
-    /// Task 3.2.13: block public register until setup complete and AllowPublicRegistration.
-    /// If no SystemSettings row yet, allow (dev bootstrap) unless explicitly seeded closed.
-    /// When IsSetupComplete=false after settings exist, only setup wizard should create admin.
+    /// 3.3.6: setup incomplete → no public register (SuperAdmin via /api/setup/admin).
+    /// After setup: require AllowPublicRegistration.
     /// </summary>
     private async Task<Result> EnsurePublicRegistrationAllowedAsync(CancellationToken cancellationToken)
     {
@@ -97,20 +94,9 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, Result<Re
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (settings is null)
+        if (settings is null || !settings.IsSetupComplete)
         {
-            // First boot without seed race — allow
-            return Result.Success();
-        }
-
-        if (!settings.IsSetupComplete)
-        {
-            // Setup incomplete: only first user may register (dev / pre-wizard).
-            // After any user exists, further public register waits for setup (3S / 3.3).
-            var anyUser = await _userManager.Users.AnyAsync(cancellationToken);
-            return anyUser
-                ? Result.Failure(DomainErrors.Auth.RegistrationDisabled)
-                : Result.Success();
+            return Result.Failure(DomainErrors.Auth.SetupRequired);
         }
 
         if (!settings.AllowPublicRegistration)

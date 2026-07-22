@@ -30,6 +30,26 @@ public static class DomainErrors
         public static readonly Error EmailNotConfirmed = Error.Failure("AUTH_013", "Email Not Confirmed", "The email address is not confirmed.");
         public static readonly Error RegistrationDisabled = Error.Forbidden("AUTH_014", "Registration Disabled", "Public registration is disabled. Ask an administrator for an invite.");
         public static readonly Error InvalidInviteToken = Error.Failure("AUTH_015", "Invalid Invite Token", "The invite token is invalid or has expired.");
+        public static readonly Error SetupRequired = Error.Forbidden(
+            "AUTH_017",
+            "Setup Required",
+            "First-run setup is not complete. Create the Super Admin via POST /api/setup/admin.");
+        public static readonly Error SuperAdminAlreadyExists = Error.Conflict(
+            "AUTH_018",
+            "Super Admin Already Exists",
+            "A Super Admin already exists for this instance.");
+        public static readonly Error SuperAdminBootstrapRace = Error.Conflict(
+            "AUTH_019",
+            "Super Admin Bootstrap Race",
+            "Another Super Admin was created concurrently. Sign in with the existing Super Admin or use setup status.");
+    }
+
+    public static class Setup
+    {
+        public static readonly Error AlreadyComplete = Error.Conflict(
+            "SETUP_001",
+            "Setup Already Complete",
+            "First-run setup is already finished.");
     }
 
     public static class Subscription
