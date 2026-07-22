@@ -40,12 +40,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
             return Result.Failure<LoginResponse>(DomainErrors.Auth.InvalidCredentials);
-        }
-
-        if (!user.EmailConfirmed)
-        {
-            return Result.Failure<LoginResponse>(DomainErrors.Auth.EmailNotConfirmed);
-        }
+        }        
 
         var tokenResult = await GenerateTokenAsync(user, cancellationToken);
 

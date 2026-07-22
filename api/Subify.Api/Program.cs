@@ -1,6 +1,8 @@
-
-using Subify.Infrastructure;
+using System.Reflection;
+using Scalar.AspNetCore;
+using Subify.Api.Common.Extensions;
 using Subify.Application;
+using Subify.Infrastructure;
 
 namespace Subify.Api;
 
@@ -11,32 +13,41 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddApplicationServices();
-
-        // Add services to the container.
         builder.Services.AddInfrastructureServices(builder.Configuration);
-        
-        builder.Services.AddControllers();
+
         builder.Services.AddHttpContextAccessor();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
+
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options
+                    .WithTitle("Subify OS API")
+                    .WithTheme(ScalarTheme.Purple)
+                    .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            });
+
+            // Convenience: open API docs at root in development
+            app.MapGet("/", () => Results.Redirect("/scalar/v1"))
+                .ExcludeFromDescription();
         }
 
-        app.UseHttpsRedirection();
-
+        // Avoid forcing HTTPS redirect when running the local http profile
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseHttpsRedirection();
+        }
 
         app.UseAuthentication();
         app.UseAuthorization();
 
-
-        app.MapControllers();
+        app.MapEndpoints();
 
         app.Run();
     }
