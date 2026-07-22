@@ -64,7 +64,7 @@
 | --- | ---- | ----------- |
 | 0 | Repo, dokümantasyon, temiz başlangıç | [x] 0.1 + 0.2 tamam |
 | 1 | Core setup (solution, tooling, Scalar) | [~] |
-| 2 | Domain, EF, Postgres, seed altyapısı | [~] |
+| 2 | Domain, EF, Postgres, seed altyapısı | [x] |
 | 3 | Auth, roller, SuperAdmin, şifre, multi-user | [~] |
 | 3S | **First-run Setup Wizard (API + Web)** | [ ] |
 | 4 | Subscription + finansal motor | [ ] |
@@ -379,13 +379,15 @@
 
 ### 2.4 ISubifyDbContext genişletme
 
-- [ ] **2.4.1** DbSet’leri interface’e taşı (gerekli olanlar)  
+- [x] **2.4.1** DbSet’leri interface’e taşı (gerekli olanlar)  
   **Açıklama:** Handler’lar concrete context’e bağımlı olmasın.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `ISubifyDbContext` → tüm OS `DbSet<>` + `Users` + `SaveChangesAsync`; `AddRefreshTokenAsync` korundu; `ISubifyDbContextContractTests`.
 
-- [ ] **2.4.2** Unit of Work / SaveChanges tek giriş  
+- [x] **2.4.2** Unit of Work / SaveChanges tek giriş  
   **Açıklama:** Handler sonunda tutarlı save.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `IUnitOfWork` + `ISubifyDbContext : IUnitOfWork`; `PrepareChangesForSave` tek pipeline; DI aynı scope instance; Persistence README.
 
 ---
 
@@ -393,21 +395,25 @@
 
 ### 3.1 JWT ve token servisi
 
-- [~] **3.1.1** Access token üretimi  
+- [x] **3.1.1** Access token üretimi  
   **Açıklama:** Sub, email, jti, roles, locale claims.  
-  **Durum:** Mevcut; claim isimleri gözden geçir.
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `AccessTokenClaimsFactory` + `AppClaimTypes`; jti UUID v7; locale normalize; iat/nbf/exp; `CurrentUserService` hizalı; claim roundtrip testleri.
 
-- [~] **3.1.2** Refresh token üretimi + hash saklama  
+- [x] **3.1.2** Refresh token üretimi + hash saklama  
   **Açıklama:** SHA256 hash DB; plain sadece response.  
-  **Durum:** Mevcut.
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `RefreshTokenHasher` (SHA-256 hex); `RefreshTokenMaterial`; `JwtOptions.RefreshTokenExpirationDays` (7); Login yalnızca hash persist; lookup API `HashRefreshToken`.
 
-- [ ] **3.1.3** Refresh token rotation implementasyonu  
+- [x] **3.1.3** Refresh token rotation implementasyonu  
   **Açıklama:** Eski revoke + yeni token; reuse detection (`theft_detected`).  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `RefreshHandler` + `POST /api/auth/refresh`; rotate→`replaced`; reuse→`AUTH_016` + tüm session revoke; rotation tests.
 
-- [ ] **3.1.4** Token expiry config  
+- [x] **3.1.4** Token expiry config  
   **Açıklama:** Access (ör. 15–60 dk) ve refresh (ör. 7 gün) appsettings.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `JwtOptions` resolve/clamp (access 5–1440, refresh 1–90); appsettings + Development; `Authentication/README.md`; `JwtOptionsExpiryTests`.
 
 - [ ] **3.1.5** JWT validation clock skew  
   **Açıklama:** TokenValidationParameters.  

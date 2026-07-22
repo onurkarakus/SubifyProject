@@ -8,11 +8,18 @@ using Subify.Domain.Entities;
 
 namespace Subify.Infrastructure.Persistence;
 
+/// <summary>
+/// EF Core DbContext and request-scoped unit of work (tasks 2.4.1 / 2.4.2).
+/// All handler commits should go through <see cref="SaveChangesAsync"/> so GUID fill,
+/// audit timestamps, and soft-delete conversion always run.
+/// </summary>
 public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, ISubifyDbContext
 {
     public SubifyDbContext(DbContextOptions<SubifyDbContext> options) : base(options)
     {
     }
+
+    // Users comes from IdentityDbContext<ApplicationUser, ...> and satisfies ISubifyDbContext.Users.
 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserCategory> UserCategories => Set<UserCategory>();
@@ -42,28 +49,36 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
         builder.ApplySoftDeleteQueryFilters();
     }
 
+    /// <summary>
+    /// Unit-of-work commit (task 2.4.2). Single entry for async persistence from Application.
+    /// </summary>
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        this.AssignGuidIdsOnAdd();
-        ApplyAuditTimestamps();
-        ConvertHardDeletesToSoftDeletes();
-
+        PrepareChangesForSave();
         return base.SaveChangesAsync(cancellationToken);
     }
 
     public override int SaveChanges()
     {
-        this.AssignGuidIdsOnAdd();
-        ApplyAuditTimestamps();
-        ConvertHardDeletesToSoftDeletes();
-
+        PrepareChangesForSave();
         return base.SaveChanges();
     }
 
+    /// <inheritdoc />
     public async Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
     {
         await RefreshTokens.AddAsync(refreshToken, cancellationToken);
         await SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Shared pre-save pipeline — only path that mutates tracked entities before SQL.
+    /// </summary>
+    private void PrepareChangesForSave()
+    {
+        this.AssignGuidIdsOnAdd();
+        ApplyAuditTimestamps();
+        ConvertHardDeletesToSoftDeletes();
     }
 
     private void ApplyAuditTimestamps()

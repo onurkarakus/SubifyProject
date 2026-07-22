@@ -1,7 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Subify.Application.Common.Interfaces;
+using Subify.Domain.Constants;
 using Subify.Domain.Errors;
 
 namespace Subify.Infrastructure.Authentication;
@@ -24,9 +24,10 @@ public sealed class CurrentUserService : ICurrentUserService
     {
         get
         {
+            // Prefer short JWT "sub" (MapInboundClaims=false); fall back to NameIdentifier
             var value = FindFirstValue(
+                AppClaimTypes.Subject,
                 ClaimTypes.NameIdentifier,
-                JwtRegisteredClaimNames.Sub,
                 "sub");
 
             return Guid.TryParse(value, out var id) ? id : null;
@@ -34,10 +35,10 @@ public sealed class CurrentUserService : ICurrentUserService
     }
 
     public string? Email =>
-        FindFirstValue(ClaimTypes.Email, JwtRegisteredClaimNames.Email, "email");
+        FindFirstValue(AppClaimTypes.Email, ClaimTypes.Email, "email");
 
     public string? Locale =>
-        FindFirstValue(JwtRegisteredClaimNames.Locale, "locale");
+        FindFirstValue(AppClaimTypes.Locale, "locale");
 
     public IReadOnlyList<string> Roles
     {
@@ -48,7 +49,7 @@ public sealed class CurrentUserService : ICurrentUserService
                 return Array.Empty<string>();
             }
 
-            return User.FindAll(ClaimTypes.Role)
+            return User.FindAll(AppClaimTypes.Role)
                 .Select(claim => claim.Value)
                 .Where(role => !string.IsNullOrWhiteSpace(role))
                 .Distinct(StringComparer.OrdinalIgnoreCase)

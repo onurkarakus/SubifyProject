@@ -14,6 +14,11 @@ public static class DomainErrors
         public static readonly Error EmailNotVerified = Error.Unauthorized("AUTH_002", "Email Not Verified", "Please verify your email before logging in.");
         public static readonly Error InvalidToken = Error.Unauthorized("AUTH_003", "Invalid Token", "The access token is invalid or expired.");
         public static readonly Error InvalidRefreshToken = Error.Unauthorized("AUTH_004", "Invalid Refresh Token", "The refresh token is invalid, expired, or revoked.");
+        /// <summary>Presented a already-rotated/revoked refresh token (possible theft). User sessions may be bulk-revoked.</summary>
+        public static readonly Error RefreshTokenReuseDetected = Error.Unauthorized(
+            "AUTH_016",
+            "Refresh Token Reuse Detected",
+            "This refresh token was already used. Active sessions for this account were revoked. Please log in again.");
         public static readonly Error AccountLocked = Error.Locked("AUTH_005", "Account Locked", "Too many failed attempts. Try again in {minutes} minutes.");
         public static readonly Error PasswordTooWeak = Error.Failure("AUTH_006", "Password Too Weak", "Password must be at least 8 characters with uppercase, lowercase, and number.");
         public static readonly Error InvalidEmailFormat = Error.Failure("AUTH_007", "Invalid Email Format", "The email address provided is not in a valid format.");
