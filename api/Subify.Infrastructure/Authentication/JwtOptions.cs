@@ -24,6 +24,12 @@ public class JwtOptions
     public const int MaxRefreshTokenDays = 90;
     public const int RecommendedRefreshTokenDays = 7;
 
+    // --- Validation clock skew (seconds) — task 3.1.5 ---
+    /// <summary>Default 30s (tighter than ASP.NET default of 5 minutes).</summary>
+    public const int DefaultClockSkewSeconds = 30;
+    public const int MinClockSkewSeconds = 0;
+    public const int MaxClockSkewSeconds = 300; // 5 minutes hard ceiling
+
     public string Issuer { get; set; } = string.Empty;
     public string Audience { get; set; } = string.Empty;
 
@@ -41,6 +47,12 @@ public class JwtOptions
     /// Recommended 7; clamped to <see cref="MinRefreshTokenDays"/>–<see cref="MaxRefreshTokenDays"/>.
     /// </summary>
     public int RefreshTokenExpirationDays { get; set; } = DefaultRefreshTokenDays;
+
+    /// <summary>
+    /// Allowed clock difference when validating <c>nbf</c>/<c>exp</c>
+    /// (appsettings: <c>JwtOptions:ClockSkewSeconds</c>). Task 3.1.5.
+    /// </summary>
+    public int ClockSkewSeconds { get; set; } = DefaultClockSkewSeconds;
 
     /// <summary>Effective access lifetime used when issuing JWTs.</summary>
     public int ResolveAccessTokenLifetime()
@@ -65,6 +77,17 @@ public class JwtOptions
         return RefreshTokenExpirationDays;
     }
 
+    /// <summary>Effective clock skew for JWT validation (task 3.1.5).</summary>
+    public TimeSpan ResolveClockSkew()
+    {
+        if (ClockSkewSeconds < MinClockSkewSeconds || ClockSkewSeconds > MaxClockSkewSeconds)
+        {
+            return TimeSpan.FromSeconds(DefaultClockSkewSeconds);
+        }
+
+        return TimeSpan.FromSeconds(ClockSkewSeconds);
+    }
+
     /// <summary>
     /// Soft check for recommended ranges (logging / ops — does not throw).
     /// </summary>
@@ -82,3 +105,4 @@ public class JwtOptions
         return accessOk && refreshOk;
     }
 }
+

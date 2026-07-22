@@ -1,14 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Subify.Application.Common.Interfaces;
-using Subify.Domain.Constants;
 using Subify.Domain.Entities;
 using Subify.Infrastructure.Authentication;
 using Subify.Infrastructure.Persistence;
@@ -45,7 +40,8 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
         services.AddScoped<ISubifyDbContext>(provider => provider.GetRequiredService<SubifyDbContext>());
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<SubifyDbContext>());
 
-        var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+                         ?? new JwtOptions();
 
         services.AddAuthentication(options =>
         {
@@ -59,18 +55,8 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
             options.RequireHttpsMetadata = false;
             // Keep JWT claim names as issued (sub, email) so CurrentUserService can resolve them consistently
             options.MapInboundClaims = false;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidAudience = jwtOptions?.Audience,
-                ValidIssuer = jwtOptions?.Issuer,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? string.Empty)),
-                NameClaimType = AppClaimTypes.Subject,
-                RoleClaimType = AppClaimTypes.Role
-            };
+            // Task 3.1.5: ClockSkew from JwtOptions (default 30s)
+            options.TokenValidationParameters = JwtTokenValidation.CreateParameters(jwtOptions);
         });
 
         services.AddAuthorization();
