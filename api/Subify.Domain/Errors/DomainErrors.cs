@@ -50,6 +50,16 @@ public static class DomainErrors
             "SETUP_001",
             "Setup Already Complete",
             "First-run setup is already finished.");
+
+        public static readonly Error SuperAdminRequired = Error.Failure(
+            "SETUP_002",
+            "Super Admin Required",
+            "Create a Super Admin before completing setup (POST /api/setup/admin).");
+
+        public static readonly Error SettingsNotInitialized = Error.NotFound(
+            "SETUP_003",
+            "Settings Not Initialized",
+            "System settings row is missing. Restart the API so seed can create it.");
     }
 
     public static class Subscription

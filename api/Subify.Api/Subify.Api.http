@@ -54,18 +54,17 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
-### Setup — Status (3.3.6 / 3S.1)
+### Setup wizard (Faz 3S) — full first-run flow
+### 1) status → 2) admin (tokens) → 3) instance → 4) smtp? → 5) ai? → 6) complete
+### After SuperAdmin create, use returned accessToken for authenticated steps.
 ### ---------------------------------------------------------------------------
+
 # @name setupStatus
 GET {{host}}/api/setup/status
 Accept: application/json
 
 ###
 
-### ---------------------------------------------------------------------------
-### Setup — Create first SuperAdmin (3.3.1 / 3.3.6)
-### Only while setup incomplete and no SuperAdmin yet
-### ---------------------------------------------------------------------------
 # @name setupAdmin
 POST {{host}}/api/setup/admin
 Content-Type: {{contentType}}
@@ -76,6 +75,63 @@ Accept: application/json
   "email": "admin@test.com",
   "password": "Password123!"
 }
+
+###
+
+@setupAccessToken = {{setupAdmin.response.body.$.accessToken}}
+
+# @name setupInstance
+PUT {{host}}/api/setup/instance
+Authorization: Bearer {{setupAccessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "instanceName": "Home Lab",
+  "defaultLocale": "tr",
+  "defaultCurrency": "TRY",
+  "timeZoneId": "Europe/Istanbul",
+  "allowPublicRegistration": false
+}
+
+###
+
+# @name setupSmtp
+PUT {{host}}/api/setup/smtp
+Authorization: Bearer {{setupAccessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "smtpEnabled": true,
+  "smtpHost": "smtp.example.com",
+  "smtpPort": 587,
+  "smtpUser": "mailer@example.com",
+  "smtpPassword": "change-me",
+  "smtpFromName": "Subify",
+  "smtpFromEmail": "noreply@example.com"
+}
+
+###
+
+# @name setupAi
+PUT {{host}}/api/setup/ai
+Authorization: Bearer {{setupAccessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "aiProvider": "openai",
+  "aiApiKey": "sk-your-key",
+  "aiModel": "gpt-4o-mini"
+}
+
+###
+
+# @name setupComplete
+POST {{host}}/api/setup/complete
+Authorization: Bearer {{setupAccessToken}}
+Accept: application/json
 
 ###
 
