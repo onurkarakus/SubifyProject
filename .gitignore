@@ -68,6 +68,10 @@ yarn-error.log*
 **/out/
 **/publish/
 **/PublishProfiles/
+# Accidental Windows-style path segments created on macOS/Linux (literal "bin\Debug")
+**/bin\\*/
+**/bin\\Debug/
+**/bin\\Debug/**
 *.dll
 *.exe
 *.pdb
