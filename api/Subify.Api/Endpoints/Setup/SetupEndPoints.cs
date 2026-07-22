@@ -2,19 +2,23 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
+using Subify.Application.Features.Setup.CompleteSetup;
 using Subify.Application.Features.Setup.CreateSetupAdmin;
 using Subify.Application.Features.Setup.GetSetupStatus;
+using Subify.Application.Features.Setup.UpdateSetupAi;
+using Subify.Application.Features.Setup.UpdateSetupInstance;
+using Subify.Application.Features.Setup.UpdateSetupSmtp;
+using Subify.Infrastructure.Authorization;
 
 namespace Subify.Api.Endpoints.Setup;
 
-/// <summary>First-run setup API surface (3.3.1 / 3.3.6 / 3S.1).</summary>
+/// <summary>First-run setup wizard API (Faz 3S).</summary>
 public sealed class SetupEndPoints : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/setup")
-            .WithTags("Setup")
-            .AllowAnonymous();
+            .WithTags("Setup");
 
         group.MapGet("/status", async (
                 IMediator mediator,
@@ -22,14 +26,13 @@ public sealed class SetupEndPoints : IEndpoint
                 CancellationToken cancellationToken) =>
             {
                 var result = await mediator.Send(new GetSetupStatusQuery(), cancellationToken);
-                return result.MapResult(
-                    onSuccess: r => Results.Ok(r),
-                    instance: httpContext.Request.Path.Value);
+                return result.MapResult(r => Results.Ok(r), httpContext.Request.Path.Value);
             })
             .WithName("GetSetupStatus")
             .WithSummary("Setup status (public)")
-            .WithDescription("isSetupComplete, hasSuperAdmin, allowPublicRegistration — no secrets.")
-            .Produces<SetupStatusResponse>(StatusCodes.Status200OK);
+            .WithDescription("No secrets. Web uses this for redirect to /setup.")
+            .Produces<SetupStatusResponse>(StatusCodes.Status200OK)
+            .AllowAnonymous();
 
         group.MapPost("/admin", async (
                 [FromBody] CreateSetupAdminCommand command,
@@ -39,17 +42,80 @@ public sealed class SetupEndPoints : IEndpoint
             {
                 var result = await mediator.Send(command, cancellationToken);
                 return result.MapResult(
-                    onSuccess: r => Results.Created($"/api/users/{r.UserId}", r),
-                    instance: httpContext.Request.Path.Value);
+                    r => Results.Created($"/api/users/{r.UserId}", r),
+                    httpContext.Request.Path.Value);
             })
             .WithName("CreateSetupAdmin")
             .WithSummary("Create first Super Admin")
-            .WithDescription(
-                "Race-safe SuperAdmin bootstrap while setup is incomplete. " +
-                "Fails if SuperAdmin already exists or setup is complete. Task 3.3.1 / 3.3.6.")
+            .WithDescription("Only while setup incomplete and no SuperAdmin. Returns tokens for wizard (3S.2.2).")
             .Produces<CreateSetupAdminResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status403Forbidden)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AllowAnonymous();
+
+        group.MapPut("/instance", async (
+                [FromBody] UpdateSetupInstanceCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(() => Results.NoContent(), httpContext.Request.Path.Value);
+            })
+            .WithName("UpdateSetupInstance")
+            .WithSummary("Setup: instance defaults")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(AuthPolicies.SuperAdmin);
+
+        group.MapPut("/smtp", async (
+                [FromBody] UpdateSetupSmtpCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(() => Results.NoContent(), httpContext.Request.Path.Value);
+            })
+            .WithName("UpdateSetupSmtp")
+            .WithSummary("Setup: save SMTP (no send)")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(AuthPolicies.SuperAdmin);
+
+        group.MapPut("/ai", async (
+                [FromBody] UpdateSetupAiCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(() => Results.NoContent(), httpContext.Request.Path.Value);
+            })
+            .WithName("UpdateSetupAi")
+            .WithSummary("Setup: save AI BYOK key")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(AuthPolicies.SuperAdmin);
+
+        group.MapPost("/complete", async (
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(new CompleteSetupCommand(), cancellationToken);
+                return result.MapResult(r => Results.Ok(r), httpContext.Request.Path.Value);
+            })
+            .WithName("CompleteSetup")
+            .WithSummary("Finish setup wizard")
+            .WithDescription("Requires SuperAdmin. Sets IsSetupComplete=true. Repeat → 409 SETUP_001.")
+            .Produces<CompleteSetupResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(AuthPolicies.SuperAdmin);
     }
 }

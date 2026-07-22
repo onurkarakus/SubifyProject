@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Identity;
@@ -11,9 +12,7 @@ using Subify.Domain.Shared;
 
 namespace Subify.Application.Features.Setup.CreateSetupAdmin;
 
-/// <summary>
-/// First SuperAdmin via setup (tasks 3.3.1 / 3.3.6). Not available after setup complete.
-/// </summary>
+/// <summary>First SuperAdmin (3S.2.1 / 3.3.1). Optional tokens for wizard session (3S.2.2).</summary>
 public sealed record CreateSetupAdminCommand(
     string FullName,
     string Email,
@@ -23,18 +22,29 @@ public sealed record CreateSetupAdminResponse(
     string UserId,
     string Email,
     string FullName,
-    string Role);
+    string Role,
+    string? AccessToken,
+    string? RefreshToken,
+    DateTime? Expiration);
 
 public sealed class CreateSetupAdminHandler
     : IRequestHandler<CreateSetupAdminCommand, Result<CreateSetupAdminResponse>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ISubifyDbContext _db;
+    private readonly ITokenService _tokenService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CreateSetupAdminHandler(UserManager<ApplicationUser> userManager, ISubifyDbContext db)
+    public CreateSetupAdminHandler(
+        UserManager<ApplicationUser> userManager,
+        ISubifyDbContext db,
+        ITokenService tokenService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _db = db;
+        _tokenService = tokenService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<CreateSetupAdminResponse>> Handle(
@@ -78,9 +88,7 @@ public sealed class CreateSetupAdminHandler
         var roleAssign = await SuperAdminBootstrap.TryAssignFirstSuperAdminAsync(_userManager, user);
         if (roleAssign.IsFailure)
         {
-            // Cleanup orphaned user if race lost
-            if (roleAssign.Error.Code == DomainErrors.Auth.SuperAdminBootstrapRace.Code
-                || roleAssign.Error.Code == DomainErrors.Auth.SuperAdminAlreadyExists.Code)
+            if (roleAssign.Error.Code is "AUTH_018" or "AUTH_019")
             {
                 await _userManager.DeleteAsync(user);
             }
@@ -93,13 +101,41 @@ public sealed class CreateSetupAdminHandler
             await _db.NotificationSettings.AddAsync(
                 NotificationSetting.CreateDefaults(user.Id),
                 cancellationToken);
-            await _db.SaveChangesAsync(cancellationToken);
         }
+
+        // 3S.2.2 — issue tokens so wizard can continue authenticated
+        var issued = await _tokenService.GenerateAccessToken(user, cancellationToken);
+        var ip = ResolveClientIp();
+        await _db.RefreshTokens.AddAsync(
+            RefreshToken.Create(
+                user.Id,
+                issued.HashedRefreshToken,
+                ip,
+                issued.RefreshTokenExpiresAt,
+                userAgent: _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString()),
+            cancellationToken);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return Result.Success(new CreateSetupAdminResponse(
             UserId: user.Id.ToString(),
             Email: user.Email!,
             FullName: user.FullName,
-            Role: Domain.Constants.AppRoles.SuperAdmin));
+            Role: Domain.Constants.AppRoles.SuperAdmin,
+            AccessToken: issued.AccessToken,
+            RefreshToken: issued.RefreshToken,
+            Expiration: issued.Expiration));
+    }
+
+    private string ResolveClientIp()
+    {
+        var ctx = _httpContextAccessor.HttpContext;
+        var forwarded = ctx?.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwarded))
+        {
+            return forwarded.Split(',', StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+        }
+
+        return ctx?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
     }
 }

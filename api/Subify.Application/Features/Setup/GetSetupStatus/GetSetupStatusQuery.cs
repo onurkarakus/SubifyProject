@@ -10,14 +10,24 @@ namespace Subify.Application.Features.Setup.GetSetupStatus;
 
 public sealed record GetSetupStatusQuery : IRequest<Result<SetupStatusResponse>>;
 
+/// <summary>Public setup status for web redirect (3S.1.2). No secrets.</summary>
 public sealed record SetupStatusResponse(
     bool IsSetupComplete,
     bool HasSuperAdmin,
     bool AllowPublicRegistration,
-    string? InstanceName);
+    bool CanCreateAdmin,
+    string? SuggestedNextStep,
+    string? InstanceName,
+    string? DefaultLocale,
+    string? DefaultCurrency,
+    bool HasSmtpConfigured,
+    bool HasAiConfigured,
+    string Version);
 
 public sealed class GetSetupStatusHandler : IRequestHandler<GetSetupStatusQuery, Result<SetupStatusResponse>>
 {
+    public const string ApiVersion = "1.0.0-os";
+
     private readonly ISubifyDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
 
@@ -36,11 +46,27 @@ public sealed class GetSetupStatusHandler : IRequestHandler<GetSetupStatusQuery,
             .FirstOrDefaultAsync(cancellationToken);
 
         var hasSuperAdmin = await SuperAdminBootstrap.HasAnySuperAdminAsync(_userManager);
+        var isComplete = settings?.IsSetupComplete ?? false;
+        var canCreateAdmin = !isComplete && !hasSuperAdmin;
+
+        // Wizard path: admin → instance (defaults) → optional smtp/ai → complete
+        string? next = isComplete
+            ? null
+            : !hasSuperAdmin
+                ? "admin"
+                : "instance";
 
         return Result.Success(new SetupStatusResponse(
-            IsSetupComplete: settings?.IsSetupComplete ?? false,
+            IsSetupComplete: isComplete,
             HasSuperAdmin: hasSuperAdmin,
             AllowPublicRegistration: settings?.AllowPublicRegistration ?? false,
-            InstanceName: settings?.InstanceName));
+            CanCreateAdmin: canCreateAdmin,
+            SuggestedNextStep: next,
+            InstanceName: settings?.InstanceName,
+            DefaultLocale: settings?.DefaultLocale,
+            DefaultCurrency: settings?.DefaultCurrency,
+            HasSmtpConfigured: settings?.HasSmtpConfigured ?? false,
+            HasAiConfigured: settings?.HasAiConfigured ?? false,
+            Version: ApiVersion));
     }
 }

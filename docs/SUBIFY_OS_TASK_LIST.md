@@ -96,7 +96,7 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 | 1 | Core setup (solution, tooling, Scalar) | [~] |
 | 2 | Domain, EF, Postgres, seed altyapısı | [x] |
 | 3 | Auth, roller, SuperAdmin, şifre, multi-user | [~] |
-| 3S | **First-run Setup Wizard (API + Web)** | [ ] |
+| 3S | **First-run Setup Wizard (API + Web)** | [~] API P0/P1; web 3S.8 açık |
 | 4 | Subscription + finansal motor | [ ] |
 | 5 | Categories, providers, profile, activity | [ ] |
 | 6 | Reports, FX, resources/i18n | [ ] |
@@ -581,41 +581,49 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 3S.1 Setup state & güvenlik
 
-- [ ] **3S.1.1** `IsSetupComplete` persistence  
+- [x] **3S.1.1** `IsSetupComplete` persistence  
   **Açıklama:** SystemSettings (veya ayrı `setup_state`) flag; seed sonrası default `false`.  
-  **Öncelik:** P0 · **Bağımlı:** 2.1.5
+  **Öncelik:** P0 · **Bağımlı:** 2.1.5 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemSettings.CreateDefault` + seeder; `MarkSetupComplete`.
 
-- [ ] **3S.1.2** `GET /api/setup/status` (public)  
+- [x] **3S.1.2** `GET /api/setup/status` (public)  
   **Açıklama:** `{ isSetupComplete, currentStep?, version }` — web yönlendirme için. Secret yok.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `canCreateAdmin`, `suggestedNextStep`, locale/currency, `hasSmtpConfigured`/`hasAiConfigured` (secret yok).
 
-- [ ] **3S.1.3** Setup endpoint’leri setup tamamlanınca kilit  
+- [x] **3S.1.3** Setup endpoint’leri setup tamamlanınca kilit  
   **Açıklama:** `IsSetupComplete == true` iken `POST /api/setup/*` → 409/403.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Handler’lar `SETUP_001`; complete sonrası admin/instance/smtp/ai kilitli.
 
-- [ ] **3S.1.4** Setup tamamlanmadan app API’leri  
+- [x] **3S.1.4** Setup tamamlanmadan app API’leri  
   **Açıklama:** Subscriptions vb. auth ister; setup incomplete iken login sadece SuperAdmin (ilk user) veya setup token — pratikte: setup bitmeden sadece setup + status.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SetupGateMiddleware` — incomplete iken allowlist: setup/auth/health/docs; diğerleri `AUTH_017`.
 
-- [ ] **3S.1.5** Health/readiness’ta setup bilgisi (opsiyonel)  
+- [x] **3S.1.5** Health/readiness’ta setup bilgisi (opsiyonel)  
   **Açıklama:** `GET /health` veya `/health/ready` → `setupRequired: true/false`.  
-  **Öncelik:** P2 · **Bağımlı:** 1.2.7
+  **Öncelik:** P2 · **Bağımlı:** 1.2.7 · **Tamamlandı:** 2026-07-22  
+  **Not:** `GET /health` → `setupRequired` (DB erişilebilirse).
 
 ### 3S.2 Adım 1 — Super Admin oluştur
 
-- [ ] **3S.2.1** `POST /api/setup/admin`  
+- [x] **3S.2.1** `POST /api/setup/admin`  
   **Açıklama:** fullName, email, password → SuperAdmin + EmailConfirmed=true. Sadece `IsSetupComplete == false` ve henüz SuperAdmin yokken.  
-  **Öncelik:** P0 · **Bağımlı:** 3.3.1 mantığı buraya taşınır/paylaşılır
+  **Öncelik:** P0 · **Bağımlı:** 3.3.1 mantığı buraya taşınır/paylaşılır · **Tamamlandı:** 2026-07-22  
+  **Not:** `CreateSetupAdmin` + `SuperAdminBootstrap`; race → AUTH_018/019.
 
-- [ ] **3S.2.2** Setup admin sonrası otomatik login token (opsiyonel)  
+- [x] **3S.2.2** Setup admin sonrası otomatik login token (opsiyonel)  
   **Açıklama:** Response’ta access+refresh; wizard devamı için oturum.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** Access + refresh (hash DB) wizard oturumu için.
 
 ### 3S.3 Adım 2 — Instance varsayılanları
 
-- [ ] **3S.3.1** `PUT /api/setup/instance`  
+- [x] **3S.3.1** `PUT /api/setup/instance`  
   **Açıklama:** `InstanceName`, `DefaultLocale` (tr/en), `DefaultCurrency` (TRY/USD/…), `TimeZoneId` (opsiyonel), `AllowPublicRegistration` (default false).  
-  **Öncelik:** P0 · **Bağımlı:** SuperAdmin oturumu veya setup session
+  **Öncelik:** P0 · **Bağımlı:** SuperAdmin oturumu veya setup session · **Tamamlandı:** 2026-07-22  
+  **Not:** SuperAdmin only; setup incomplete.
 
 - [ ] **3S.3.2** Theme default (opsiyonel)  
   **Açıklama:** Instance default accent / dark preference (kullanıcı profili sonra override eder).  
@@ -633,9 +641,10 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 3S.5 Adım 4 — SMTP (opsiyonel, skip; gönderim Faz 15)
 
-- [ ] **3S.5.1** `PUT /api/setup/smtp`  
+- [x] **3S.5.1** `PUT /api/setup/smtp`  
   **Açıklama:** Host, Port, User, Password, FromName, FromEmail, enabled flag. **Sadece kaydet**; test-send ve gerçek mail **Faz 15**.  
-  **Öncelik:** P1 · **Bağımlı:** 2.1.5
+  **Öncelik:** P1 · **Bağımlı:** 2.1.5 · **Tamamlandı:** 2026-07-22  
+  **Not:** Persist only; no send.
 
 - [ ] **3S.5.2** Setup SMTP “Atla”  
   **Açıklama:**  
@@ -647,9 +656,10 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 3S.6 Adım 5 — AI (opsiyonel, skip)
 
-- [ ] **3S.6.1** `PUT /api/setup/ai`  
+- [x] **3S.6.1** `PUT /api/setup/ai`  
   **Açıklama:** Provider (OpenAI / compatible), API key, model (opsiyonel). Secret mask.  
-  **Öncelik:** P1 · **Bağımlı:** 2.1.5
+  **Öncelik:** P1 · **Bağımlı:** 2.1.5 · **Tamamlandı:** 2026-07-22  
+  **Not:** BYOK key stored; status only exposes `hasAiConfigured`.
 
 - [ ] **3S.6.2** Setup AI “Atla”  
   **Açıklama:** AI key yoksa AI endpoint’ler `AI_KEY_MISSING`.  
@@ -661,9 +671,10 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 3S.7 Adım 6 — Finish
 
-- [ ] **3S.7.1** `POST /api/setup/complete`  
+- [x] **3S.7.1** `POST /api/setup/complete`  
   **Açıklama:** Validasyon: SuperAdmin var mı? → `IsSetupComplete = true`. Idempotent değil (tekrar 409).  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** SuperAdmin required; tekrar → SETUP_001.
 
 - [ ] **3S.7.2** Setup complete sonrası yönlendirme  
   **Açıklama:** Web → login veya dashboard.  

@@ -8,6 +8,7 @@ using Subify.Api.Common.Health;
 using Subify.Api.Common.Logging;
 using Subify.Api.Common.OpenApi;
 using Subify.Api.Common.RateLimiting;
+using Subify.Api.Common.Setup;
 using Subify.Application;
 using Subify.Infrastructure;
 using Subify.Infrastructure.Persistence.Seeding;
@@ -90,6 +91,9 @@ public class Program
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // 3S.1.4 — while setup incomplete, block app APIs (allow setup/auth/health/docs)
+            app.UseMiddleware<SetupGateMiddleware>();
 
             app.MapEndpoints();
             app.MapSubifyReadyHealthCheck();
