@@ -4,17 +4,20 @@ Bu doküman, Subify API'sinin döndürdüğü tüm hata kodlarını ve çözüm 
 
 > ## 🔄 Subify OS uyumluluk notu
 >
-> **Geçerli ürün modeli:** [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) · [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md).
+> **Geçerli ürün modeli:** [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) · [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md).  
+> **Kaynak kod kataloğu:** `api/Subify.Domain/Errors/DomainErrors.cs` (**task 1.2.4 — OS temizliği uygulandı**).
 >
-> | Kod / grup | SaaS (bu dosya) | Subify OS |
-> | ---------- | --------------- | --------- |
-> | `SUB_001` Subscription Limit | Free max 3 | **Kullanılmaz** — limit yok |
-> | `AI_001` Premium Required | Premium abonelik | **Kullanılmaz** — yerine örn. `AI_KEY_MISSING` (instance key yok) |
-> | `REP_001` Premium Required | Premium rapor | **Kullanılmaz** — raporlar herkese açık (auth) |
-> | `PRO_006` Push Requires Premium | Premium push | **Kullanılmaz** (veya push tamamen opsiyonel) |
-> | `PAY_*` | Ödeme / webhook | **Kullanılmaz** — ödeme yok |
+> | Kod / grup | Eski SaaS | Subify OS (güncel) |
+> | ---------- | --------- | ------------------ |
+> | Abonelik limiti | `SUB_001` Free max 3 | **Kaldırıldı** — limit yok |
+> | `SUB_001`… | limit + diğerleri | NotFound = `SUB_001`, AccessDenied = `SUB_002`, … (yeniden numaralandı) |
+> | AI premium | `AI_001` Premium Required | **`AI_KEY_MISSING`** — SystemSettings’te LLM key yok |
+> | Rapor premium | `REP_001` Premium | **Kaldırıldı** — `REP_001` = InvalidDateRange |
+> | Push premium | `PRO_006` | **Kaldırıldı** |
+> | `PAY_*` | Ödeme | **Kaldırıldı** (sınıf yok) |
+> | SystemSettings | — | `SET_001`…`SET_004` eklendi |
 >
-> Implementasyonda `DomainErrors` OS’a göre güncellenmelidir (task list `1.2.4`). Aşağıdaki tablolar hâlâ eski kataloğu gösterir; üst satırlar geçersiz sayılır.
+> Aşağıdaki eski tablolar tarihsel referans içerebilir; **uygulama için `DomainErrors.cs` geçerlidir.**
 
 > **Referanslar:**
 >

@@ -71,13 +71,13 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 
         var expiresAt = now.AddDays(7);
 
-        var refreshTokenEntity = new RefreshToken(
+        var refreshTokenEntity = RefreshToken.Create(
             user.Id,
             generatedTokens.HashedRefreshToken,
             ipAddress,
             expiresAt,
-            string.Empty,
-            userAgent);
+            deviceId: null,
+            userAgent: userAgent);
 
         await _dbContext.AddRefreshTokenAsync(refreshTokenEntity, cancellationToken);
 

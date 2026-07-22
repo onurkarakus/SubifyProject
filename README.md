@@ -62,7 +62,16 @@ cd docker
 docker compose up -d
 ```
 
-Varsayılan (compose ile hizalı): DB `subify_db`, user `subify_admin`.
+Varsayılanlar **API appsettings ile hizalı** (task 2.3.11):
+
+| | |
+| - | - |
+| Host / Port | `localhost:5432` |
+| Database | `subify_db` |
+| User | `subify_admin` |
+| Password | `SecretPassword123!` |
+
+Detay: [`docker/README.md`](docker/README.md) · örnek env: [`docker/.env.example`](docker/.env.example)
 
 ### 2. API
 
@@ -71,9 +80,12 @@ cd api/Subify.Api
 dotnet run --launch-profile http
 ```
 
+API start’ta EF Core **auto-migrate** + **seed** çalışır (Postgres ready olana kadar retry). Manuel `dotnet ef database update` gerekmez.
+
 - API: http://localhost:5240  
 - **Scalar (test UI):** http://localhost:5240/scalar/v1  
 - OpenAPI JSON: http://localhost:5240/openapi/v1.json  
+- Health: http://localhost:5240/health · readiness: http://localhost:5240/health/ready
 
 ### 3. Web (iskelet)
 

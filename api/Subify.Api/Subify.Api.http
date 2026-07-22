@@ -36,6 +36,24 @@ Accept: application/json
 ###
 
 ### ---------------------------------------------------------------------------
+### Health — liveness (container probe)
+### ---------------------------------------------------------------------------
+# @name healthLive
+GET {{host}}/health
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Health — readiness (Postgres reachable)
+### ---------------------------------------------------------------------------
+# @name healthReady
+GET {{host}}/health/ready
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
 ### Auth — Register
 ### Body: RegisterCommand { fullName, email, password }
 ### 201 Created → RegisterResponse { email, message, userId, expiration }
@@ -101,6 +119,22 @@ Accept: application/json
 {
   "email": "onur@test.com",
   "password": "WrongPassword1!"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Login validation failure (empty body fields — expect 400 VAL)
+### Pipeline: ValidationBehavior + LoginValidator → ProblemDetails.errors
+### ---------------------------------------------------------------------------
+# @name loginValidationFail
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "email": "",
+  "password": ""
 }
 
 ###

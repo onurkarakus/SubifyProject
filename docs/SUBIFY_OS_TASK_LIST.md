@@ -2,11 +2,44 @@
 
 | Alan | Değer |
 | ---- | ----- |
-| **Sürüm** | 1.0 |
+| **Sürüm** | 1.2 |
 | **Durum** | Aktif — uygulama sırası |
 | **Son güncelleme** | 2026-03-22 |
 | **Kaynak** | [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md), [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) |
 | **Kullanım** | Grok’a görev verirken **task numarasını** yaz (ör. `3.2.4` veya `T-3.2.4`) |
+
+---
+
+## Ürün kararları (kapsam & erteleme)
+
+### Şimdi / MVP
+
+| Konu | Karar |
+| ---- | ----- |
+| **E-posta confirm** | **Yok** — register sonrası hemen login (`EmailConfirmed = true`) |
+| **İlk kurulum (Setup Wizard)** | **Var** — e-ticaret kurulumu gibi; Super Admin → opsiyonel kullanıcılar → opsiyonel SMTP/AI → hazır |
+| **Şifre sıfırlama (şimdi)** | **Oturum içi change-password** + **SuperAdmin kullanıcı şifresini sıfırlar** |
+| **Invite** | Link API/UI’da üretilir; mail ile gönderme **sonra** (Faz 15) |
+| **SMTP / AI ayarları** | Setup + SystemSettings’te **saklanır** (kullanıcı kendi SMTP/AI key’ini girer) |
+| **E-posta gönderim motoru** | **Sonraya** — proje core bitince Faz 15 (`IEmailSender`, test mail, forgot-mail, reminder, invite-mail) |
+
+### Kapsam dışı (iptal)
+
+| Konu | Karar |
+| ---- | ----- |
+| **E-posta doğrulama (confirm-email / resend)** | Uygulanmayacak (`[-]`) |
+| **Freemium / premium / ödeme** | Yok |
+
+### Ertelenen (Faz 15 — EmailSend, core sonrası)
+
+| Konu | Not |
+| ---- | --- |
+| `IEmailSender` + SmtpEmailSender | Kullanıcının girdiği SMTP ile |
+| Forgot-password e-posta + token reset | “Şifremi unuttum” → mail link |
+| Invite / yenileme hatırlatma maili | SMTP doluysa |
+| Test SMTP mail | SuperAdmin |
+
+**Auth sonucu (şimdi):** Confirm yok. Şifre unutma: admin reset veya (sonra) e-posta ile forgot.
 
 ---
 
@@ -18,6 +51,7 @@
    - `[ ]` Yapılmadı
    - `[~]` Kısmen yapıldı / iskelet var
    - `[x]` Tamamlandı
+   - `[-]` **İptal / kapsam dışı** — yapılmayacak
 4. **Öncelik:** P0 (bloklayıcı) → P1 → P2 → P3 (sonra / opsiyonel).
 5. **Bağımlılık:** Bir task’ın “Bağımlı” satırı varsa önce onlar bitmeli.
 6. Eski SaaS task listeleri (`SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md`) **geçersizdir**; bu dosya geçerlidir.
@@ -31,18 +65,20 @@
 | 0 | Repo, dokümantasyon, temiz başlangıç | [x] 0.1 + 0.2 tamam |
 | 1 | Core setup (solution, tooling, Scalar) | [~] |
 | 2 | Domain, EF, Postgres, seed altyapısı | [~] |
-| 3 | Auth, roller, SuperAdmin, multi-user | [~] |
+| 3 | Auth, roller, SuperAdmin, şifre, multi-user | [~] |
+| 3S | **First-run Setup Wizard (API + Web)** | [ ] |
 | 4 | Subscription + finansal motor | [ ] |
 | 5 | Categories, providers, profile, activity | [ ] |
 | 6 | Reports, FX, resources/i18n | [ ] |
 | 7 | Admin panel API (users, settings, invites) | [ ] |
-| 8 | SMTP, e-posta şablonları, background jobs | [ ] |
+| 8 | Background jobs (FX; mail job’ları Faz 15) | [ ] |
 | 9 | AI (BYOK) | [ ] |
-| 10 | Web (Next.js) UI | [ ] |
+| 10 | Web (Next.js) UI + setup UI | [ ] |
 | 11 | Docker, release, ops | [ ] |
 | 12 | Testler | [ ] |
-| 13 | Flutter (Faz 7 — en son) | [ ] |
+| 13 | Flutter (en son) | [ ] |
 | 14 | Dokümantasyon & polish | [ ] |
+| **15** | **EmailSend altyapısı (core sonrası)** | [ ] ertelendi |
 
 ---
 
@@ -103,7 +139,7 @@
 
 - [x] **1.1.3** Result / Error / DomainErrors altyapısı  
   **Açıklama:** `Result<T>`, `Error`, error kodları.  
-  **Durum:** Mevcut; OS’a göre kod temizliği 1.2.4.
+  **Durum:** Mevcut; OS temizliği **1.2.4** ile yapıldı.
 
 - [x] **1.1.4** Minimal API endpoint discovery  
   **Açıklama:** `IEndpoint`, `AddEndpoints`, `MapEndpoints`.  
@@ -115,53 +151,65 @@
 
 ### 1.2 Cross-cutting API pipeline
 
-- [ ] **1.2.1** FluentValidation MediatR pipeline behavior  
+- [x] **1.2.1** FluentValidation MediatR pipeline behavior  
   **Açıklama:** Tüm `IRequest` öncesi validator çalışsın; hatalar `VAL_*` + ProblemDetails.  
-  **Öncelik:** P0 · **Bağımlı:** —
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** `ValidationBehavior<,>` + `AddValidatorsFromAssembly` + FluentValidation 12.1.1; handler öncesi short-circuit → `ValidationResult`/`ValidationResult<T>`.
 
-- [ ] **1.2.2** Validation exception → ProblemDetails middleware/map  
+- [x] **1.2.2** Validation exception → ProblemDetails middleware/map  
   **Açıklama:** Pipeline failure’ların HTTP 400 ile RFC 7807 dönmesi.  
-  **Öncelik:** P0 · **Bağımlı:** 1.2.1
+  **Öncelik:** P0 · **Bağımlı:** 1.2.1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `ToFailureHttpResult` / validation ProblemDetails (`VAL_001` + `errors`); `ValidationExceptionHandler`; `AddProblemDetails` + `UseExceptionHandler`.
 
-- [ ] **1.2.3** Global exception handler  
+- [x] **1.2.3** Global exception handler  
   **Açıklama:** Beklenmeyen exception → `SYS_001`, traceId; development’ta detay opsiyonel.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** `GlobalExceptionHandler` — 500 + SYS_001 + traceId; Dev’de message/exceptionType; client abort → 499.
 
-- [ ] **1.2.4** DomainErrors OS temizliği  
+- [x] **1.2.4** DomainErrors OS temizliği  
   **Açıklama:** Premium/limit kodlarını kaldır veya yeniden adlandır (`AI_KEY_MISSING` vb.); `SUBS_001` limit kalksın.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** Limit/premium/PAY kaldırıldı; `AI_KEY_MISSING`, `SET_*`, auth invite/reg disabled eklendi; SUB kodları yeniden numaralandı.
 
-- [ ] **1.2.5** CORS policy  
+- [x] **1.2.5** CORS policy  
   **Açıklama:** Web origin (`localhost:3000` + env); production’da bilinen origin.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `Cors:AllowedOrigins` config; Dev default localhost:3000; prod boş = cross-origin kapalı; credentials + headers/methods.
 
-- [ ] **1.2.6** Rate limiting (login/register/forgot/AI)  
-  **Açıklama:** ASP.NET rate limiter; brute-force ve AI abuse koruması (plan limiti değil).  
-  **Öncelik:** P1
+- [x] **1.2.6** Rate limiting (login/register/AI)  
+  **Açıklama:** ASP.NET rate limiter; brute-force ve AI abuse koruması (plan limiti değil). Forgot-password endpoint yok.  
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** Policies `auth-login` (10/dk), `auth-register` (5/dk), `ai-analyze` (5/dk, hazır); 429 + `SYS_004` ProblemDetails; config `RateLimiting`.
 
-- [ ] **1.2.7** `GET /health` (liveness)  
+- [x] **1.2.7** `GET /health` (liveness)  
   **Açıklama:** Basit 200 OK; container healthcheck için.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** `GET /health` → `{ status, timestamp }`; anonymous, rate-limit disabled; DB kontrolü yok (1.2.8 readiness).
 
-- [ ] **1.2.8** `GET /health/ready` (readiness)  
+- [x] **1.2.8** `GET /health/ready` (readiness)  
   **Açıklama:** Postgres bağlantı kontrolü.  
-  **Öncelik:** P1 · **Bağımlı:** 2.3.x
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** EF `AddDbContextCheck` → `/health/ready`; 200 Healthy / 503 Unhealthy + JSON (database status).
 
-- [ ] **1.2.9** OpenAPI JWT Bearer security scheme  
+- [x] **1.2.9** OpenAPI JWT Bearer security scheme  
   **Açıklama:** Scalar’da Authorize ile Bearer token girebilme.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `BearerSecuritySchemeTransformer` + Scalar `AddPreferredSecuritySchemes("Bearer")`.
 
-- [ ] **1.2.10** ProblemDetails status code map doğrulama  
+- [x] **1.2.10** ProblemDetails status code map doğrulama  
   **Açıklama:** `ResultExtensions` tüm `ErrorType` için doğru HTTP kodu.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `ProblemDetailsStatusMapper` tek kaynak; `GatewayTimeout`→504; `Subify.Api.Tests` 14 test.
 
-- [ ] **1.2.11** Request logging / Serilog temel kurulum  
+- [x] **1.2.11** Request logging / Serilog temel kurulum  
   **Açıklama:** Console + structured log; secret loglanmaz.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-03-22  
+  **Not:** Serilog console+file; UseSerilogRequestLogging (body/auth header yok); /health → Debug.
 
-- [ ] **1.2.12** `ICurrentUserService`  
+- [x] **1.2.12** `ICurrentUserService`  
   **Açıklama:** JWT’den `UserId`, email, roller; handler’larda tekrar parse yok.  
-  **Öncelik:** P0 · **Bağımlı:** 3.1.x
+  **Öncelik:** P0 · **Bağımlı:** 3.1.x · **Tamamlandı:** 2026-03-22  
+  **Not:** `ICurrentUserService` + `CurrentUserService`; JWT `MapInboundClaims=false`; `GetRequiredUserId()`.
 
 ---
 
@@ -169,137 +217,165 @@
 
 ### 2.1 Domain model düzeltmeleri
 
-- [ ] **2.1.1** `ApplicationUser.Locate` → `Locale` rename  
+- [x] **2.1.1** `ApplicationUser.Locate` → `Locale` rename  
   **Açıklama:** Property, migration, TokenService claim, tüm referanslar.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** Property + TokenService; migration `RenameLocateToLocale` (RenameColumn AspNetUsers).
 
-- [ ] **2.1.2** ApplicationUser profil alanlarını PRD ile hizala  
+- [x] **2.1.2** ApplicationUser profil alanlarını PRD ile hizala  
   **Açıklama:** FullName, Locale, MainCurrency, MonthlyBudget, ApplicationThemeColor, DarkTheme, audit. Plan alanı **eklenmeyecek**.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** Constants (locale/currency/theme); EF max-length + decimal(10,2); `ApplyRegistrationProfile` / `UpdateProfile`; migration AlignApplicationUserProfileFields.
 
-- [ ] **2.1.3** Subscription domain metodları güçlendir  
+- [x] **2.1.3** Subscription domain metodları güçlendir  
   **Açıklama:** Factory/create kuralları, `UserShare` computed, archive/reactivate, Category XOR UserCategory invariant.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** `Create`/`Update` Result; UserShare + monthly/yearly; Archive/Reactivate; XOR kategori; ProviderId nullable; BillingCycle Monthly|Yearly; domain tests 8.
 
-- [ ] **2.1.4** Provider `Logout` → `LogoUrl` (veya doğru alan adı)  
+- [x] **2.1.4** Provider `Logout` → `LogoUrl` (veya doğru alan adı)  
   **Açıklama:** Typo/isim düzeltmesi + migration.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `Provider.LogoUrl`; migration `RenameProviderLogoutToLogoUrl` (RenameColumn).
 
-- [ ] **2.1.5** SystemSettings singleton modeli netleştir  
-  **Açıklama:** Tek satır instance settings; update metodları; secret alanlar.  
-  **Öncelik:** P1
+- [x] **2.1.5** SystemSettings singleton / instance config modeli  
+  **Açıklama:** Tek satır (veya key-value) instance ayarları. Alanlar:  
+  - Setup: `IsSetupComplete`, `SetupCompletedAt`, `InstanceName`  
+  - Locale defaults: `DefaultLocale`, `DefaultCurrency`, `TimeZoneId` (opsiyonel)  
+  - AI: `AiProvider` (örn. OpenAI), `AiApiKey` (secret), `AiModel` (opsiyonel)  
+  - SMTP (saklanır, **gönderim Faz 15**): Host, Port, User, Password, FromName, FromEmail, `SmtpEnabled`  
+  - Public reg: `AllowPublicRegistration` (setup sonrası genelde false)  
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** Entity + methods (`CreateDefault`, UpdateInstance/Ai/Smtp, MarkSetupComplete); EF config; migration ExpandSystemSettingsInstanceModel.
 
-- [ ] **2.1.6** RefreshToken entity rotation alanları  
+- [x] **2.1.6** RefreshToken entity rotation alanları  
   **Açıklama:** RevokedAt, ReplacedByToken, ReasonRevoked, IsActive helper.  
-  **Öncelik:** P0 · **Durum notu:** Kısmen var; gözden geçir.
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** Create/Revoke/MarkReplaced; IsActive/IsExpired; column renames; LoginHandler Create; DB update applied.
 
-- [ ] **2.1.7** Invite token entity (yeni)  
+- [x] **2.1.7** Invite token entity (yeni)  
   **Açıklama:** `UserInvite`: token hash, email, expires, createdBy, usedAt.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** Entity + Create/TryMarkUsed; EF config; migration AddUserInviteEntity; DB applied.
 
-- [ ] **2.1.8** Device token entity (opsiyonel / sonra)  
+- [x] **2.1.8** Device token entity (opsiyonel / sonra)  
   **Açıklama:** Push için; Flutter fazına kadar ertele.  
-  **Öncelik:** P3
+  **Öncelik:** P3 · **Tamamlandı:** 2026-03-22  
+  **Not:** `UserDeviceToken` + `DevicePlatform`; Create/Touch/Deactivate; migration + DB applied. Endpoint Flutter fazında.
 
-- [ ] **2.1.9** Soft delete global query filter stratejisi  
+- [x] **2.1.9** Soft delete global query filter stratejisi  
   **Açıklama:** `ISoftDeletable` için EF filter (opsiyonel ama tutarlı).  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-03-22  
+  **Not:** Global `DeletedAt == null` filter; hard Delete → soft-delete (Subscription.Archive); admin için `IgnoreQueryFilters()`.
 
-- [ ] **2.1.10** BaseEntity Id generation politikası  
+- [x] **2.1.10** BaseEntity Id generation politikası  
   **Açıklama:** Postgres uyumlu UUID (v4/v7 veya `gen_random_uuid()`); dokümante et.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** UUID v7 via `GuidGenerator.NewId()`; SaveChanges empty-Id fill; EF ValueGeneratedNever; ADR-010 güncellendi.
 
 ### 2.2 EF Core configurations
 
-- [ ] **2.2.1** `IEntityTypeConfiguration<>` klasör yapısı  
+- [x] **2.2.1** `IEntityTypeConfiguration<>` klasör yapısı  
   **Açıklama:** Infrastructure/Persistence/Configurations.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** 15 config + README; assembly scan; migration CompleteEntityTypeConfigurations (DB applied).
 
-- [ ] **2.2.2** Subscription configuration  
-  **Açıklama:** Index `(UserId, Archived, NextRenewalDate)`, FK, precision decimal, check constraints mümkünse.  
-  **Öncelik:** P0
+- [x] **2.2.2** Subscription configuration  
+  **Açıklama:** Index `(UserId, Archived, NextRenewalDate)`, FK, precision decimal.  
+  **Öncelik:** P0 · **Tamamlandı:** SubscriptionConfiguration
 
-- [ ] **2.2.3** Category / UserCategory / Provider configuration  
-  **Açıklama:** Unique slug, indexes, soft delete.  
-  **Öncelik:** P0
+- [x] **2.2.3** Category / UserCategory / Provider configuration  
+  **Açıklama:** Unique slug, indexes, soft delete (global filter).  
+  **Öncelik:** P0 · **Tamamlandı:** Category/UserCategory/ProviderConfiguration
 
-- [ ] **2.2.4** Resource unique index  
+- [x] **2.2.4** Resource unique index  
   **Açıklama:** `(PageName, Name, LanguageCode)` unique.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** ResourceConfiguration
 
-- [ ] **2.2.5** RefreshToken configuration  
+- [x] **2.2.5** RefreshToken configuration  
   **Açıklama:** Index user+token hash; uzunluk limitleri.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** RefreshTokenConfiguration
 
-- [ ] **2.2.6** ActivityLog / AiSuggestionLog configuration  
-  **Açıklama:** Index `(UserId, CreatedAt DESC)`.  
-  **Öncelik:** P1
+- [x] **2.2.6** ActivityLog / AiSuggestionLog configuration  
+  **Açıklama:** Index `(UserId, CreatedAt)`.  
+  **Öncelik:** P1 · **Tamamlandı:** ActivityLog + AiSuggestionLog configs
 
-- [ ] **2.2.7** EmailTemplates unique (Name, LanguageCode)  
-  **Açıklama:**  
-  **Öncelik:** P1
+- [x] **2.2.7** EmailTemplates unique (Name, LanguageCode)  
+  **Açıklama:** EF unique index hazır; seed Faz 15.  
+  **Öncelik:** P3 · **Tamamlandı:** EmailTemplatesConfiguration
 
-- [ ] **2.2.8** ExchangeRateSnapshot index  
-  **Açıklama:** `(Base, Target, FetchedAt DESC)`.  
-  **Öncelik:** P1
+- [x] **2.2.8** ExchangeRateSnapshot index  
+  **Açıklama:** `(Base, Target, FetchedAt)`.  
+  **Öncelik:** P1 · **Tamamlandı:** ExchangeRateSnapshotConfiguration
 
-- [ ] **2.2.9** ApplicationUser / Identity table naming  
+- [x] **2.2.9** ApplicationUser / Identity table naming  
   **Açıklama:** Postgres naming convention (snake_case opsiyonel); tutarlılık.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** PascalCase kararlaştırıldı (ADR-011). `AspNetUsers` + Identity `AspNet*` tables explicit config; snake_case / `EFCore.NamingConventions` **yok**. Migration gerekmedi (isimler zaten aynı).
 
-- [ ] **2.2.10** SystemSettings configuration  
-  **Açıklama:** Tek kayıt garantisi dokümantasyonu (app-level).  
-  **Öncelik:** P1
+- [x] **2.2.10** SystemSettings configuration  
+  **Açıklama:** Instance fields + max lengths; singleton seed app-level (2.3.9).  
+  **Öncelik:** P1 · **Tamamlandı:** SystemSettingsConfiguration
 
 ### 2.3 DbContext, migrate, seed runtime
 
-- [~] **2.3.1** SubifyDbContext DbSet’ler  
+- [x] **2.3.1** SubifyDbContext DbSet’ler  
   **Açıklama:** Tüm OS entity’ler; billing yok.  
-  **Durum:** Büyük ölçüde mevcut.
+  **Durum:** Tamam — UserInvite, UserDeviceToken dahil.
 
-- [ ] **2.3.2** Startup auto-migrate  
+- [x] **2.3.2** Startup auto-migrate  
   **Açıklama:** API ayağa kalkarken `Database.Migrate()` + retry Postgres ready.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-03-22  
+  **Not:** `DatabaseMigrator.MigrateAsync` — pending migrations + 15 deneme / 2 sn; Program start’ta traffic öncesi.
 
-- [ ] **2.3.3** `IDataSeeder` / `DbInitializer` arayüzü  
+- [x] **2.3.3** `IDataSeeder` / `DbInitializer` arayüzü  
   **Açıklama:** Idempotent seed pipeline.  
-  **Öncelik:** P0 · **Bağımlı:** 2.3.2
+  **Öncelik:** P0 · **Bağımlı:** 2.3.2 · **Tamamlandı:** 2026-07-22  
+  **Not:** `IDataSeeder` + `DatabaseSeeder` + `DatabaseInitializer` (migrate→seed); assembly auto-register; concrete seeders 2.3.4+.
 
-- [ ] **2.3.4** Role seed  
+- [x] **2.3.4** Role seed  
   **Açıklama:** `SuperAdmin`, `Admin`, `User` Identity rolleri.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `AppRoles` + `RolesDataSeeder` (Order 10); RoleManager; UUID v7 Id; idempotent RoleExists.
 
-- [ ] **2.3.5** Category seed (10 sistem kategorisi)  
+- [x] **2.3.5** Category seed (10 sistem kategorisi)  
   **Açıklama:** streaming, music, productivity, gaming, shopping, utilities, education, health, cloud, other.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemCategories` + `Category.CreateSystem` + `CategoriesDataSeeder` (Order 20); slug-idempotent (IgnoreQueryFilters).
 
-- [ ] **2.3.6** Provider seed (başlangıç listesi)  
+- [x] **2.3.6** Provider seed (başlangıç listesi)  
   **Açıklama:** Netflix, Spotify vb. TR/global; LogoUrl opsiyonel.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemProviders` (28) + `Provider.CreateCatalog` + `ProvidersDataSeeder` (Order 30); LogoUrl null (self-host); slug-idempotent.
 
-- [ ] **2.3.7** Resource seed (TR/EN temel metinler)  
+- [x] **2.3.7** Resource seed (TR/EN temel metinler)  
   **Açıklama:** Common, Category, Dashboard, Subscription, Error (paywall metinleri yok).  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemResources` + `Resource.Create` + `ResourcesDataSeeder` (Order 40); Paywall/freemium yok; key-idempotent.
 
-- [ ] **2.3.8** Email template seed  
-  **Açıklama:** VerifyEmail, ResetPassword, RenewalReminder TR/EN.  
-  **Öncelik:** P1
+- [x] **2.3.8** Email template seed  
+  **Açıklama:** ResetPassword, RenewalReminder, Invite (VerifyEmail yok).  
+  **Öncelik:** P3 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemEmailTemplates` + `EmailTemplatesDataSeeder` (Order 60); 6 satır TR/EN; **SMTP send hâlâ Faz 15**.
 
-- [ ] **2.3.9** SystemSettings initial empty row  
+- [x] **2.3.9** SystemSettings initial empty row  
   **Açıklama:** Singleton boş kayıt oluştur.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SystemSettingsDataSeeder` (Order 50) + `CreateDefault()`; tablo boşsa 1 satır; secrets yok; `IsSetupComplete=false`.
 
-- [ ] **2.3.10** Seed sadece boş tabloya  
+- [x] **2.3.10** Seed sadece boş tabloya  
   **Açıklama:** Idempotent; ikinci start duplicate üretmesin.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Tüm seeder’lar key/table-empty stratejisi; `SeedIdempotencyTests` double-run; mevcut satır overwrite yok.
 
-- [ ] **2.3.11** Development connection string / docker-compose hizası  
+- [x] **2.3.11** Development connection string / docker-compose hizası  
   **Açıklama:** appsettings ile `docker/docker-compose.yaml` kullanıcı/şifre/db aynı.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `appsettings` + `appsettings.Development` + compose defaults + `.env.example` → `subify_db` / `subify_admin` / `SecretPassword123!` / `5432`; healthcheck; `docker/README.md`.
 
-- [ ] **2.3.12** Migration baseline gözden geçir  
+- [x] **2.3.12** Migration baseline gözden geçir  
   **Açıklama:** Rename/alan değişikliklerinden sonra yeni migration; gerekirse squash dokümantasyonu.  
-  **Öncelik:** P0 · **Bağımlı:** 2.1.x, 2.2.x
+  **Öncelik:** P0 · **Bağımlı:** 2.1.x, 2.2.x · **Tamamlandı:** 2026-07-22  
+  **Not:** 11 migration; model drift yok; tip=`CompleteEntityTypeConfigurations`; squash **ertelendi** (v1.0); `Migrations/README.md` + `MigrationBaselineTests`.
 
 ### 2.4 ISubifyDbContext genişletme
 
@@ -340,12 +416,12 @@
 ### 3.2 Auth endpoint’leri
 
 - [~] **3.2.1** `POST /api/auth/register`  
-  **Açıklama:** FullName, Email, Password; validation; duplicate email 409.  
-  **Durum:** Mevcut handler; SuperAdmin yok (3.3.x); e-posta yok.
+  **Açıklama:** FullName, Email, Password; validation; duplicate email 409. Register’da `EmailConfirmed = true` (confirm yok).  
+  **Durum:** Mevcut handler; SuperAdmin yok (3.3.x).
 
 - [~] **3.2.2** `POST /api/auth/login`  
-  **Açıklama:** Email/password; tokens; lockout.  
-  **Durum:** Mevcut; EmailConfirmed politikası 3.2.8.
+  **Açıklama:** Email/password; tokens; lockout. **EmailConfirmed kontrolü yapılmaz / her zaman geçer.**  
+  **Durum:** Mevcut; 3.2.9 ile confirm engeli kaldırılacak.
 
 - [ ] **3.2.3** `POST /api/auth/refresh-token`  
   **Açıklama:** Body refreshToken → yeni access+refresh.  
@@ -355,41 +431,51 @@
   **Açıklama:** Refresh revoke; reason `logout`.  
   **Öncelik:** P0
 
-- [ ] **3.2.5** `GET /api/auth/confirm-email`  
-  **Açıklama:** userId + code; Identity confirm.  
-  **Öncelik:** P1 · **Bağımlı:** 8.x SMTP (veya dev bypass)
+- [-] **3.2.5** `GET /api/auth/confirm-email`  
+  **Açıklama:** ~~userId + code; Identity confirm~~  
+  **Durum:** **İptal** — e-posta confirm uygulama kapsamı dışında.
 
-- [ ] **3.2.6** `POST /api/auth/resend-confirmation`  
-  **Açıklama:** Rate limited.  
-  **Öncelik:** P1
+- [-] **3.2.6** `POST /api/auth/resend-confirmation`  
+  **Açıklama:** ~~Rate limited confirm mail~~  
+  **Durum:** **İptal** — e-posta gönderimi yok.
 
-- [ ] **3.2.7** `POST /api/auth/forgot-password`  
-  **Açıklama:** Email varsa reset mail (enumeration-safe response).  
-  **Öncelik:** P1 · **Bağımlı:** 8.x
+- [ ] **3.2.7** `POST /api/auth/forgot-password` (**Faz 15** — e-posta motoru sonrası)  
+  **Açıklama:** Enumeration-safe; SMTP yoksa anlamlı hata (`SET_003` / “e-posta yapılandırılmadı”). Token mail ile gider.  
+  **Öncelik:** P3 · **Bağımlı:** 15.1, 15.2  
+  **Durum:** Ertelendi (EmailSend core sonrası).
 
-- [ ] **3.2.8** `POST /api/auth/reset-password`  
-  **Açıklama:** Email + code + newPassword.  
-  **Öncelik:** P1
+- [ ] **3.2.8** `POST /api/auth/reset-password` (token ile; **Faz 15** ile birlikte)  
+  **Açıklama:** Email + code/token + newPassword (forgot-password mail akışı).  
+  **Öncelik:** P3 · **Bağımlı:** 3.2.7, 15.x  
+  **Durum:** Ertelendi.
 
-- [ ] **3.2.9** EmailConfirmed politikası (self-host)  
-  **Açıklama:** SMTP yokken: register sonrası login mümkün (EmailConfirmed=true) **veya** env `REQUIRE_EMAIL_CONFIRMATION=false` default. SMTP sonra enforce opsiyonu.  
+- [ ] **3.2.9** EmailConfirmed / confirm engelini kaldır  
+  **Açıklama:** Register’da `EmailConfirmed = true`. LoginHandler’daki `EmailNotConfirmed` kontrolünü **kaldır**.  
   **Öncelik:** P0
 
 - [ ] **3.2.10** Login response’a user özeti ekle  
-  **Açıklama:** id, email, fullName, locale, roles (plan yok).  
+  **Açıklama:** id, email, fullName, locale, roles (plan yok); opsiyonel `isSetupComplete`.  
   **Öncelik:** P0
 
 - [ ] **3.2.11** Register sonrası otomatik NotificationSettings satırı  
-  **Açıklama:** defaults: email on, days_before=3.  
+  **Açıklama:** defaults: `emailEnabled=false` (mail motoru yokken), `daysBeforeRenewal` in-app için.  
   **Öncelik:** P1
 
 - [ ] **3.2.12** Auth endpoint OpenAPI örnekleri / Produces düzelt  
   **Açıklama:** Status kodları doğru.  
   **Öncelik:** P2
 
-- [ ] **3.2.13** Public registration kapatma flag  
-  **Açıklama:** `ALLOW_PUBLIC_REGISTRATION` env; false iken sadece invite/admin create. İlk SuperAdmin istisnası.  
-  **Öncelik:** P1 · **Bağımlı:** 3.3.1
+- [ ] **3.2.13** Public registration flag  
+  **Açıklama:** SystemSettings `AllowPublicRegistration` (setup’ta seçilir; env override opsiyonel). Setup tamamlanmadan public reg kapalı (sadece setup admin oluşturur).  
+  **Öncelik:** P0 · **Bağımlı:** 3S.1, 3.3.1
+
+- [ ] **3.2.14** `POST /api/auth/change-password` (oturum açık)  
+  **Açıklama:** currentPassword + newPassword; kendi şifresini değiştirir.  
+  **Öncelik:** P0
+
+- [ ] **3.2.15** `POST /api/admin/users/{id}/reset-password` (SuperAdmin)  
+  **Açıklama:** Admin başka kullanıcının şifresini yeni şifre ile set eder (mail gerekmez — self-host unutma senaryosu).  
+  **Öncelik:** P0 · **Bağımlı:** 3.3.3
 
 ### 3.3 SuperAdmin bootstrap ve roller
 
@@ -413,6 +499,10 @@
   **Açıklama:** v1 dışı bırakılabilir; dokümante et.  
   **Öncelik:** P3
 
+- [ ] **3.3.6** İlk kullanıcı yalnızca Setup üzerinden  
+  **Açıklama:** `IsSetupComplete == false` iken normal `/register` kapalı veya setup’a yönlendir; SuperAdmin sadece `POST /api/setup/admin`.  
+  **Öncelik:** P0 · **Bağımlı:** 3S.2
+
 ### 3.4 Identity güvenlik ayarları
 
 - [ ] **3.4.1** Password policy  
@@ -426,6 +516,145 @@
 - [ ] **3.4.3** Unique email enforce  
   **Açıklama:** Identity + DB.  
   **Öncelik:** P0 · **Durum:** options mevcut; test et.
+
+---
+
+# FAZ 3S — First-run Setup Wizard (ilk ayağa kalkış)
+
+> E-ticaret “kurulum sihirbazı” benzeri. Docker/API ilk açıldığında setup tamamlanmadıysa web kullanıcıyı setup’a alır.  
+> **Akış:** Welcome → Super Admin → Instance defaults → (opsiyonel) ek kullanıcılar → (opsiyonel) SMTP → (opsiyonel) AI → Finish.
+
+### 3S.1 Setup state & güvenlik
+
+- [ ] **3S.1.1** `IsSetupComplete` persistence  
+  **Açıklama:** SystemSettings (veya ayrı `setup_state`) flag; seed sonrası default `false`.  
+  **Öncelik:** P0 · **Bağımlı:** 2.1.5
+
+- [ ] **3S.1.2** `GET /api/setup/status` (public)  
+  **Açıklama:** `{ isSetupComplete, currentStep?, version }` — web yönlendirme için. Secret yok.  
+  **Öncelik:** P0
+
+- [ ] **3S.1.3** Setup endpoint’leri setup tamamlanınca kilit  
+  **Açıklama:** `IsSetupComplete == true` iken `POST /api/setup/*` → 409/403.  
+  **Öncelik:** P0
+
+- [ ] **3S.1.4** Setup tamamlanmadan app API’leri  
+  **Açıklama:** Subscriptions vb. auth ister; setup incomplete iken login sadece SuperAdmin (ilk user) veya setup token — pratikte: setup bitmeden sadece setup + status.  
+  **Öncelik:** P1
+
+- [ ] **3S.1.5** Health/readiness’ta setup bilgisi (opsiyonel)  
+  **Açıklama:** `GET /health` veya `/health/ready` → `setupRequired: true/false`.  
+  **Öncelik:** P2 · **Bağımlı:** 1.2.7
+
+### 3S.2 Adım 1 — Super Admin oluştur
+
+- [ ] **3S.2.1** `POST /api/setup/admin`  
+  **Açıklama:** fullName, email, password → SuperAdmin + EmailConfirmed=true. Sadece `IsSetupComplete == false` ve henüz SuperAdmin yokken.  
+  **Öncelik:** P0 · **Bağımlı:** 3.3.1 mantığı buraya taşınır/paylaşılır
+
+- [ ] **3S.2.2** Setup admin sonrası otomatik login token (opsiyonel)  
+  **Açıklama:** Response’ta access+refresh; wizard devamı için oturum.  
+  **Öncelik:** P1
+
+### 3S.3 Adım 2 — Instance varsayılanları
+
+- [ ] **3S.3.1** `PUT /api/setup/instance`  
+  **Açıklama:** `InstanceName`, `DefaultLocale` (tr/en), `DefaultCurrency` (TRY/USD/…), `TimeZoneId` (opsiyonel), `AllowPublicRegistration` (default false).  
+  **Öncelik:** P0 · **Bağımlı:** SuperAdmin oturumu veya setup session
+
+- [ ] **3S.3.2** Theme default (opsiyonel)  
+  **Açıklama:** Instance default accent / dark preference (kullanıcı profili sonra override eder).  
+  **Öncelik:** P2
+
+### 3S.4 Adım 3 — Ek kullanıcılar (opsiyonel, skip edilebilir)
+
+- [ ] **3S.4.1** Setup sırasında kullanıcı ekleme  
+  **Açıklama:** `POST /api/setup/users` veya mevcut admin users API (setup auth ile). Email + temp password veya invite link response.  
+  **Öncelik:** P1 · **Bağımlı:** 7.1.2 veya 7.2.1
+
+- [ ] **3S.4.2** Setup UI’da “Atla”  
+  **Açıklama:** Kullanıcı eklemeden sonraki adıma geçiş.  
+  **Öncelik:** P0 (web)
+
+### 3S.5 Adım 4 — SMTP (opsiyonel, skip; gönderim Faz 15)
+
+- [ ] **3S.5.1** `PUT /api/setup/smtp`  
+  **Açıklama:** Host, Port, User, Password, FromName, FromEmail, enabled flag. **Sadece kaydet**; test-send ve gerçek mail **Faz 15**.  
+  **Öncelik:** P1 · **Bağımlı:** 2.1.5
+
+- [ ] **3S.5.2** Setup SMTP “Atla”  
+  **Açıklama:**  
+  **Öncelik:** P0 (web)
+
+- [ ] **3S.5.3** Admin Settings’ten SMTP sonradan düzenleme  
+  **Açıklama:** Setup sonrası `PUT /api/admin/settings` ile SMTP alanları (gönderim yine Faz 15).  
+  **Öncelik:** P1 · **Bağımlı:** 7.3.2
+
+### 3S.6 Adım 5 — AI (opsiyonel, skip)
+
+- [ ] **3S.6.1** `PUT /api/setup/ai`  
+  **Açıklama:** Provider (OpenAI / compatible), API key, model (opsiyonel). Secret mask.  
+  **Öncelik:** P1 · **Bağımlı:** 2.1.5
+
+- [ ] **3S.6.2** Setup AI “Atla”  
+  **Açıklama:** AI key yoksa AI endpoint’ler `AI_KEY_MISSING`.  
+  **Öncelik:** P0 (web)
+
+- [ ] **3S.6.3** Setup sırasında AI test (opsiyonel)  
+  **Açıklama:** Mini ping; yoksa Faz 7.3.4 / 9.x.  
+  **Öncelik:** P2
+
+### 3S.7 Adım 6 — Finish
+
+- [ ] **3S.7.1** `POST /api/setup/complete`  
+  **Açıklama:** Validasyon: SuperAdmin var mı? → `IsSetupComplete = true`. Idempotent değil (tekrar 409).  
+  **Öncelik:** P0
+
+- [ ] **3S.7.2** Setup complete sonrası yönlendirme  
+  **Açıklama:** Web → login veya dashboard.  
+  **Öncelik:** P0 (web)
+
+### 3S.8 Setup Web UI
+
+- [ ] **3S.8.1** Setup layout (wizard steps indicator)  
+  **Açıklama:** Manifesto light/dark; adım çubuğu.  
+  **Öncelik:** P0 · **Bağımlı:** 10.1.x
+
+- [ ] **3S.8.2** Step: Welcome  
+  **Açıklama:** Subify OS tanıtım, dil seçimi (opsiyonel).  
+  **Öncelik:** P1
+
+- [ ] **3S.8.3** Step: Create Super Admin form  
+  **Açıklama:**  
+  **Öncelik:** P0 · **Bağımlı:** 3S.2.1
+
+- [ ] **3S.8.4** Step: Instance defaults form  
+  **Açıklama:**  
+  **Öncelik:** P0 · **Bağımlı:** 3S.3.1
+
+- [ ] **3S.8.5** Step: Add users (skip)  
+  **Açıklama:**  
+  **Öncelik:** P1
+
+- [ ] **3S.8.6** Step: SMTP config (skip)  
+  **Açıklama:** “E-posta gönderimi sonraki sürümde; ayarları şimdiden kaydedebilirsiniz.”  
+  **Öncelik:** P1
+
+- [ ] **3S.8.7** Step: AI config (skip)  
+  **Açıklama:**  
+  **Öncelik:** P1
+
+- [ ] **3S.8.8** Step: Finish / success  
+  **Açıklama:**  
+  **Öncelik:** P0 · **Bağımlı:** 3S.7.1
+
+- [ ] **3S.8.9** Root redirect: setupRequired → `/setup`  
+  **Açıklama:** `GET /api/setup/status` ile; complete ise app’e.  
+  **Öncelik:** P0 · **Bağımlı:** 3S.1.2, 10.1.5
+
+- [ ] **3S.8.10** Setup tamamlanmışken `/setup` engeli  
+  **Açıklama:** Login’e yönlendir.  
+  **Öncelik:** P0
 
 ---
 
@@ -596,8 +825,8 @@
   **Öncelik:** P1
 
 - [ ] **5.3.5** `PUT /api/profile/notifications`  
-  **Açıklama:** emailEnabled, daysBeforeRenewal (push sonra).  
-  **Öncelik:** P1
+  **Açıklama:** `daysBeforeRenewal` (in-app uyarı için). `emailEnabled` gerekmez veya her zaman false — **mail gönderimi yok**.  
+  **Öncelik:** P2
 
 - [ ] **5.3.6** Profile update activity log  
   **Açıklama:**  
@@ -704,7 +933,7 @@
 ### 7.2 Invites
 
 - [ ] **7.2.1** `POST /api/admin/invites`  
-  **Açıklama:** Email + expiry; token üret.  
+  **Açıklama:** Email + expiry; token üret; **response’ta invite link/token** (mail yok — admin kopyalar).  
   **Öncelik:** P1 · **Bağımlı:** 2.1.7
 
 - [ ] **7.2.2** `GET /api/admin/invites`  
@@ -715,9 +944,9 @@
   **Açıklama:** Token + password + fullName → User.  
   **Öncelik:** P1
 
-- [ ] **7.2.4** Invite e-posta gönderimi  
-  **Açıklama:** SMTP varsa mail; yoksa admin’e raw link response.  
-  **Öncelik:** P1 · **Bağımlı:** 8.x
+- [ ] **7.2.4** Invite e-posta gönderimi (**Faz 15**)  
+  **Açıklama:** SMTP doluysa mail; değilse sadece link (zaten response’ta).  
+  **Öncelik:** P3 · **Durum:** Ertelendi.
 
 - [ ] **7.2.5** Invite single-use + expiry enforce  
   **Açıklama:**  
@@ -726,16 +955,16 @@
 ### 7.3 SystemSettings API
 
 - [ ] **7.3.1** `GET /api/admin/settings`  
-  **Açıklama:** Secret maskeli (smtp password, AI key).  
+  **Açıklama:** Instance + AI + SMTP (secret maskeli: AI key, SMTP password).  
   **Öncelik:** P0 · **Bağımlı:** 2.1.5, 3.3.3
 
 - [ ] **7.3.2** `PUT /api/admin/settings`  
-  **Açıklama:** SMTP + AI key partial update (boş = değiştirme).  
+  **Açıklama:** Instance defaults, AI, SMTP partial update (boş secret = değiştirme).  
   **Öncelik:** P0
 
-- [ ] **7.3.3** `POST /api/admin/settings/test-smtp`  
+- [ ] **7.3.3** `POST /api/admin/settings/test-smtp` (**Faz 15**)  
   **Açıklama:** Test mail SuperAdmin adresine.  
-  **Öncelik:** P1 · **Bağımlı:** 8.1
+  **Öncelik:** P3 · **Bağımlı:** 15.1 · **Durum:** Ertelendi (EmailSend sonrası).
 
 - [ ] **7.3.4** `POST /api/admin/settings/test-ai`  
   **Açıklama:** Minimal model ping.  
@@ -745,83 +974,43 @@
   **Açıklama:** Secret değer loglanmaz.  
   **Öncelik:** P2
 
-### 7.4 Email templates admin (P2)
+### 7.4 Email templates admin (**Faz 15**)
 
 - [ ] **7.4.1** List/get/update email templates  
-  **Açıklama:** SuperAdmin.  
-  **Öncelik:** P2
+  **Öncelik:** P3 · **Durum:** Ertelendi — EmailSend sonrası.
 
 - [ ] **7.4.2** Template preview / test send  
-  **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P3 · **Durum:** Ertelendi.
+
+### 7.5 Admin şifre reset UI/API köprüsü
+
+- [ ] **7.5.1** Admin users tablosunda “Şifre sıfırla”  
+  **Açıklama:** Yeni şifre girişi; `3.2.15` çağrısı.  
+  **Öncelik:** P0 · **Bağımlı:** 3.2.15, 10.9.1
 
 ---
 
-# FAZ 8 — SMTP, e-posta, background jobs
+# FAZ 8 — Background jobs (FX; mail job’ları Faz 15)
 
-### 8.1 E-posta altyapısı
+> MVP’de yenileme hatırlatması **dashboard / upcoming UI**. E-posta job’ları Faz 15.
 
-- [ ] **8.1.1** `IEmailSender` abstraction  
-  **Açıklama:**  
-  **Öncelik:** P1
+### 8.1–8.3 E-posta — **ERTELENDİ → Faz 15**
 
-- [ ] **8.1.2** SmtpEmailSender (SystemSettings)  
-  **Açıklama:** Runtime settings; factory/refresh.  
-  **Öncelik:** P1 · **Bağımlı:** 7.3.2
+- [ ] **8.1.*** / **8.2.*** / **8.3.*** — bkz. **Faz 15** (EmailSend)
 
-- [ ] **8.1.3** Null/Noop email sender  
-  **Açıklama:** SMTP yokken log + safe no-op.  
-  **Öncelik:** P1
-
-- [ ] **8.1.4** Template renderer  
-  **Açıklama:** `{{FullName}}` placeholder replace.  
-  **Öncelik:** P1 · **Bağımlı:** 2.3.8
-
-- [ ] **8.1.5** Locale’e göre template seçimi  
-  **Açıklama:**  
-  **Öncelik:** P1
-
-### 8.2 Auth e-postaları
-
-- [ ] **8.2.1** Verify email mail  
-  **Açıklama:**  
-  **Öncelik:** P1 · **Bağımlı:** 3.2.5, 8.1
-
-- [ ] **8.2.2** Reset password mail  
-  **Açıklama:**  
-  **Öncelik:** P1
-
-- [ ] **8.2.3** Invite mail  
-  **Açıklama:**  
-  **Öncelik:** P1
-
-### 8.3 Yenileme hatırlatma
-
-- [ ] **8.3.1** Renewal reminder job  
-  **Açıklama:** Günlük; days_before_renewal; email_enabled.  
-  **Öncelik:** P1 · **Bağımlı:** 8.1, 4.x
-
-- [ ] **8.3.2** Duplicate send koruması  
-  **Açıklama:** Aynı gün aynı subscription için tekrar mail yok (log/flag).  
-  **Öncelik:** P1
-
-- [ ] **8.3.3** Job disabled when SMTP empty  
-  **Açıklama:** Warning log.  
-  **Öncelik:** P1
-
-### 8.4 Background host
+### 8.4 Background host (non-mail jobs)
 
 - [ ] **8.4.1** HostedService vs Hangfire kararı implement  
-  **Açıklama:** v1 için `BackgroundService` yeterli önerilir; dokümante.  
-  **Öncelik:** P1
+  **Açıklama:** v1 için `BackgroundService` (ör. FX sync).  
+  **Öncelik:** P2 · **Bağımlı:** 6.2.4 (opsiyonel)
 
 - [ ] **8.4.2** Job schedule configuration  
-  **Açıklama:** Cron benzeri env (ör. daily 08:00).  
+  **Açıklama:** Cron benzeri env (ör. FX hourly).  
   **Öncelik:** P2
 
 - [ ] **8.4.3** Job hata izolasyonu  
-  **Açıklama:** Bir user fail tüm job’u öldürmesin.  
-  **Öncelik:** P1
+  **Açıklama:** Bir iterasyon fail tüm job’u öldürmesin.  
+  **Öncelik:** P2
 
 ---
 
@@ -928,19 +1117,23 @@
 ### 10.2 Auth sayfaları
 
 - [ ] **10.2.1** Login sayfası  
-  **Açıklama:**  
-  **Öncelik:** P0 · **Bağımlı:** 3.2.2, 10.1.5
+  **Açıklama:** Setup incomplete ise `/setup`’a yönlendir.  
+  **Öncelik:** P0 · **Bağımlı:** 3.2.2, 10.1.5, 3S.1.2
 
-- [ ] **10.2.2** Register sayfası (ilk kurulum + public)  
-  **Açıklama:** İlk kullanıcı SuperAdmin bilgilendirme metni.  
-  **Öncelik:** P0
+- [ ] **10.2.2** Register sayfası (public; setup sonrası flag açıksa)  
+  **Açıklama:** İlk kullanıcı **setup wizard** ile; public reg kapalıysa CTA yok.  
+  **Öncelik:** P1 · **Bağımlı:** 3.2.13
 
-- [ ] **10.2.3** Forgot / reset password sayfaları  
-  **Açıklama:**  
-  **Öncelik:** P1
+- [ ] **10.2.3** Change password sayfası/modal (oturum içi)  
+  **Açıklama:** Profile veya settings; `3.2.14`.  
+  **Öncelik:** P0 · **Bağımlı:** 3.2.14
+
+- [ ] **10.2.3b** Forgot password sayfaları (**Faz 15**)  
+  **Açıklama:** “Şifremi unuttum” + e-posta token reset UI. SMTP yoksa bilgilendirme.  
+  **Öncelik:** P3 · **Bağımlı:** 3.2.7, 3.2.8, 15.x · **Durum:** Ertelendi.
 
 - [ ] **10.2.4** Accept invite sayfası  
-  **Açıklama:**  
+  **Açıklama:** Token query/path ile; mail gerekmez (link paylaşımı manuel).  
   **Öncelik:** P1 · **Bağımlı:** 7.2.3
 
 - [ ] **10.2.5** Logout  
@@ -1056,8 +1249,8 @@
   **Öncelik:** P0 · **Bağımlı:** 5.3.x
 
 - [ ] **10.8.2** Notification preferences form  
-  **Açıklama:**  
-  **Öncelik:** P1
+  **Açıklama:** In-app tercihler (ör. days before renewal). **E-posta toggle yok / disabled.**  
+  **Öncelik:** P2
 
 - [ ] **10.8.3** Theme color picker  
   **Açıklama:**  
@@ -1073,8 +1266,8 @@
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.9.3** SystemSettings form (SMTP + AI)  
-  **Açıklama:** Masked secrets; test buttons.  
+- [ ] **10.9.3** SystemSettings form (Instance + SMTP + AI)  
+  **Açıklama:** Instance name/locale/currency; SMTP alanları (kayıt); AI key (maskeli); test-AI. Test-SMTP → Faz 15.  
   **Öncelik:** P0 · **Bağımlı:** 7.3.x
 
 - [ ] **10.9.4** Admin nav visibility by role  
@@ -1135,8 +1328,7 @@
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **11.2.4** Troubleshooting (port, JWT, SMTP)  
-  **Açıklama:**  
+- [ ] **11.2.4** Troubleshooting (port, JWT, setup, AI key; SMTP Faz 15)  
   **Öncelik:** P2
 
 ---
@@ -1300,57 +1492,108 @@
   **Öncelik:** P1
 
 - [ ] **14.3.2** Yeni scope task ekleme kuralı  
-  **Açıklama:** Manifesto çelişkisi yoksa ekle; çelişki varsa reddet.  
+  **Açıklama:** Manifesto çelişkisi yoksa ekle; çelişki varsa reddet. Setup / EmailSend kararlarına uy.  
   **Öncelik:** P1
+
+---
+
+# FAZ 15 — EmailSend altyapısı (core ürün bittikten sonra)
+
+> Kullanıcı setup/settings’te **kendi SMTP** bilgilerini girebilir (MVP’de kayıt).  
+> **Gönderim motoru, test mail, forgot-password mail, invite mail, yenileme maili** bu fazda açılır.
+
+### 15.1 Motor
+
+- [ ] **15.1.1** `IEmailSender` abstraction  
+  **Öncelik:** P2
+
+- [ ] **15.1.2** `SmtpEmailSender` (SystemSettings’ten oku)  
+  **Açıklama:** Runtime secret; factory/refresh.  
+  **Öncelik:** P2 · **Bağımlı:** 2.1.5, 7.3.2
+
+- [ ] **15.1.3** Noop sender when SMTP empty/disabled  
+  **Öncelik:** P2
+
+- [ ] **15.1.4** Template renderer + `email_templates` seed  
+  **Açıklama:** ResetPassword, RenewalReminder, Invite (VerifyEmail **yok** — confirm yok).  
+  **Öncelik:** P2
+
+- [ ] **15.1.5** Locale’e göre template  
+  **Öncelik:** P2
+
+### 15.2 Auth mailleri
+
+- [ ] **15.2.1** Forgot-password e-posta + token  
+  **Açıklama:** `3.2.7` / `3.2.8` aktif hale gelir.  
+  **Öncelik:** P2
+
+- [ ] **15.2.2** Invite e-posta (opsiyonel; link hâlâ UI’da)  
+  **Öncelik:** P3
+
+### 15.3 Operasyonel mailler
+
+- [ ] **15.3.1** Renewal reminder background job  
+  **Açıklama:** `daysBeforeRenewal` + SMTP enabled.  
+  **Öncelik:** P2 · **Bağımlı:** 8.4, 4.x
+
+- [ ] **15.3.2** Duplicate send koruması  
+  **Öncelik:** P2
+
+- [ ] **15.3.3** `POST /api/admin/settings/test-smtp`  
+  **Açıklama:** `7.3.3` implement.  
+  **Öncelik:** P2
+
+### 15.4 Web
+
+- [ ] **15.4.1** Forgot / reset password sayfaları  
+  **Açıklama:** `10.2.3b`  
+  **Öncelik:** P2
+
+- [ ] **15.4.2** Settings “Test SMTP” butonu  
+  **Öncelik:** P2
 
 ---
 
 ## Önerilen uygulama sırası (numara rehberi)
 
-Grok’a verirken pratik sprint paketleri:
-
 | Sıra | Paket | Task aralığı |
 | ---- | ----- | ------------ |
-| 1 | Pipeline + health + error OS | `1.2.1` → `1.2.12` (kritikler) |
-| 2 | Domain fix + EF + migrate/seed | `2.1` → `2.3` |
-| 3 | Auth tamam + SuperAdmin | `3.1` → `3.3` |
-| 4 | Subscription core | `4.1` → `4.3` |
-| 5 | Categories + Profile + Activity | `5.x` |
-| 6 | Admin + Settings | `7.x` |
-| 7 | Reports + FX | `6.x` |
-| 8 | SMTP + jobs | `8.x` |
+| 1 | Pipeline + health + error OS | `1.2.x` (kritikler) |
+| 2 | Domain + EF + migrate/seed | `2.1` → `2.3` |
+| 3 | Auth + SuperAdmin + change/reset password (admin) | `3.1`–`3.4`, `3.2.14`, `3.2.15` |
+| 4 | **First-run Setup Wizard** | **`3S.*`** + web `3S.8` |
+| 5 | Subscription core | `4.x` |
+| 6 | Categories + Profile + Activity | `5.x` |
+| 7 | Admin + Settings (SMTP kaydet, AI) | `7.x` |
+| 8 | Reports + FX | `6.x` |
 | 9 | AI | `9.x` |
-| 10 | Web foundation + auth + dashboard + subs | `10.1` → `10.5` |
-| 11 | Web admin + reports + profile | `10.6` → `10.9` |
+| 10 | Web app shell + dashboard + subs | `10.1`–`10.5` |
+| 11 | Web admin + profile | `10.6`–`10.9` |
 | 12 | Docker release | `11.x` |
 | 13 | Tests | `12.x` |
 | 14 | Flutter | `13.x` |
-| 15 | Polish | `0.x`, `14.x` |
+| 15 | Polish | `14.x` |
+| **16** | **EmailSend + forgot-mail + reminders** | **`15.x`** |
 
 ---
 
 ## Hızlı referans: P0 “MVP dikey dilim” minimum set
 
-Aşağıdakiler self-host demo için minimum:
-
 1. `1.2.1`, `1.2.3`, `1.2.7`, `1.2.12`
-2. `2.1.1`, `2.1.2`, `2.2.1`–`2.2.5`, `2.3.2`–`2.3.5`, `2.3.10`, `2.3.11`
-3. `3.1.3`, `3.2.3`, `3.2.4`, `3.2.9`, `3.2.10`, `3.3.1`–`3.3.4`
-4. `4.1.1`–`4.1.10`, `4.2.1`–`4.2.6`, `4.3.1`–`4.3.3`
-5. `5.1.1`–`5.1.3`, `5.3.1`–`5.3.2`
-6. `7.1.1`–`7.1.2`, `7.3.1`–`7.3.2`
-7. `10.1.5`–`10.1.8`, `10.2.1`–`10.2.2`, `10.3.1`, `10.4.1`, `10.4.3`, `10.5.1`–`10.5.5`, `10.9.1`, `10.9.3`
-8. `11.1.3`, `11.1.4`, `11.1.7`, `11.2.1`
-9. `12.2.3`
+2. `2.1.1`, `2.1.2`, `2.1.5` (settings model), `2.2.1`–`2.2.5`, `2.3.2`–`2.3.5`, `2.3.10`, `2.3.11`
+3. `3.1.3`, `3.2.3`, `3.2.4`, `3.2.9`, `3.2.10`, `3.2.14`, `3.2.15`, `3.3.1`–`3.3.4`, `3.3.6`
+4. **Setup:** `3S.1.1`–`3S.1.3`, `3S.2.1`, `3S.3.1`, `3S.7.1`, `3S.8.1`, `3S.8.3`, `3S.8.4`, `3S.8.8`–`3S.8.10`
+5. `4.1.1`–`4.1.10`, `4.2.1`–`4.2.6`, `4.3.1`–`4.3.3`
+6. `5.1.1`–`5.1.3`, `5.3.1`–`5.3.2`
+7. `7.1.1`–`7.1.2`, `7.3.1`–`7.3.2`, `7.5.1`
+8. `10.1.5`–`10.1.8`, `10.2.1`, `10.2.3`, `10.3.1`, `10.4.1`, `10.4.3`, `10.5.1`–`10.5.5`, `10.9.1`, `10.9.3`
+9. `11.1.3`, `11.1.4`, `11.1.7`, `11.2.1`
+10. `12.2.3`
+
+**Setup sonrası opsiyonel adımlar (MVP nice-to-have):** `3S.4`, `3S.5` (SMTP kaydet), `3S.6` (AI kaydet).
 
 ---
 
-## Kullanım örneği
-
-> “**3.3.1** ve **3.3.2** task’larını yap.”  
-> “**4.1.1**’den **4.2.6**’ya kadar subscription dilimini implement et.”  
-> “**1.2.1**, **1.2.3**, **1.2.7** — pipeline ve health.”
-
----
-
-*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir. Çelişkide Manifesto > PRD > bu liste > legacy docs.*
+*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir (sürüm 1.2).*  
+*Çelişkide: (1) Bu listedeki ürün kararları · (2) Manifesto · (3) PRD · (4) legacy docs.*  
+*Özet: **Confirm yok** · **Setup wizard var** · **Şifre: change + admin reset şimdi; forgot-mail Faz 15** · **EmailSend core sonrası**.*

@@ -23,13 +23,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
             return Result.Failure<RegisterResponse>(DomainErrors.Auth.EmailAlreadyRegistered);
         }
 
-        var newUser = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FullName = request.FullName,
-            EmailConfirmed = false
-        };
+        var newUser = new ApplicationUser();
+        newUser.ApplyRegistrationProfile(request.FullName, request.Email);
 
         var createResult = await _userManager.CreateAsync(newUser, request.Password);
 
@@ -43,7 +38,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<RegisterR
             Email: newUser.Email!,
             UserId: newUser.Id.ToString(),
             Expiration: DateTime.UtcNow.AddMinutes(15),
-            Message: "Kayıt başarılı! Lütfen e-posta adresinizi doğrulayın."
+            Message: "Kayıt başarılı."
         ));
     }
 }

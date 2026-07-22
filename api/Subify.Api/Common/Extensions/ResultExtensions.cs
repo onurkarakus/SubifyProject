@@ -1,53 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
 using Subify.Domain.Abstractions.Shared;
-using Subify.Domain.Errors;
 using Subify.Domain.Shared;
 
 namespace Subify.Api.Common.Extensions;
 
 public static class ResultExtensions
 {
+    private const string ErrorTypeBaseUri = "https://api.subify.app/errors";
+
     public static ProblemDetails ToProblemDetails(this Error error)
     {
         return new ProblemDetails
         {
-            Status = GetStatusCode(error.Type),
+            Status = ProblemDetailsStatusMapper.ToStatusCode(error),
             Title = error.Title,
-            Type = $"https://api.subify.app/errors/{error.Code}",
+            Type = $"{ErrorTypeBaseUri}/{error.Code}",
             Detail = error.Description,
-            Extensions = new Dictionary<string, object?>
+            Extensions =
             {
-                {"errorCode", error.Code}
+                ["errorCode"] = error.Code
             }
         };
     }
 
-    public static ProblemDetails ToProblemDetails<T>(this Result<T> result)
-    {
-        if (result.IsSuccess)
-        {
-            throw new InvalidOperationException("Successful result cannot be converted to problem details.");
-        }
-
-        var problemDetails = result.Error.ToProblemDetails();
-
-        if (result is IValidationResult validationResult)
-        {
-            problemDetails.Extensions["errors"] = validationResult.Errors
-            .GroupBy(e => e.Code)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Select(e => e.Description).ToArray()
-            );
-
-            if (problemDetails.Detail == DomainErrors.ValidationErrors.ValidationFailed.Description)
-            {
-                problemDetails.Detail = "One or more validation errors occurred.";
-            }
-        }
-
-        return problemDetails;
-    }
+    public static ProblemDetails ToProblemDetails<T>(this Result<T> result) =>
+        ToProblemDetails((Result)result);
 
     public static ProblemDetails ToProblemDetails(this Result result)
     {
@@ -56,66 +33,134 @@ public static class ResultExtensions
             throw new InvalidOperationException("Successful result cannot be converted to problem details.");
         }
 
-        var problemDetails = result.Error.ToProblemDetails(); // Start with the base error's problem details
-
         if (result is IValidationResult validationResult)
         {
-            problemDetails.Extensions["errors"] = validationResult.Errors
-                .GroupBy(e => e.Code)
+            return CreateValidationProblemDetails(validationResult, result);
+        }
+
+        var problemDetails = result.Error.ToProblemDetails();
+
+        if (result.Errors is { Length: > 1 })
+        {
+            problemDetails.Extensions["errors"] = result.Errors
+                .GroupBy(e => string.IsNullOrWhiteSpace(e.Code) ? "_" : e.Code)
                 .ToDictionary(
                     group => group.Key,
-                    group => group.Select(e => e.Description).ToArray()
-                );
-            // Update Detail to match ERROR_CODES.md example for validation failures
-            if (problemDetails.Detail == DomainErrors.ValidationErrors.ValidationFailed.Description)
-            {
-                problemDetails.Detail = "One or more validation errors occurred.";
-            }
+                    group => group.Select(e => e.Description).ToArray());
         }
+
+        // Always align Status with Error.Type (never leave null / wrong)
+        problemDetails.Status = ProblemDetailsStatusMapper.ToStatusCode(result.Error);
+
         return problemDetails;
     }
 
-    public static IResult MapResult<T>(this Result<T> result, Func<T, IResult> onSuccess, Func<Result<T>, IResult> onFailure)
+    /// <summary>
+    /// Maps a failed <see cref="Result"/> to an RFC 7807 ProblemDetails HTTP response
+    /// with the correct status code for the domain <see cref="ErrorType"/>.
+    /// </summary>
+    public static IResult ToFailureHttpResult(this Result result, string? instance = null)
+    {
+        var problem = result.ToProblemDetails();
+        if (!string.IsNullOrWhiteSpace(instance))
+        {
+            problem.Instance = instance;
+        }
+
+        return ToProblemHttpResult(problem);
+    }
+
+    public static IResult ToFailureHttpResult<T>(this Result<T> result, string? instance = null) =>
+        ToFailureHttpResult((Result)result, instance);
+
+    public static IResult MapResult<T>(
+        this Result<T> result,
+        Func<T, IResult> onSuccess,
+        string? instance = null)
+    {
+        return result.IsSuccess
+            ? onSuccess(result.Value)
+            : result.ToFailureHttpResult(instance);
+    }
+
+    public static IResult MapResult(
+        this Result result,
+        Func<IResult> onSuccess,
+        string? instance = null)
+    {
+        return result.IsSuccess
+            ? onSuccess()
+            : result.ToFailureHttpResult(instance);
+    }
+
+    /// <summary>
+    /// Legacy overload kept for call sites that supply a custom onFailure mapper.
+    /// Prefer <see cref="ToFailureHttpResult(Result, string?)"/> so status codes stay consistent.
+    /// </summary>
+    public static IResult MapResult<T>(
+        this Result<T> result,
+        Func<T, IResult> onSuccess,
+        Func<Result<T>, IResult> onFailure)
     {
         return result.IsSuccess ? onSuccess(result.Value) : onFailure(result);
     }
 
-    public static IResult MapResult(this Result result, Func<IResult> onSuccess, Func<Result, IResult> onFailure)
+    public static IResult MapResult(
+        this Result result,
+        Func<IResult> onSuccess,
+        Func<Result, IResult> onFailure)
     {
         return result.IsSuccess ? onSuccess() : onFailure(result);
     }
 
-    private static int GetStatusCode(ErrorType errorType)
+    public static IResult ToProblemHttpResult(ProblemDetails problem)
     {
-        return errorType switch
-        {
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            ErrorType.Locked => StatusCodes.Status423Locked,
-            ErrorType.TooManyRequest => StatusCodes.Status429TooManyRequests,
-            ErrorType.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
-            ErrorType.InternalServerError => StatusCodes.Status500InternalServerError,
-            _ => StatusCodes.Status500InternalServerError
-        };
+        var statusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
+        problem.Status = statusCode;
+
+        return Results.Problem(
+            detail: problem.Detail,
+            instance: problem.Instance,
+            statusCode: statusCode,
+            title: problem.Title,
+            type: problem.Type,
+            extensions: problem.Extensions);
     }
 
-    private static string GetTitle(Error error)
+    private static ProblemDetails CreateValidationProblemDetails(
+        IValidationResult validationResult,
+        Result result)
     {
-        return error.Type switch
+        var validationError = IValidationResult.ValidationError;
+
+        var fieldErrors = validationResult.Errors
+            .Where(e => !string.Equals(e.Code, validationError.Code, StringComparison.Ordinal))
+            .ToArray();
+
+        if (fieldErrors.Length == 0)
         {
-            ErrorType.Validation => "Validation Error",
-            ErrorType.NotFound => "Resource Not Found",
-            ErrorType.Conflict => "Conflict",
-            ErrorType.Unauthorized => "Unauthorized",
-            ErrorType.Forbidden => "Forbidden",
-            ErrorType.Locked => "Locked",
-            ErrorType.TooManyRequest => "Too Many Requests",
-            ErrorType.ServiceUnavailable => "Service Unavailable",
-            ErrorType.InternalServerError => "Internal Server Error",
-            _ => "An error occurred"
+            fieldErrors = validationResult.Errors is { Length: > 0 }
+                ? validationResult.Errors
+                : [result.Error];
+        }
+
+        var errorsByField = fieldErrors
+            .GroupBy(e => string.IsNullOrWhiteSpace(e.Code) ? "_" : e.Code)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(e => e.Description).ToArray());
+
+        return new ProblemDetails
+        {
+            Status = ProblemDetailsStatusMapper.ToStatusCode(ErrorType.Validation),
+            Title = validationError.Title,
+            Type = $"{ErrorTypeBaseUri}/{validationError.Code}",
+            Detail = "One or more validation errors occurred.",
+            Extensions =
+            {
+                ["errorCode"] = validationError.Code,
+                ["errors"] = errorsByField
+            }
         };
     }
 }

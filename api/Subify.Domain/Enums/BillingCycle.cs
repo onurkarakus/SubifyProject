@@ -1,14 +1,10 @@
-namespace Subify.Domain.Enums
+namespace Subify.Domain.Enums;
+
+/// <summary>
+/// Subscription billing period (Subify OS PRD: monthly | yearly).
+/// </summary>
+public enum BillingCycle
 {
-    public enum BillingCycle
-    {
-        Daily = 1,
-        Weekly = 2,
-        Monthly = 3,
-        Quarterly = 4,
-        SemiAnnually = 5,
-        Annually = 6,
-        Biennially = 7,
-        Triennially = 8
-    }
+    Monthly = 1,
+    Yearly = 2
 }
