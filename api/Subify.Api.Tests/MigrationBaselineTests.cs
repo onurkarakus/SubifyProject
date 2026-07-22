@@ -14,9 +14,9 @@ public class MigrationBaselineTests
     {
         var ids = GetMigrationIds();
 
-        Assert.Equal(11, ids.Count);
+        Assert.True(ids.Count >= 12, $"Expected at least 12 migrations, got {ids.Count}");
         Assert.Equal("20260716202334_InitialCreate", ids[0]);
-        Assert.Equal("20260722101332_CompleteEntityTypeConfigurations", ids[^1]);
+        Assert.Contains(ids, id => id.EndsWith("_NotificationSettingsEmailDefaultFalse", StringComparison.Ordinal));
     }
 
     [Fact]

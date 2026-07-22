@@ -20,8 +20,9 @@
 | 9 | `20260722100525_AddUserInviteEntity` | `UserInvites` |
 | 10 | `20260722100729_AddUserDeviceTokenEntity` | `UserDeviceTokens` |
 | 11 | `20260722101332_CompleteEntityTypeConfigurations` | Max lengths, unique indexes, composite indexes |
+| 12 | `*NotificationSettingsEmailDefaultFalse` | EmailEnabled default false (3.2.11) |
 
-**Tip of baseline:** `CompleteEntityTypeConfigurations`  
+**Tip of baseline:** latest migration in folder (currently NotificationSettingsEmailDefaultFalse)  
 **Snapshot:** `SubifyDbContextModelSnapshot.cs`
 
 ## Code-only (no migration needed)

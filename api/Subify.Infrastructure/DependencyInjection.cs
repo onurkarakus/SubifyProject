@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Subify.Application.Common.Interfaces;
 using Subify.Domain.Entities;
 using Subify.Infrastructure.Authentication;
+using Subify.Infrastructure.Authorization;
 using Subify.Infrastructure.Persistence;
 using Subify.Infrastructure.Persistence.Seeding;
 
@@ -28,6 +29,15 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 8;
             options.User.RequireUniqueEmail = true;
+
+            // Task 3.2.2 — brute-force lockout (no email confirm gate)
+            options.Lockout.AllowedForNewUsers = true;
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+
+            // OS: confirm flow yok; Identity still tracks the flag (register sets true)
+            options.SignIn.RequireConfirmedEmail = false;
+            options.SignIn.RequireConfirmedAccount = false;
         })
         .AddEntityFrameworkStores<SubifyDbContext>()
         .AddDefaultTokenProviders();
@@ -59,7 +69,7 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
             options.TokenValidationParameters = JwtTokenValidation.CreateParameters(jwtOptions);
         });
 
-        services.AddAuthorization();
+        services.AddAuthorization(AuthPolicies.Configure);
 
         return services;
     }
