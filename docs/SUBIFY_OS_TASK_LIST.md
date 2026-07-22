@@ -28,7 +28,7 @@
 
 | Faz | Konu | Genel durum |
 | --- | ---- | ----------- |
-| 0 | Repo, dokümantasyon, temiz başlangıç | [~] 0.1 tamam · 0.2 açık |
+| 0 | Repo, dokümantasyon, temiz başlangıç | [x] 0.1 + 0.2 tamam |
 | 1 | Core setup (solution, tooling, Scalar) | [~] |
 | 2 | Domain, EF, Postgres, seed altyapısı | [~] |
 | 3 | Auth, roller, SuperAdmin, multi-user | [~] |
@@ -77,13 +77,15 @@
   **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
   **Not:** Eski dosyada `*.sln` ve `*.launchSettings.json` yanlışlıkla ignore ediliyordu (kaldırıldı). `!.env.example`, logs, TestResults, Flutter/Docker data eklendi.
 
-- [ ] **0.2.2** API’de kullanılmayan kalıntıları temizle  
+- [x] **0.2.2** API’de kullanılmayan kalıntıları temizle  
   **Açıklama:** `WeatherForecast`, boş Controllers klasörü, örnek dosyalar, çakışan legacy HTTP testleri.  
-  **Öncelik:** P1 · **Durum notu:** WeatherForecast/AuthController büyük ölçüde temizlendi; tarama tekrarla.
+  **Öncelik:** P1 · **Tamamlandı:** 2026-03-22  
+  **Not:** `LoginRequest` (kullanılmıyordu), boş `Repositories`/`RequestEntities` klasörleri, `bin\Debug` artifact kaldırıldı; `.http` host `5240` yapıldı.
 
-- [ ] **0.2.3** `Subify.Api.http` dosyasını güncelle  
+- [x] **0.2.3** `Subify.Api.http` dosyasını güncelle  
   **Açıklama:** Scalar ile uyumlu login/register örnek istekleri.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-03-22  
+  **Not:** host `5240`, Scalar/OpenAPI GET’leri, register/login (+ duplicate/invalid), named requests, token variable zinciri.
 
 ---
 
