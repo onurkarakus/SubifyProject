@@ -1,8 +1,49 @@
-@Subify.Api_HostAddress = http://localhost:5000
+###
+### Subify OS API — HTTP smoke tests (VS / Rider / VS Code REST Client)
+###
+### Preferred interactive UI (Development):
+###   Scalar:     {{host}}/scalar/v1
+###   OpenAPI:    {{host}}/openapi/v1.json
+###   Root:       {{host}}/  → redirects to Scalar
+###
+### Run API:
+###   cd api/Subify.Api && dotnet run --launch-profile http
+###
 
-### Yeni Kullanıcı Kaydı (Register) Testi
-POST {{Subify.Api_HostAddress}}/api/auth/register
-Content-Type: application/json
+@host = http://localhost:5240
+@contentType = application/json
+
+# After a successful login, paste tokens here for future authenticated requests:
+@accessToken = {{login.response.body.$.accessToken}}
+@refreshToken = {{login.response.body.$.refreshToken}}
+
+### ---------------------------------------------------------------------------
+### Docs — open Scalar UI in browser
+### ---------------------------------------------------------------------------
+# @name scalarUi
+GET {{host}}/scalar/v1
+Accept: text/html
+
+###
+
+### ---------------------------------------------------------------------------
+### Docs — OpenAPI document (JSON)
+### ---------------------------------------------------------------------------
+# @name openApiDocument
+GET {{host}}/openapi/v1.json
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Register
+### Body: RegisterCommand { fullName, email, password }
+### 201 Created → RegisterResponse { email, message, userId, expiration }
+### 409 Conflict → email already registered
+### ---------------------------------------------------------------------------
+# @name register
+POST {{host}}/api/auth/register
+Content-Type: {{contentType}}
 Accept: application/json
 
 {
@@ -13,12 +54,63 @@ Accept: application/json
 
 ###
 
-### Giriş Yapma (Login) Testi
-POST {{Subify.Api_HostAddress}}/api/auth/login
-Content-Type: application/json
+### ---------------------------------------------------------------------------
+### Auth — Register (duplicate email — expect 409)
+### ---------------------------------------------------------------------------
+# @name registerDuplicate
+POST {{host}}/api/auth/register
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "fullName": "Duplicate User",
+  "email": "onur@test.com",
+  "password": "Password123!"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Login
+### Body: LoginCommand { email, password }
+### 200 OK → LoginResponse { email, accessToken, refreshToken, expiration }
+###
+### Note: Login currently requires EmailConfirmed=true on the user.
+### If register left EmailConfirmed=false, confirm in DB or adjust policy (task 3.2.9).
+### ---------------------------------------------------------------------------
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
 Accept: application/json
 
 {
   "email": "onur@test.com",
   "password": "Password123!"
 }
+
+###
+
+### ---------------------------------------------------------------------------
+### Auth — Login (invalid credentials — expect 401 / problem details)
+### ---------------------------------------------------------------------------
+# @name loginInvalid
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "email": "onur@test.com",
+  "password": "WrongPassword1!"
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Example: authenticated call (Bearer)
+### Uncomment / add endpoints as they land (profile, subscriptions, …).
+### accessToken is filled from # @name login when using REST Client chain.
+### ---------------------------------------------------------------------------
+# @name mePlaceholder
+# GET {{host}}/api/profile
+# Authorization: Bearer {{accessToken}}
+# Accept: application/json
