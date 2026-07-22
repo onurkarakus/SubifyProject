@@ -55,9 +55,12 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
         return Result.Success(response);
     }
 
-    private async Task<Result<GenerateTokenResponse>> GenerateTokenAsync(ApplicationUser user, CancellationToken cancellationToken)
+    private async Task<Result<GenerateTokenResponse>> GenerateTokenAsync(
+        ApplicationUser user,
+        CancellationToken cancellationToken)
     {
-        var generatedTokens = await _tokenService.GenerateAccessToken(user);
+        // Access JWT + plain/hash refresh pair (3.1.1 / 3.1.2)
+        var generatedTokens = await _tokenService.GenerateAccessToken(user, cancellationToken);
 
         var httpContext = _httpContextAccessor.HttpContext;
         var forwarded = httpContext?.Request?.Headers["X-Forwarded-For"].FirstOrDefault();
@@ -67,26 +70,17 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 
         var userAgent = httpContext?.Request?.Headers.UserAgent.ToString();
 
-        var now = DateTime.UtcNow;
-
-        var expiresAt = now.AddDays(7);
-
+        // Persist HASH only — plain refresh token goes to the client response only
         var refreshTokenEntity = RefreshToken.Create(
             user.Id,
             generatedTokens.HashedRefreshToken,
             ipAddress,
-            expiresAt,
+            generatedTokens.RefreshTokenExpiresAt,
             deviceId: null,
             userAgent: userAgent);
 
         await _dbContext.AddRefreshTokenAsync(refreshTokenEntity, cancellationToken);
 
-        var response = new GenerateTokenResponse(
-            generatedTokens.AccessToken,
-            generatedTokens.RefreshToken,
-            generatedTokens.HashedRefreshToken,
-            generatedTokens.Expiration);
-
-        return Result.Success(response);
+        return Result.Success(generatedTokens);
     }
 }

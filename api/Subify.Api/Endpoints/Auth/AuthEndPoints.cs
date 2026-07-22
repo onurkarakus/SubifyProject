@@ -5,6 +5,7 @@ using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
 using Subify.Api.Common.RateLimiting;
 using Subify.Application.Features.Auth.Login;
+using Subify.Application.Features.Auth.Refresh;
 using Subify.Application.Features.Auth.Register;
 
 namespace Subify.Api.Endpoints.Auth;
@@ -38,6 +39,30 @@ public class AuthEndPoints : IEndpoint
             .RequireRateLimiting(RateLimitingOptions.LoginPolicy)
             .AllowAnonymous();
 
+        group.MapPost("/refresh", async (
+                [FromBody] RefreshCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+
+                return result.MapResult(
+                    onSuccess: response => Results.Ok(response),
+                    instance: httpContext.Request.Path.Value);
+            })
+            .WithName("RefreshToken")
+            .WithSummary("Refresh tokens")
+            .WithDescription(
+                "Rotates the refresh token (old revoked as replaced) and returns a new access + refresh pair. " +
+                "Reusing a revoked refresh token triggers theft detection and revokes all sessions.")
+            .Produces<RefreshResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .RequireRateLimiting(RateLimitingOptions.LoginPolicy)
+            .AllowAnonymous();
+
         group.MapPost("/register", async (
                 [FromBody] RegisterCommand command,
                 IMediator mediator,
@@ -61,4 +86,5 @@ public class AuthEndPoints : IEndpoint
             .AllowAnonymous();
     }
 }
+
 

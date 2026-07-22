@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Subify.Application.Common.Interfaces;
+using Subify.Domain.Constants;
 using Subify.Domain.Entities;
 using Subify.Infrastructure.Authentication;
 using Subify.Infrastructure.Persistence;
@@ -36,10 +37,13 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
         .AddEntityFrameworkStores<SubifyDbContext>()
         .AddDefaultTokenProviders();
 
-        services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        // Same scoped DbContext instance for both abstractions (task 2.4.1 / 2.4.2)
         services.AddScoped<ISubifyDbContext>(provider => provider.GetRequiredService<SubifyDbContext>());
+        services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<SubifyDbContext>());
 
         var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
 
@@ -64,8 +68,8 @@ public static IServiceCollection AddInfrastructureServices(this IServiceCollecti
                 ValidAudience = jwtOptions?.Audience,
                 ValidIssuer = jwtOptions?.Issuer,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? string.Empty)),
-                NameClaimType = JwtRegisteredClaimNames.Sub,
-                RoleClaimType = ClaimTypes.Role
+                NameClaimType = AppClaimTypes.Subject,
+                RoleClaimType = AppClaimTypes.Role
             };
         });
 

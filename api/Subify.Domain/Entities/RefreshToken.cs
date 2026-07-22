@@ -3,7 +3,8 @@ using Subify.Domain.Common;
 namespace Subify.Domain.Entities;
 
 /// <summary>
-/// Persisted refresh token (hashed). Supports rotation and revoke reasons.
+/// Persisted refresh token. Only <see cref="TokenHash"/> (SHA-256 hex) is stored —
+/// never the plain token (task 3.1.2). Supports rotation and revoke reasons.
 /// </summary>
 public class RefreshToken : BaseEntity
 {
@@ -13,7 +14,12 @@ public class RefreshToken : BaseEntity
     public const string ReasonExpired = "expired";
     public const string ReasonAdmin = "admin";
 
+    /// <summary>SHA-256 hex length (64). Column allows up to 128 for future algorithms.</summary>
+    public const int TokenHashMaxLength = 128;
+
     public Guid UserId { get; private set; }
+
+    /// <summary>SHA-256 hex of the plain refresh token. Lookup key for rotation/logout.</summary>
     public string TokenHash { get; private set; } = null!;
     public string CreatedByIp { get; private set; } = string.Empty;
     public DateTimeOffset ExpiresAt { get; private set; }
@@ -54,11 +60,19 @@ public class RefreshToken : BaseEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(tokenHash);
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty);
 
+        var normalizedHash = tokenHash.Trim();
+        if (normalizedHash.Length > TokenHashMaxLength)
+        {
+            throw new ArgumentException(
+                $"Token hash exceeds max length {TokenHashMaxLength}.",
+                nameof(tokenHash));
+        }
+
         return new RefreshToken
         {
             Id = GuidGenerator.NewId(),
             UserId = userId,
-            TokenHash = tokenHash,
+            TokenHash = normalizedHash,
             CreatedByIp = string.IsNullOrWhiteSpace(createdByIp) ? "Unknown" : createdByIp.Trim(),
             ExpiresAt = expiresAt,
             DeviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId.Trim(),
@@ -93,4 +107,26 @@ public class RefreshToken : BaseEntity
 
     public void MarkTheftDetected(string? revokedByIp = null) =>
         Revoke(ReasonTheftDetected, revokedByIp);
+
+    /// <summary>
+    /// Force-mark theft even if already revoked (reuse detection on a rotated token).
+    /// Updates reason/IP without clearing replacement chain.
+    /// </summary>
+    public void FlagReuseAsTheft(string? revokedByIp = null)
+    {
+        if (!IsRevoked)
+        {
+            MarkTheftDetected(revokedByIp);
+            return;
+        }
+
+        ReasonRevoked = ReasonTheftDetected;
+        if (!string.IsNullOrWhiteSpace(revokedByIp))
+        {
+            RevokedByIp = revokedByIp.Trim();
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }
+
