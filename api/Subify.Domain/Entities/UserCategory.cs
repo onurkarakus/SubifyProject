@@ -15,6 +15,19 @@ public class UserCategory : BaseEntity, ISoftDeletable
 
     protected UserCategory() { }
 
+    /// <summary>Creates a personal category owned by <paramref name="userId"/>.</summary>
+    public static UserCategory CreateForUser(Guid userId, string name, string? icon = null, string? color = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var category = new UserCategory
+        {
+            Id = GuidGenerator.NewId()
+        };
+        category.Create(userId, name.Trim(), icon, color);
+        return category;
+    }
+
     public void Create(Guid userId, string name, string? icon, string? color)
     {
         UserId = userId;
