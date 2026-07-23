@@ -97,7 +97,7 @@ public class Subscription : BaseEntity, ISoftDeletable
             return Result.Failure<Subscription>(validation.Error);
         }
 
-        var entity = new Subscription();
+        var entity = new Subscription { Id = GuidGenerator.NewId() };
         entity.ApplyValues(
             userId,
             name,
