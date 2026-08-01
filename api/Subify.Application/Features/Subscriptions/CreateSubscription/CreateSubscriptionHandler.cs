@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Interfaces;
 using Subify.Domain.Constants;
@@ -14,16 +13,16 @@ public sealed class CreateSubscriptionHandler
 {
     private readonly ISubifyDbContext _db;
     private readonly ICurrentUserService _currentUser;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IActivityLogger _activityLogger;
 
     public CreateSubscriptionHandler(
         ISubifyDbContext db,
         ICurrentUserService currentUser,
-        IHttpContextAccessor httpContextAccessor)
+        IActivityLogger activityLogger)
     {
         _db = db;
         _currentUser = currentUser;
-        _httpContextAccessor = httpContextAccessor;
+        _activityLogger = activityLogger;
     }
 
     public async Task<Result<CreateSubscriptionResponse>> Handle(
@@ -76,19 +75,15 @@ public sealed class CreateSubscriptionHandler
 
         var entity = create.Value;
 
-        // 4.1.2 — subscription + activity.created in one unit of work
         await _db.Subscriptions.AddAsync(entity, cancellationToken);
-        await _db.ActivityLogs.AddAsync(
-            ActivityLog.Create(
-                userId: userId,
-                entityType: ActivityLogConstants.EntityTypes.Subscription,
-                action: ActivityLogConstants.Actions.SubscriptionCreated,
-                description: $"Created subscription '{entity.Name}'.",
-                entityId: entity.Id,
-                newValues: SubscriptionActivitySnapshots.Capture(entity),
-                ipAddress: ResolveClientIp(),
-                userAgent: ResolveUserAgent()),
-            cancellationToken);
+        await _activityLogger.LogAsync(
+            userId: userId,
+            entityType: ActivityLogConstants.EntityTypes.Subscription,
+            action: ActivityLogConstants.Actions.SubscriptionCreated,
+            description: $"Created subscription '{entity.Name}'.",
+            entityId: entity.Id,
+            newValues: SubscriptionActivitySnapshots.Capture(entity),
+            cancellationToken: cancellationToken);
 
         await _db.SaveChangesAsync(cancellationToken);
 
@@ -100,23 +95,4 @@ public sealed class CreateSubscriptionHandler
         return Result.Success(
             CreateSubscriptionResponse.FromSubscription(SubscriptionResponse.FromEntity(loaded)));
     }
-
-    private string? ResolveClientIp()
-    {
-        var ctx = _httpContextAccessor.HttpContext;
-        var forwarded = ctx?.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwarded))
-        {
-            return forwarded.Split(',', StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-        }
-
-        return ctx?.Connection.RemoteIpAddress?.ToString();
-    }
-
-    private string? ResolveUserAgent()
-    {
-        var ua = _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString();
-        return string.IsNullOrWhiteSpace(ua) ? null : ua;
-    }
-
 }

@@ -6,6 +6,10 @@ public static class ActivityLogConstants
     public static class EntityTypes
     {
         public const string Subscription = "Subscription";
+        public const string Profile = "Profile";
+        public const string Auth = "Auth";
+        public const string SystemSettings = "SystemSettings";
+        public const string AiSuggestion = "AiSuggestion";
     }
 
     public static class Actions
@@ -14,5 +18,14 @@ public static class ActivityLogConstants
         public const string SubscriptionUpdated = "subscription.updated";
         public const string SubscriptionArchived = "subscription.archived";
         public const string SubscriptionReactivated = "subscription.reactivated";
+        public const string ProfileUpdated = "profile.updated";
+        public const string AuthLogin = "auth.login";
+        public const string AuthLogout = "auth.logout";
+        public const string SettingsUpdated = "settings.updated";
+        /// <summary>SuperAdmin set another user's password (7.5.1 / 3.2.15). Never log the password.</summary>
+        public const string AdminPasswordReset = "user.password_reset_by_admin";
+        public const string AiAnalyze = "ai.analyze";
     }
 }
+
+
