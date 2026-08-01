@@ -1,21 +1,21 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Interfaces;
+using Subify.Application.Features.Subscriptions.CreateSubscription;
 using Subify.Domain.Constants;
-using Subify.Domain.Entities;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
 
-namespace Subify.Application.Features.Subscriptions.CreateSubscription;
+namespace Subify.Application.Features.Subscriptions.UpdateSubscription;
 
-public sealed class CreateSubscriptionHandler
-    : IRequestHandler<CreateSubscriptionCommand, Result<CreateSubscriptionResponse>>
+public sealed class UpdateSubscriptionHandler
+    : IRequestHandler<UpdateSubscriptionCommand, Result<SubscriptionResponse>>
 {
     private readonly ISubifyDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IActivityLogger _activityLogger;
 
-    public CreateSubscriptionHandler(
+    public UpdateSubscriptionHandler(
         ISubifyDbContext db,
         ICurrentUserService currentUser,
         IActivityLogger activityLogger)
@@ -25,20 +25,34 @@ public sealed class CreateSubscriptionHandler
         _activityLogger = activityLogger;
     }
 
-    public async Task<Result<CreateSubscriptionResponse>> Handle(
-        CreateSubscriptionCommand request,
+    public async Task<Result<SubscriptionResponse>> Handle(
+        UpdateSubscriptionCommand request,
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
         {
-            return Result.Failure<CreateSubscriptionResponse>(DomainErrors.UserErrors.UnAuthorized);
+            return Result.Failure<SubscriptionResponse>(DomainErrors.UserErrors.UnAuthorized);
         }
 
         var userId = _currentUser.UserId.Value;
 
         if (!CreateSubscriptionValidator.TryParseBillingCycle(request.BillingCycle, out var billingCycle))
         {
-            return Result.Failure<CreateSubscriptionResponse>(DomainErrors.Subscription.InvalidBillingCycle);
+            return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.InvalidBillingCycle);
+        }
+
+        var entity = await _db.Subscriptions
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
+
+        if (entity is null)
+        {
+            return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.SubscriptionNotFound);
+        }
+
+        if (entity.UserId != userId)
+        {
+            return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.SubscriptionAccessDenied);
         }
 
         var refs = await SubscriptionReferenceValidator.ValidateAsync(
@@ -51,11 +65,12 @@ public sealed class CreateSubscriptionHandler
 
         if (refs.IsFailure)
         {
-            return Result.Failure<CreateSubscriptionResponse>(refs.Error);
+            return Result.Failure<SubscriptionResponse>(refs.Error);
         }
 
-        var create = Subscription.Create(
-            userId: userId,
+        var oldValues = SubscriptionActivitySnapshots.Capture(entity);
+
+        var update = entity.Update(
             name: request.Name,
             price: request.Price,
             currency: request.Currency,
@@ -68,31 +83,29 @@ public sealed class CreateSubscriptionHandler
             lastUsedAt: request.LastUsedAt,
             notes: request.Notes);
 
-        if (create.IsFailure)
+        if (update.IsFailure)
         {
-            return Result.Failure<CreateSubscriptionResponse>(create.Error);
+            return Result.Failure<SubscriptionResponse>(update.Error);
         }
 
-        var entity = create.Value;
-
-        await _db.Subscriptions.AddAsync(entity, cancellationToken);
         await _activityLogger.LogAsync(
             userId: userId,
             entityType: ActivityLogConstants.EntityTypes.Subscription,
-            action: ActivityLogConstants.Actions.SubscriptionCreated,
-            description: $"Created subscription '{entity.Name}'.",
+            action: ActivityLogConstants.Actions.SubscriptionUpdated,
+            description: $"Updated subscription '{entity.Name}'.",
             entityId: entity.Id,
+            oldValues: oldValues,
             newValues: SubscriptionActivitySnapshots.Capture(entity),
             cancellationToken: cancellationToken);
 
         await _db.SaveChangesAsync(cancellationToken);
 
         var loaded = await _db.Subscriptions
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .IncludeDetails()
             .FirstAsync(s => s.Id == entity.Id, cancellationToken);
 
-        return Result.Success(
-            CreateSubscriptionResponse.FromSubscription(SubscriptionResponse.FromEntity(loaded)));
+        return Result.Success(SubscriptionResponse.FromEntity(loaded));
     }
 }

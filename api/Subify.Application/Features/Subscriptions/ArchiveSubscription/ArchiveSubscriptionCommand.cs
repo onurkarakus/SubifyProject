@@ -1,0 +1,81 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Subify.Application.Common.Interfaces;
+using Subify.Domain.Constants;
+using Subify.Domain.Errors;
+using Subify.Domain.Shared;
+
+namespace Subify.Application.Features.Subscriptions.ArchiveSubscription;
+
+/// <summary>Soft-archive subscription (4.1.7). Maps to DELETE API later.</summary>
+public sealed record ArchiveSubscriptionCommand(Guid Id) : IRequest<Result<SubscriptionResponse>>;
+
+public sealed class ArchiveSubscriptionHandler
+    : IRequestHandler<ArchiveSubscriptionCommand, Result<SubscriptionResponse>>
+{
+    private readonly ISubifyDbContext _db;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IActivityLogger _activityLogger;
+
+    public ArchiveSubscriptionHandler(
+        ISubifyDbContext db,
+        ICurrentUserService currentUser,
+        IActivityLogger activityLogger)
+    {
+        _db = db;
+        _currentUser = currentUser;
+        _activityLogger = activityLogger;
+    }
+
+    public async Task<Result<SubscriptionResponse>> Handle(
+        ArchiveSubscriptionCommand request,
+        CancellationToken cancellationToken)
+    {
+        if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+        {
+            return Result.Failure<SubscriptionResponse>(DomainErrors.UserErrors.UnAuthorized);
+        }
+
+        var userId = _currentUser.UserId.Value;
+
+        var entity = await _db.Subscriptions
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
+
+        if (entity is null)
+        {
+            return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.SubscriptionNotFound);
+        }
+
+        if (entity.UserId != userId)
+        {
+            return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.SubscriptionAccessDenied);
+        }
+
+        if (!entity.Archived)
+        {
+            var oldValues = SubscriptionActivitySnapshots.Capture(entity);
+            entity.Archive();
+
+            await _activityLogger.LogAsync(
+                userId: userId,
+                entityType: ActivityLogConstants.EntityTypes.Subscription,
+                action: ActivityLogConstants.Actions.SubscriptionArchived,
+                description: $"Archived subscription '{entity.Name}'.",
+                entityId: entity.Id,
+                oldValues: oldValues,
+                newValues: SubscriptionActivitySnapshots.Capture(entity),
+                cancellationToken: cancellationToken);
+
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        var loaded = await _db.Subscriptions
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .IncludeDetails()
+            .FirstAsync(s => s.Id == entity.Id, cancellationToken);
+
+        return Result.Success(SubscriptionResponse.FromEntity(loaded));
+    }
+}
