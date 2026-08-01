@@ -7,8 +7,8 @@ using Subify.Domain.Entities;
 namespace Subify.Infrastructure.Persistence.Seeding;
 
 /// <summary>
-/// Seeds ResetPassword, RenewalReminder, Invite templates (task 2.3.8).
-/// No VerifyEmail. SMTP send is Faz 15 — templates only.
+/// Seeds ResetPassword, RenewalReminder, Invite, ReportSummary templates (task 2.3.8).
+/// No VerifyEmail. Templates only; SMTP sender uses these at runtime.
 /// Idempotent on (Name, LanguageCode).
 /// </summary>
 public sealed class EmailTemplatesDataSeeder : IDataSeeder

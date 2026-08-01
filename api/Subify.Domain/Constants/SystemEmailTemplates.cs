@@ -2,7 +2,7 @@ namespace Subify.Domain.Constants;
 
 /// <summary>
 /// Built-in email template catalog (task 2.3.8).
-/// Stored now; actual SMTP send is Faz 15. <b>No VerifyEmail</b> (email confirm disabled).
+/// Built-in catalog seed + fallback. SMTP send when enabled. <b>No VerifyEmail</b> (email confirm disabled).
 /// </summary>
 public static class SystemEmailTemplates
 {
@@ -17,6 +17,7 @@ public static class SystemEmailTemplates
         public const string ResetPassword = "ResetPassword";
         public const string RenewalReminder = "RenewalReminder";
         public const string Invite = "Invite";
+        public const string ReportSummary = "ReportSummary";
 
         /// <summary>Intentionally not seeded (OS has no email confirmation).</summary>
         public const string VerifyEmail = "VerifyEmail";
@@ -26,14 +27,15 @@ public static class SystemEmailTemplates
     [
         Names.ResetPassword,
         Names.RenewalReminder,
-        Names.Invite
+        Names.Invite,
+        Names.ReportSummary
     ];
 
     public static readonly IReadOnlyList<Definition> All = Build();
 
     private static IReadOnlyList<Definition> Build()
     {
-        var list = new List<Definition>(capacity: 6);
+        var list = new List<Definition>(capacity: 8);
 
         // ResetPassword
         list.Add(new(
@@ -107,7 +109,7 @@ public static class SystemEmailTemplates
                 "",
                 footerTr: false)));
 
-        // Invite (link shown in UI always; mail send later in Faz 15)
+        // Invite (link shown in UI always; optional mail when SMTP configured)
         list.Add(new(
             Names.Invite,
             SupportedLocales.Tr,
@@ -138,6 +140,59 @@ public static class SystemEmailTemplates
                 "{{InviteUrl}}",
                 "Accept Invitation",
                 "<p>This link expires after a limited time. If you were not expecting this invite, you can ignore it.</p>",
+                footerTr: false)));
+
+        // ReportSummary — period spend email from reports export
+        list.Add(new(
+            Names.ReportSummary,
+            SupportedLocales.Tr,
+            "Harcama özeti ({{Months}} ay) - Subify",
+            HtmlLayout(
+                "Harcama Özeti",
+                """
+                <p>Merhaba {{FullName}},</p>
+                <p>Son <strong>{{Months}}</strong> aylık abonelik harcama özetin (ana para: <strong>{{Currency}}</strong>):</p>
+                <div style="background:#F7F7F7;padding:20px;border-radius:8px;margin:20px 0;">
+                  <p style="margin:0;"><strong>Aktif abonelik:</strong> {{ActiveCount}}</p>
+                  <p style="margin:10px 0 0;"><strong>Aylık ortalama:</strong> {{AverageMonthly}} {{Currency}}</p>
+                  <p style="margin:10px 0 0;"><strong>Son ay:</strong> {{LatestMonth}} {{Currency}}</p>
+                  <p style="margin:10px 0 0;"><strong>Bütçe:</strong> {{BudgetLine}}</p>
+                </div>
+                <p><strong>Aylık seri</strong></p>
+                {{SeriesHtml}}
+                <p style="margin-top:16px;"><strong>Kategoriler</strong></p>
+                {{CategoriesHtml}}
+                <p style="color:#888;font-size:12px;margin-top:16px;">Oluşturulma: {{GeneratedAt}}</p>
+                """,
+                "{{AppUrl}}/reports",
+                "Raporları Aç",
+                "",
+                footerTr: true)));
+
+        list.Add(new(
+            Names.ReportSummary,
+            SupportedLocales.En,
+            "Spend summary ({{Months}} months) - Subify",
+            HtmlLayout(
+                "Spend Summary",
+                """
+                <p>Hello {{FullName}},</p>
+                <p>Your subscription spend summary for the last <strong>{{Months}}</strong> months (main currency: <strong>{{Currency}}</strong>):</p>
+                <div style="background:#F7F7F7;padding:20px;border-radius:8px;margin:20px 0;">
+                  <p style="margin:0;"><strong>Active subscriptions:</strong> {{ActiveCount}}</p>
+                  <p style="margin:10px 0 0;"><strong>Monthly average:</strong> {{AverageMonthly}} {{Currency}}</p>
+                  <p style="margin:10px 0 0;"><strong>Latest month:</strong> {{LatestMonth}} {{Currency}}</p>
+                  <p style="margin:10px 0 0;"><strong>Budget:</strong> {{BudgetLine}}</p>
+                </div>
+                <p><strong>Monthly series</strong></p>
+                {{SeriesHtml}}
+                <p style="margin-top:16px;"><strong>Categories</strong></p>
+                {{CategoriesHtml}}
+                <p style="color:#888;font-size:12px;margin-top:16px;">Generated: {{GeneratedAt}}</p>
+                """,
+                "{{AppUrl}}/reports",
+                "Open Reports",
+                "",
                 footerTr: false)));
 
         return list;

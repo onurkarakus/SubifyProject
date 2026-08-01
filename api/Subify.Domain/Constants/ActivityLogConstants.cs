@@ -25,6 +25,10 @@ public static class ActivityLogConstants
         /// <summary>SuperAdmin set another user's password (7.5.1 / 3.2.15). Never log the password.</summary>
         public const string AdminPasswordReset = "user.password_reset_by_admin";
         public const string AiAnalyze = "ai.analyze";
+        /// <summary>AI period commentary on reports data (optional reports follow-up).</summary>
+        public const string AiReportCommentary = "ai.report_commentary";
+        /// <summary>User requested email of period report summary (SMTP).</summary>
+        public const string ReportEmailSummary = "report.email_summary";
     }
 }
 
