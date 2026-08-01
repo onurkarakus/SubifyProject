@@ -1,26 +1,169 @@
 @import "tailwindcss";
 
+/* Design tokens — SUBIFY_OS_MANIFESTO §4.1 + UI_MOCKUPS */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --sidebar: #ffffff;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-soft: color-mix(in srgb, #7c3aed 14%, transparent);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --ring: #7c3aed;
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px rgb(15 23 42 / 0.04);
+  --shadow-glow: 0 0 40px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.dark {
+  /* Mockup navy-slate blend (still manifesto-aligned) */
+  --background: #0b1220;
+  --surface: #121a2b;
+  --surface-elevated: #1a2438;
+  --sidebar: #0e1524;
+  --foreground: #f8fafc;
+  --muted: #94a3b8;
+  --muted-foreground: #94a3b8;
+  --border: #243044;
+  --primary: #8b5cf6;
+  --primary-hover: #a78bfa;
+  --primary-soft: color-mix(in srgb, #8b5cf6 18%, transparent);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --ring: #8b5cf6;
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03), 0 12px 40px rgb(0 0 0 / 0.35);
+  --shadow-glow: 0 0 48px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-sidebar: var(--sidebar);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page titles — manifesto hierarchy */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Stat / KPI card with soft primary wash (dashboard mockup) */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 18%, transparent),
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.dark .stat-card::before {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 28%, transparent),
+    transparent 60%
+  );
+}
+
+/* Subscription card states (manifesto 4.2) */
+.card-soon {
+  border-color: color-mix(in srgb, var(--warning) 70%, transparent);
+}
+
+.dark .card-soon {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--warning) 25%, transparent);
+}
+
+.card-overdue {
+  border-color: color-mix(in srgb, var(--danger) 75%, transparent);
+}
+
+.dark .card-overdue {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+/* Landing / auth atmospheric background */
+.bg-aurora {
+  background:
+    radial-gradient(
+      900px 500px at 80% 10%,
+      color-mix(in srgb, var(--primary) 35%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px 400px at 10% 80%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 50%
+    ),
+    var(--background);
+}
+
+.dark .bg-aurora {
+  background:
+    radial-gradient(
+      900px 520px at 75% 0%,
+      color-mix(in srgb, var(--primary) 40%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      600px 360px at 15% 90%,
+      color-mix(in srgb, #6366f1 22%, transparent),
+      transparent 50%
+    ),
+    var(--background);
 }
