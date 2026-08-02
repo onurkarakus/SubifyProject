@@ -67,7 +67,7 @@ Most subscription apps want your data **and** a monthly fee. Subify OS is the op
 | **Privacy by architecture** | Data lives in **your** PostgreSQL. No product analytics requirement. |
 | **Built like a product, shipped like ops** | Setup wizard, Super Admin, invites, backup scripts, health endpoints. |
 
-If you later want a managed cloud, we document a **separate** SaaS transition path — it does **not** pollute the open-source core with paywalls. See [`docs/SUBIFY_SAAS_TRANSITION_PRD.md`](docs/SUBIFY_SAAS_TRANSITION_PRD.md).
+A possible future **managed Cloud** product is planned separately and must **not** reintroduce paywalls into this self-host core. See the [docs index](docs/README.md) (maintainer notes).
 
 ---
 
@@ -193,26 +193,25 @@ SubifyProject/
 ├── mobile/                   # Flutter (later)
 ├── docker/                   # Compose, Caddy/nginx samples, backup scripts
 ├── data/                     # Sample provider catalog JSON
-├── docs/                     # Manifesto, PRD, task list, OPS, SaaS transition
+├── docs/                     # Architecture (EN), OPS, screenshots + maintainer notes
 ├── LICENSE                   # MIT
 └── README.md
 ```
 
 ---
 
-## Documentation map
+## Documentation
 
 | Doc | Purpose |
 | --- | ------- |
-| [`docs/SUBIFY_OS_MANIFESTO.md`](docs/SUBIFY_OS_MANIFESTO.md) | Product constitution (self-host, no freemium) |
-| [`docs/SUBIFY_OS_PRD.md`](docs/SUBIFY_OS_PRD.md) | Product requirements |
-| [`docs/SUBIFY_OS_TASK_LIST.md`](docs/SUBIFY_OS_TASK_LIST.md) | Implementation checklist |
-| [`docs/OPS.md`](docs/OPS.md) | Install, backup, upgrade, troubleshooting |
-| [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md) | API shapes |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Data model notes |
-| [`docs/SUBIFY_SAAS_TRANSITION_PRD.md`](docs/SUBIFY_SAAS_TRANSITION_PRD.md) | Optional future Cloud path (separate product) |
+| **[docs/README.md](docs/README.md)** | Full index (public EN + maintainer notes) |
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Clean Architecture, auth, jobs, layers |
+| **[docs/OPS.md](docs/OPS.md)** | Install, backup, upgrade, troubleshooting |
+| **[docker/README.md](docker/README.md)** | Compose, env, healthchecks |
+| **[docs/API_CONTRACTS.md](docs/API_CONTRACTS.md)** | API payload notes |
+| **[docs/screenshots/](docs/screenshots/)** | Live UI captures |
 
-**Source of truth order:** Manifesto → OS PRD → OS task list → other docs.
+Long-form product backlog and design memory live under `docs/` for maintainers; they are **not** required reading to run or evaluate the stack. Start with **Architecture** if you only have five minutes.
 
 ---
 
@@ -252,16 +251,17 @@ Report issues responsibly. For production, put TLS in front ([`docker/Caddyfile`
 - [ ] Flutter client against the same API  
 - [ ] Optional tags / deeper community catalog  
 
-Task-level detail: [`docs/SUBIFY_OS_TASK_LIST.md`](docs/SUBIFY_OS_TASK_LIST.md).
+Maintainer checklist and product notes: [docs index](docs/README.md).
 
 ---
 
 ## Contributing
 
-1. Read the **manifesto** — features that reintroduce freemium/paywalls into OS will be rejected.  
+1. **No freemium / paywalls in OS** — this is a self-host product; payment features belong to a separate Cloud track if ever built.  
 2. Prefer small PRs with tests for Application/Domain behavior.  
 3. Keep i18n keys for new UI (TR + EN).  
-4. Don’t commit real secrets; use `.env.example` only.
+4. Don’t commit real secrets; use `.env.example` only.  
+5. Public docs (README, Architecture) stay **English**; deep product memory may remain in Turkish under `docs/`.
 
 Issues and discussions welcome — especially self-host war stories and provider catalog contributions (`data/provider-catalog.sample.json`).
 

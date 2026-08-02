@@ -2,6 +2,8 @@
 
 Self-host ops for Docker and bare-metal. Complements [`docker/README.md`](../docker/README.md).
 
+**Docs map:** [Architecture](./ARCHITECTURE.md) · [Full index](./README.md) · [Root README](../README.md)
+
 ---
 
 ## 11.2.1 Install (one command)
