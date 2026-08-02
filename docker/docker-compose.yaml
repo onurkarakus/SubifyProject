@@ -1,10 +1,20 @@
-# Subify OS — local development Postgres
-# Credentials must match api/Subify.Api/appsettings*.json (task 2.3.11).
-# Override via docker/.env (see .env.example).
+# Subify OS — full stack (Faz 11)
+# From repo root or docker/:
+#   cd docker && cp .env.example .env && docker compose up -d --build
+#
+# Services:
+#   postgres :5432
+#   api      :5240  → container :8080  (auto-migrate + seed on start)
+#   web      :3000
+#
+# Postgres-only (local API/web on host):
+#   docker compose -f docker-compose.db.yaml up -d
+
+name: subify
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: subify_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-subify_admin}
@@ -15,11 +25,93 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-subify_admin} -d ${POSTGRES_DB:-subify_db}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-subify_admin} -d ${POSTGRES_DB:-subify_db}",
+        ]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 12
+      start_period: 10s
     restart: unless-stopped
+    networks:
+      - subify_net
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Subify.Api/Dockerfile
+    container_name: subify_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=${POSTGRES_DB:-subify_db};Username=${POSTGRES_USER:-subify_admin};Password=${POSTGRES_PASSWORD:-SecretPassword123!}
+      JwtOptions__Issuer: ${JWT_ISSUER:-SubifyOS}
+      JwtOptions__Audience: ${JWT_AUDIENCE:-SubifyOSClient}
+      JwtOptions__SecretKey: ${JWT_SECRET_KEY:-SuperSecretKeyForSubifyOsProjectWhichNeedsToBeLongEnough}
+      JwtOptions__ExpirationInMinutes: ${JWT_EXPIRATION_MINUTES:-60}
+      JwtOptions__RefreshTokenExpirationDays: ${JWT_REFRESH_DAYS:-7}
+      # Browser origin for the web app (CORS)
+      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost:3000}
+      Cors__AllowedOrigins__1: ${WEB_ORIGIN_ALT:-http://127.0.0.1:3000}
+      App__PublicWebBaseUrl: ${WEB_ORIGIN:-http://localhost:3000}
+      ExchangeRates__Enabled: ${EXCHANGE_RATES_ENABLED:-true}
+      ExchangeRates__SyncInterval: ${EXCHANGE_RATES_INTERVAL:-1h}
+      BackgroundJobs__Enabled: ${BACKGROUND_JOBS_ENABLED:-true}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY:-}
+    ports:
+      - "${API_PORT:-5240}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+    restart: unless-stopped
+    networks:
+      - subify_net
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      args:
+        # Must be the URL the *browser* uses to reach the API
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5240/api}
+    container_name: subify_web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-qO-",
+          "http://127.0.0.1:3000/",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+    restart: unless-stopped
+    networks:
+      - subify_net
 
 volumes:
   postgres_data:
+
+networks:
+  subify_net:
+    driver: bridge

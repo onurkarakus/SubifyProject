@@ -1,0 +1,54 @@
+# Subify OS reverse proxy example (Faz 11.1.5)
+# Usage (with compose services on subify_net):
+#   caddy run --config docker/Caddyfile
+#
+# Or add a `caddy` service that mounts this file and joins subify_net.
+#
+# TLS: Caddy auto-HTTPS when using a real domain + ports 80/443.
+# For local HTTP-only, use :80 and skip certificate.
+
+# Replace with your domain for production:
+# subify.example.com {
+:80 {
+	encode gzip
+
+	# 14.1.4 — security headers at the edge (HSTS only when on HTTPS / real domain)
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# HSTS — enable only behind TLS:
+		# Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Remove identifying headers if present
+		-Server
+	}
+
+	# Web (Next.js)
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# If API is exposed under same host at /api/* — use path strip carefully.
+# Current Next client calls absolute NEXT_PUBLIC_API_URL.
+# Recommended production:
+#   NEXT_PUBLIC_API_URL=https://subify.example.com/api
+# and proxy /api to the API container:
+#
+# subify.example.com {
+#   encode gzip
+#   handle_path /api/* {
+#     reverse_proxy api:8080
+#   }
+#   handle {
+#     reverse_proxy web:3000
+#   }
+# }
+#
+# Note: ASP.NET maps routes as /api/... so with handle_path the path is stripped.
+# Prefer handle (no strip) if the API already includes /api prefix:
+#
+#   handle /api/* {
+#     reverse_proxy api:8080
+#   }
