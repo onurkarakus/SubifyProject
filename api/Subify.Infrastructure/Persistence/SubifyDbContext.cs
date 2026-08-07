@@ -25,6 +25,7 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<UserCategory> UserCategories => Set<UserCategory>();
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<SubscriptionPriceHistory> SubscriptionPriceHistories => Set<SubscriptionPriceHistory>();
     public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
     public DbSet<Resource> Resources => Set<Resource>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -32,6 +33,7 @@ public class SubifyDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<AiSuggestionLog> AISuggestionLogs => Set<AiSuggestionLog>();
     public DbSet<NotificationSetting> NotificationSettings => Set<NotificationSetting>();
     public DbSet<EmailTemplates> EmailTemplates => Set<EmailTemplates>();
+    public DbSet<EmailSendLog> EmailSendLogs => Set<EmailSendLog>();
     public DbSet<ExchangeRateSnapshot> ExchangeRateSnapshots => Set<ExchangeRateSnapshot>();
     public DbSet<UserInvite> UserInvites => Set<UserInvite>();
     public DbSet<UserDeviceToken> UserDeviceTokens => Set<UserDeviceToken>();

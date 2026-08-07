@@ -3,7 +3,7 @@ using Subify.Domain.Common;
 namespace Subify.Domain.Entities;
 
 /// <summary>
-/// Localized HTML email template stored for Faz 15 send pipeline.
+/// Localized HTML email template for outbound SMTP (reset, invite, renewal, report summary, …).
 /// Unique key: (Name, LanguageCode).
 /// </summary>
 public class EmailTemplates : BaseEntity
@@ -45,6 +45,17 @@ public class EmailTemplates : BaseEntity
 
         Name = name.Trim();
         LanguageCode = languageCode.Trim().ToLowerInvariant();
+        Subject = subject.Trim();
+        Body = body;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Admin edit of content only (keeps unique Name+LanguageCode key).</summary>
+    public void UpdateContent(string subject, string body)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(body);
+
         Subject = subject.Trim();
         Body = body;
         UpdatedAt = DateTimeOffset.UtcNow;

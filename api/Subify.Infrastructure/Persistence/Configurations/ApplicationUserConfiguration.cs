@@ -42,9 +42,17 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
             .IsRequired()
             .HasDefaultValue(false);
 
+        builder.Property(u => u.IsDisabled)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(u => u.DisabledAt);
+
         builder.Property(u => u.CreatedAt)
             .IsRequired();
 
         builder.Property(u => u.UpdatedAt);
+
+        builder.HasIndex(u => u.IsDisabled);
     }
 }

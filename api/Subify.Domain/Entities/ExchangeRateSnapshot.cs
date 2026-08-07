@@ -15,6 +15,8 @@ public class ExchangeRateSnapshot : BaseEntity
 
     public ExchangeRateSnapshot(string baseCurrency, string targetCurrency, decimal rate, string source, DateTimeOffset fetchedAt)
     {
+        Id = GuidGenerator.NewId();
+        CreatedAt = DateTimeOffset.UtcNow;
         BaseCurrency = baseCurrency;
         TargetCurrency = targetCurrency;
         Rate = rate;

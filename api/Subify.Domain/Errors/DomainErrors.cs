@@ -85,11 +85,29 @@ public static class DomainErrors
             "AI API Key Missing",
             "AI is not configured. A Super Admin must set an LLM API key in System Settings.");
 
+        /// <summary>Provider rejected the key (401/403). Distinct from missing key so UI can prompt re-entry.</summary>
+        public static readonly Error InvalidApiKey = Error.Unauthorized(
+            "AI_KEY_INVALID",
+            "AI API Key Invalid",
+            "The LLM provider rejected the API key (401/403). Save a valid key for the selected provider, then Test AI again.");
+
         public static readonly Error RateLimitExceededMinute = Error.TooManyRequest("AI_002", "Rate Limit Exceeded (Minute)", "You have exceeded the rate limit of 5 requests per minute.");
         public static readonly Error RateLimitExceededDaily = Error.TooManyRequest("AI_003", "Rate Limit Exceeded (Daily)", "You have exceeded the daily limit of 20 AI requests.");
         public static readonly Error ServiceUnavailable = Error.ServiceUnavailable("AI_004", "AI Service Unavailable", "The AI service is temporarily unavailable.");
         public static readonly Error ProcessingError = Error.Failure("AI_005", "AI Processing Error", "An error occurred while processing your request.");
         public static readonly Error InsufficientData = Error.Failure("AI_006", "Insufficient Data", "You need at least 1 subscription for AI analysis.");
+        public static readonly Error HistoryNotFound = Error.NotFound(
+            "AI_007",
+            "AI History Not Found",
+            "The AI analysis entry was not found or does not belong to you.");
+
+        public static Error ProviderHttpError(int statusCode, string? providerMessage) =>
+            Error.ServiceUnavailable(
+                "AI_PROVIDER_ERROR",
+                "AI Provider Error",
+                string.IsNullOrWhiteSpace(providerMessage)
+                    ? $"The LLM provider returned HTTP {statusCode}."
+                    : $"The LLM provider returned HTTP {statusCode}: {providerMessage.Trim()}");
     }
 
     public static class ProfileErrors
@@ -108,6 +126,24 @@ public static class DomainErrors
 
         public static readonly Error InvalidDateRange = Error.Failure("REP_001", "Invalid Date Range", "The date range is invalid.");
         public static readonly Error InsufficientData = Error.Failure("REP_002", "Insufficient Data", "Not enough data for the requested report.");
+    }
+
+    public static class ExchangeRateErrors
+    {
+        public static readonly Error InvalidBase = Error.Failure(
+            "FX_001",
+            "Invalid Base Currency",
+            "Base currency is not supported.");
+
+        public static readonly Error ProviderUnavailable = Error.ServiceUnavailable(
+            "FX_002",
+            "Exchange Rate Provider Unavailable",
+            "Could not fetch live rates and no last-known snapshot is available.");
+
+        public static readonly Error NoSnapshot = Error.NotFound(
+            "FX_003",
+            "Exchange Rates Not Found",
+            "No exchange rate snapshot is available for the requested base currency.");
     }
 
     public static class ResourceErrors
@@ -150,6 +186,28 @@ public static class DomainErrors
         public static readonly Error AccessDenied = Error.Forbidden("USER_002", "User Access Denied", "You do not have permission to access this user.");
         public static readonly Error UnAuthorized = Error.Unauthorized("USER_003", "User Not Authorized", "You must be logged in to access this user.");
         public static readonly Error CannotModifySuperAdmin = Error.Forbidden("USER_004", "Cannot Modify Super Admin", "The Super Admin account cannot be modified this way.");
+        public static readonly Error AccountDisabled = Error.Forbidden(
+            "USER_006",
+            "Account Disabled",
+            "This account has been disabled. Contact an administrator.");
+        public static readonly Error CannotDisableSelf = Error.Failure(
+            "USER_007",
+            "Cannot Disable Self",
+            "You cannot disable or lock your own account.");
+        public static readonly Error InvalidRole = Error.Failure(
+            "USER_008",
+            "Invalid Role",
+            "Role must be User or Admin. SuperAdmin cannot be assigned via this endpoint.");
+        public static readonly Error CannotChangeOwnRole = Error.Failure(
+            "USER_009",
+            "Cannot Change Own Role",
+            "You cannot change your own role.");
+
+        /// <summary>Admin reset-password is for other users only; use change-password for self.</summary>
+        public static readonly Error UseChangePassword = Error.Failure(
+            "USER_005",
+            "Use Change Password",
+            "Use change-password for your own account.");
     }
 
     public static class CategoryErrors

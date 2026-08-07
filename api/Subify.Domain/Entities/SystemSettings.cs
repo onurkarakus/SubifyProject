@@ -5,14 +5,15 @@ namespace Subify.Domain.Entities;
 
 /// <summary>
 /// Instance-wide settings (singleton row). Secrets: AiApiKey, SmtpPassword.
-/// SMTP is stored for later EmailSend (Faz 15); sending is not enabled by domain alone.
+/// SMTP credentials and SmtpEnabled flag; actual send requires SmtpEmailSender + valid host/from.
 /// </summary>
 public class SystemSettings : BaseEntity
 {
     public const int InstanceNameMaxLength = 200;
     public const int TimeZoneIdMaxLength = 100;
     public const int AiProviderMaxLength = 100;
-    public const int AiModelMaxLength = 100;
+    public const int AiModelMaxLength = 200;
+    public const int AiBaseUrlMaxLength = 500;
     public const int SmtpHostMaxLength = 255;
     public const int SmtpUserMaxLength = 255;
     public const int SmtpFromNameMaxLength = 200;
@@ -29,12 +30,20 @@ public class SystemSettings : BaseEntity
     public string? TimeZoneId { get; private set; }
     public bool AllowPublicRegistration { get; private set; }
 
-    // --- AI (BYOK) ---
+    /// <summary>3S.3.2 — default accent for new users (profile may override).</summary>
+    public string DefaultApplicationThemeColor { get; private set; } = ThemeColors.Default;
+
+    /// <summary>3S.3.2 — default dark mode for new users (profile may override).</summary>
+    public bool DefaultDarkTheme { get; private set; }
+
+    // --- AI (BYOK, OpenAI-compatible) ---
     public string? AiProvider { get; private set; }
     public string? AiApiKey { get; private set; }
     public string? AiModel { get; private set; }
+    /// <summary>Optional override; when set, used instead of provider preset base URL.</summary>
+    public string? AiBaseUrl { get; private set; }
 
-    // --- SMTP (persist only; send in Faz 15) ---
+    // --- SMTP (enabled + host/port/from → outbound mail) ---
     public bool SmtpEnabled { get; private set; }
     public string? SmtpHost { get; private set; }
     public int? SmtpPort { get; private set; }
@@ -60,6 +69,8 @@ public class SystemSettings : BaseEntity
             DefaultCurrency = SupportedCurrencies.Default,
             TimeZoneId = "Europe/Istanbul",
             AllowPublicRegistration = false,
+            DefaultApplicationThemeColor = ThemeColors.Default,
+            DefaultDarkTheme = false,
             SmtpEnabled = false,
             CreatedAt = DateTimeOffset.UtcNow
         };
@@ -70,7 +81,9 @@ public class SystemSettings : BaseEntity
         string? defaultLocale = null,
         string? defaultCurrency = null,
         string? timeZoneId = null,
-        bool? allowPublicRegistration = null)
+        bool? allowPublicRegistration = null,
+        string? defaultApplicationThemeColor = null,
+        bool? defaultDarkTheme = null)
     {
         if (instanceName is not null)
         {
@@ -99,6 +112,16 @@ public class SystemSettings : BaseEntity
             AllowPublicRegistration = allowPublicRegistration.Value;
         }
 
+        if (defaultApplicationThemeColor is not null)
+        {
+            DefaultApplicationThemeColor = ThemeColors.Normalize(defaultApplicationThemeColor);
+        }
+
+        if (defaultDarkTheme is not null)
+        {
+            DefaultDarkTheme = defaultDarkTheme.Value;
+        }
+
         Touch();
     }
 
@@ -106,7 +129,11 @@ public class SystemSettings : BaseEntity
     /// Updates AI settings. Pass <paramref name="aiApiKey"/> null to leave key unchanged;
     /// pass empty string to clear the key.
     /// </summary>
-    public void UpdateAi(string? aiProvider = null, string? aiApiKey = null, string? aiModel = null)
+    public void UpdateAi(
+        string? aiProvider = null,
+        string? aiApiKey = null,
+        string? aiModel = null,
+        string? aiBaseUrl = null)
     {
         if (aiProvider is not null)
         {
@@ -115,12 +142,17 @@ public class SystemSettings : BaseEntity
 
         if (aiApiKey is not null)
         {
-            AiApiKey = string.IsNullOrWhiteSpace(aiApiKey) ? null : aiApiKey.Trim();
+            AiApiKey = NormalizeSecret(aiApiKey);
         }
 
         if (aiModel is not null)
         {
             AiModel = string.IsNullOrWhiteSpace(aiModel) ? null : aiModel.Trim();
+        }
+
+        if (aiBaseUrl is not null)
+        {
+            AiBaseUrl = string.IsNullOrWhiteSpace(aiBaseUrl) ? null : aiBaseUrl.Trim().TrimEnd('/');
         }
 
         Touch();
@@ -197,6 +229,23 @@ public class SystemSettings : BaseEntity
     }
 
     public bool HasAiConfigured => !string.IsNullOrWhiteSpace(AiApiKey);
+
+    /// <summary>Trim; strip accidental "Bearer " paste; empty → null.</summary>
+    private static string? NormalizeSecret(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = value.Trim().Trim('"').Trim('\'');
+        if (trimmed.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = trimmed["Bearer ".Length..].Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed;
+    }
 
     public bool HasSmtpConfigured =>
         SmtpEnabled

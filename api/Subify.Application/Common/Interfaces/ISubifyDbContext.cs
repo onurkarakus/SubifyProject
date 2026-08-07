@@ -31,12 +31,14 @@ public interface ISubifyDbContext : IUnitOfWork
     DbSet<UserCategory> UserCategories { get; }
     DbSet<Provider> Providers { get; }
     DbSet<Subscription> Subscriptions { get; }
+    DbSet<SubscriptionPriceHistory> SubscriptionPriceHistories { get; }
 
     // --- Instance / i18n / notifications ---
     DbSet<SystemSettings> SystemSettings { get; }
     DbSet<Resource> Resources { get; }
     DbSet<NotificationSetting> NotificationSettings { get; }
     DbSet<EmailTemplates> EmailTemplates { get; }
+    DbSet<EmailSendLog> EmailSendLogs { get; }
 
     // --- Logs / FX ---
     DbSet<ActivityLog> ActivityLogs { get; }
