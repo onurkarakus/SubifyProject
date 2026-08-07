@@ -25,7 +25,6 @@ internal static class SubscriptionActivitySnapshots
                 entity.ProviderId,
                 entity.CategoryId,
                 entity.UserCategoryId,
-                entity.LastUsedAt,
                 entity.Notes,
                 entity.Archived
             },

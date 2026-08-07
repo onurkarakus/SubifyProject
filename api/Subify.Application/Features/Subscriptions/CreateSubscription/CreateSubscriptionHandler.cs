@@ -65,7 +65,6 @@ public sealed class CreateSubscriptionHandler
             providerId: request.ProviderId,
             categoryId: request.CategoryId,
             userCategoryId: request.UserCategoryId,
-            lastUsedAt: request.LastUsedAt,
             notes: request.Notes);
 
         if (create.IsFailure)

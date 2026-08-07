@@ -91,7 +91,31 @@ public sealed class ListSubscriptionsHandler
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        var data = items.Select(SubscriptionResponse.FromEntity).ToList();
+        // 16.4 — latest price change per subscription on the page
+        var ids = items.Select(i => i.Id).ToList();
+        var latestBySub = new Dictionary<Guid, SubscriptionPriceChangeDto>();
+        if (ids.Count > 0)
+        {
+            var histories = await _db.SubscriptionPriceHistories
+                .AsNoTracking()
+                .Where(h => h.UserId == userId && ids.Contains(h.SubscriptionId))
+                .ToListAsync(cancellationToken);
+
+            latestBySub = histories
+                .GroupBy(h => h.SubscriptionId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => SubscriptionPriceChangeDto.FromEntity(
+                        g.OrderByDescending(x => x.ChangedAt)
+                            .ThenByDescending(x => x.Id)
+                            .First()));
+        }
+
+        var data = items
+            .Select(s => SubscriptionResponse.FromEntity(
+                s,
+                latestPriceChange: latestBySub.GetValueOrDefault(s.Id)))
+            .ToList();
 
         // 4.1.5 / 4.3.3 — summary always from active non-archived matching filters (not page slice).
         var summaryRows = await query

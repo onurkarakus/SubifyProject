@@ -15,5 +15,4 @@ public sealed record UpdateSubscriptionCommand(
     Guid? ProviderId = null,
     Guid? CategoryId = null,
     Guid? UserCategoryId = null,
-    DateOnly? LastUsedAt = null,
     string? Notes = null) : IRequest<Result<SubscriptionResponse>>;
