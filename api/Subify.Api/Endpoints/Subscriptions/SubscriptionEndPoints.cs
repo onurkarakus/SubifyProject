@@ -190,7 +190,6 @@ public sealed class SubscriptionEndPoints : IEndpoint
         Guid? ProviderId = null,
         Guid? CategoryId = null,
         Guid? UserCategoryId = null,
-        DateOnly? LastUsedAt = null,
         string? Notes = null)
     {
         public UpdateSubscriptionCommand ToCommand(Guid id) =>
@@ -205,7 +204,6 @@ public sealed class SubscriptionEndPoints : IEndpoint
                 ProviderId: ProviderId,
                 CategoryId: CategoryId,
                 UserCategoryId: UserCategoryId,
-                LastUsedAt: LastUsedAt,
                 Notes: Notes);
     }
 }
