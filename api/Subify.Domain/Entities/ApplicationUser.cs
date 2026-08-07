@@ -30,6 +30,15 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
+    /// Soft-disable flag (7.1.5). When true, login is rejected even if password is valid.
+    /// Distinct from temporary Identity lockout (failed attempts / admin lock).
+    /// </summary>
+    public bool IsDisabled { get; set; }
+
+    /// <summary>When the account was soft-disabled; null when active.</summary>
+    public DateTimeOffset? DisabledAt { get; set; }
+
+    /// <summary>
     /// Applies registration defaults for a new user (profile fields + Identity username/email).
     /// Email confirmation is always true (OS: no email confirm flow).
     /// </summary>
@@ -46,8 +55,69 @@ public class ApplicationUser : IdentityUser<Guid>
         MonthlyBudget = null;
         ApplicationThemeColor = ThemeColors.Default;
         DarkTheme = false;
+        IsDisabled = false;
+        DisabledAt = null;
         CreatedAt = DateTimeOffset.UtcNow;
         UpdatedAt = null;
+    }
+
+    /// <summary>
+    /// Applies instance-wide defaults (locale/currency/theme) for new users (3S.3.2).
+    /// Call after <see cref="ApplyRegistrationProfile"/> when SystemSettings is available.
+    /// </summary>
+    public void ApplyInstanceDefaults(
+        string? locale = null,
+        string? mainCurrency = null,
+        string? applicationThemeColor = null,
+        bool? darkTheme = null)
+    {
+        if (locale is not null)
+        {
+            Locale = SupportedLocales.Normalize(locale);
+        }
+
+        if (mainCurrency is not null)
+        {
+            MainCurrency = SupportedCurrencies.Normalize(mainCurrency);
+        }
+
+        if (applicationThemeColor is not null)
+        {
+            ApplicationThemeColor = ThemeColors.Normalize(applicationThemeColor);
+        }
+
+        if (darkTheme is not null)
+        {
+            DarkTheme = darkTheme.Value;
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Soft-disable account (7.1.5). Idempotent.</summary>
+    public void Disable()
+    {
+        if (IsDisabled)
+        {
+            return;
+        }
+
+        IsDisabled = true;
+        DisabledAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Re-enable a soft-disabled account. Idempotent.</summary>
+    public void Enable()
+    {
+        if (!IsDisabled)
+        {
+            return;
+        }
+
+        IsDisabled = false;
+        DisabledAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>

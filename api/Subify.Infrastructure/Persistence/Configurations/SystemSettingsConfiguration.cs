@@ -31,6 +31,15 @@ public sealed class SystemSettingsConfiguration : IEntityTypeConfiguration<Syste
             .IsRequired()
             .HasDefaultValue(false);
 
+        builder.Property(s => s.DefaultApplicationThemeColor)
+            .IsRequired()
+            .HasMaxLength(UserProfileConstants.ThemeColorMaxLength)
+            .HasDefaultValue(ThemeColors.Default);
+
+        builder.Property(s => s.DefaultDarkTheme)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(s => s.IsSetupComplete)
             .IsRequired()
             .HasDefaultValue(false);
@@ -43,6 +52,9 @@ public sealed class SystemSettingsConfiguration : IEntityTypeConfiguration<Syste
 
         builder.Property(s => s.AiModel)
             .HasMaxLength(SystemSettings.AiModelMaxLength);
+
+        builder.Property(s => s.AiBaseUrl)
+            .HasMaxLength(SystemSettings.AiBaseUrlMaxLength);
 
         builder.Property(s => s.SmtpEnabled)
             .IsRequired()

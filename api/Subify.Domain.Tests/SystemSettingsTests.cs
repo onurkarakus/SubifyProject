@@ -18,6 +18,8 @@ public class SystemSettingsTests
         Assert.Equal(SupportedCurrencies.Default, settings.DefaultCurrency);
         Assert.Equal("Europe/Istanbul", settings.TimeZoneId);
         Assert.False(settings.AllowPublicRegistration);
+        Assert.Equal(ThemeColors.Default, settings.DefaultApplicationThemeColor);
+        Assert.False(settings.DefaultDarkTheme);
         Assert.False(settings.SmtpEnabled);
         Assert.Null(settings.AiApiKey);
         Assert.Null(settings.SmtpPassword);
@@ -51,5 +53,33 @@ public class SystemSettingsTests
         settings.UpdateAi(aiApiKey: "");
         Assert.Null(settings.AiApiKey);
         Assert.False(settings.HasAiConfigured);
+    }
+
+    [Fact]
+    public void UpdateAi_sets_and_clears_base_url()
+    {
+        var settings = SystemSettings.CreateDefault();
+        settings.UpdateAi(
+            aiProvider: "ollama",
+            aiApiKey: "ollama",
+            aiModel: "llama3.2",
+            aiBaseUrl: "http://127.0.0.1:11434/v1/");
+
+        Assert.Equal("http://127.0.0.1:11434/v1", settings.AiBaseUrl);
+
+        settings.UpdateAi(aiBaseUrl: "");
+        Assert.Null(settings.AiBaseUrl);
+    }
+
+    [Fact]
+    public void UpdateInstance_sets_theme_defaults()
+    {
+        var settings = SystemSettings.CreateDefault();
+        settings.UpdateInstance(
+            defaultApplicationThemeColor: ThemeColors.OceanBlue,
+            defaultDarkTheme: true);
+
+        Assert.Equal(ThemeColors.OceanBlue, settings.DefaultApplicationThemeColor);
+        Assert.True(settings.DefaultDarkTheme);
     }
 }

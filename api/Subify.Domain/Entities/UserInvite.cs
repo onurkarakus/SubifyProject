@@ -3,7 +3,7 @@ using Subify.Domain.Common;
 namespace Subify.Domain.Entities;
 
 /// <summary>
-/// Single-use invite for multi-user onboarding (link in API/UI; email send later in Faz 15).
+/// Single-use invite for multi-user onboarding (link always in API/UI; optional email when SMTP configured).
 /// Plain token is never stored — only <see cref="TokenHash"/>.
 /// </summary>
 public class UserInvite : BaseEntity
@@ -87,6 +87,24 @@ public class UserInvite : BaseEntity
         {
             throw new InvalidOperationException(
                 "Invite cannot be marked as used (already used, expired, or invalid user).");
+        }
+    }
+
+    /// <summary>
+    /// Expires a still-pending invite (e.g. superseded by a newer invite for the same email).
+    /// </summary>
+    public void ExpireNow(DateTimeOffset? utcNow = null)
+    {
+        if (IsUsed)
+        {
+            return;
+        }
+
+        var now = utcNow ?? DateTimeOffset.UtcNow;
+        if (ExpiresAt > now)
+        {
+            ExpiresAt = now;
+            UpdatedAt = now;
         }
     }
 }

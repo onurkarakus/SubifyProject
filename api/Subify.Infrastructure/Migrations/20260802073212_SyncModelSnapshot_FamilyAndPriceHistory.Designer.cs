@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Subify.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Subify.Infrastructure.Persistence;
 namespace Subify.Infrastructure.Migrations
 {
     [DbContext(typeof(SubifyDbContext))]
-    partial class SubifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802073212_SyncModelSnapshot_FamilyAndPriceHistory")]
+    partial class SyncModelSnapshot_FamilyAndPriceHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -325,6 +328,11 @@ namespace Subify.Infrastructure.Migrations
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
+
+                    b.Property<bool>("ShareInFamilyBudget")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -764,6 +772,9 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateOnly?>("LastUsedAt")
+                        .HasColumnType("date");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -911,6 +922,11 @@ namespace Subify.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasDefaultValue("tr");
+
+                    b.Property<bool>("FamilyBudgetEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("InstanceName")
                         .HasMaxLength(200)

@@ -23,7 +23,6 @@ public class Subscription : BaseEntity, ISoftDeletable
     public BillingCycle BillingCycle { get; private set; }
     public int SharedWithCount { get; private set; }
     public DateOnly NextRenewalDate { get; private set; }
-    public DateOnly? LastUsedAt { get; private set; }
     public string? Notes { get; private set; }
 
     /// <summary>Soft-delete / cancel flag (archived subscriptions excluded from active totals).</summary>
@@ -75,7 +74,6 @@ public class Subscription : BaseEntity, ISoftDeletable
         Guid? providerId = null,
         Guid? categoryId = null,
         Guid? userCategoryId = null,
-        DateOnly? lastUsedAt = null,
         string? notes = null,
         DateOnly? today = null)
     {
@@ -109,7 +107,6 @@ public class Subscription : BaseEntity, ISoftDeletable
             providerId,
             categoryId,
             userCategoryId,
-            lastUsedAt,
             notes,
             archived: false);
 
@@ -127,7 +124,6 @@ public class Subscription : BaseEntity, ISoftDeletable
         Guid? providerId = null,
         Guid? categoryId = null,
         Guid? userCategoryId = null,
-        DateOnly? lastUsedAt = null,
         string? notes = null,
         DateOnly? today = null)
     {
@@ -161,7 +157,6 @@ public class Subscription : BaseEntity, ISoftDeletable
             providerId,
             categoryId,
             userCategoryId,
-            lastUsedAt,
             notes,
             Archived);
 
@@ -226,7 +221,6 @@ public class Subscription : BaseEntity, ISoftDeletable
         Guid? providerId,
         Guid? categoryId,
         Guid? userCategoryId,
-        DateOnly? lastUsedAt,
         string? notes,
         bool archived)
     {
@@ -240,7 +234,6 @@ public class Subscription : BaseEntity, ISoftDeletable
         BillingCycle = billingCycle;
         SharedWithCount = sharedWithCount;
         NextRenewalDate = nextRenewalDate;
-        LastUsedAt = lastUsedAt;
         Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
         Archived = archived;
     }

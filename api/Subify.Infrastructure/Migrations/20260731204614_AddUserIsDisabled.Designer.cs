@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Subify.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Subify.Infrastructure.Persistence;
 namespace Subify.Infrastructure.Migrations
 {
     [DbContext(typeof(SubifyDbContext))]
-    partial class SubifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731204614_AddUserIsDisabled")]
+    partial class AddUserIsDisabled
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -402,60 +405,6 @@ namespace Subify.Infrastructure.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("Subify.Domain.Entities.EmailSendLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DedupeKey")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Error")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<Guid?>("RelatedEntityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Success")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TemplateName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ToEmail")
-                        .IsRequired()
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DedupeKey")
-                        .IsUnique()
-                        .HasFilter("\"DedupeKey\" IS NOT NULL AND \"Success\" = TRUE");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("TemplateName", "SentAt");
-
-                    b.ToTable("EmailSendLogs", (string)null);
-                });
-
             modelBuilder.Entity("Subify.Domain.Entities.EmailTemplates", b =>
                 {
                     b.Property<Guid>("Id")
@@ -764,6 +713,9 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateOnly?>("LastUsedAt")
+                        .HasColumnType("date");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -810,53 +762,6 @@ namespace Subify.Infrastructure.Migrations
                     b.ToTable("Subscriptions", (string)null);
                 });
 
-            modelBuilder.Entity("Subify.Domain.Entities.SubscriptionPriceHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("ChangedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NewCurrency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<decimal>("NewPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("OldCurrency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<decimal>("OldPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<Guid>("SubscriptionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("SubscriptionId", "ChangedAt");
-
-                    b.ToTable("SubscriptionPriceHistories", (string)null);
-                });
-
             modelBuilder.Entity("Subify.Domain.Entities.SystemSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -866,13 +771,9 @@ namespace Subify.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("AiApiKey");
 
-                    b.Property<string>("AiBaseUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("AiModel")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("AiProvider")
                         .HasMaxLength(100)
@@ -886,24 +787,12 @@ namespace Subify.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DefaultApplicationThemeColor")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Royal Purple");
-
                     b.Property<string>("DefaultCurrency")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasDefaultValue("TRY");
-
-                    b.Property<bool>("DefaultDarkTheme")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("DefaultLocale")
                         .IsRequired()
@@ -1216,17 +1105,6 @@ namespace Subify.Infrastructure.Migrations
                     b.Navigation("User");
 
                     b.Navigation("UserCategory");
-                });
-
-            modelBuilder.Entity("Subify.Domain.Entities.SubscriptionPriceHistory", b =>
-                {
-                    b.HasOne("Subify.Domain.Entities.Subscription", "Subscription")
-                        .WithMany()
-                        .HasForeignKey("SubscriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
                 });
 
             modelBuilder.Entity("Subify.Domain.Entities.UserCategory", b =>
