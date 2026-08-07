@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Scalar.AspNetCore;
 using Serilog;
 using Subify.Api.Common.Cors;
@@ -8,6 +10,7 @@ using Subify.Api.Common.Health;
 using Subify.Api.Common.Logging;
 using Subify.Api.Common.OpenApi;
 using Subify.Api.Common.RateLimiting;
+using Subify.Api.Common.Security;
 using Subify.Api.Common.Setup;
 using Subify.Application;
 using Subify.Infrastructure;
@@ -15,7 +18,8 @@ using Subify.Infrastructure.Persistence.Seeding;
 
 namespace Subify.Api;
 
-public class Program
+/// <summary>Entry point. <c>partial</c> enables <c>WebApplicationFactory&lt;Program&gt;</c> (Faz 12.2).</summary>
+public partial class Program
 {
     public static async Task Main(string[] args)
     {
@@ -33,6 +37,14 @@ public class Program
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 
+            // Enums as camelCase strings in JSON (billingCycle: "monthly" not 1)
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+                options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
+
             builder.Services.AddSubifyCors(builder.Configuration, builder.Environment);
             builder.Services.AddSubifyRateLimiting(builder.Configuration);
             builder.Services.AddSubifyHealthChecks();
@@ -44,16 +56,24 @@ public class Program
 
             builder.Services.AddOpenApi(options =>
             {
+                // 14.2.1 title/version + 3.3.4 JWT scheme
+                options.AddDocumentTransformer<OpenApiInfoTransformer>();
                 options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
             });
 
             var app = builder.Build();
 
-            // Task 2.3.2 + 2.3.3: migrate then run idempotent seeders before accepting traffic
-            await DatabaseInitializer.InitializeAsync(app.Services);
+            // Task 2.3.2 + 2.3.3: migrate then seed (skip in automated WebApplicationFactory "Testing")
+            if (!app.Environment.IsEnvironment("Testing"))
+            {
+                await DatabaseInitializer.InitializeAsync(app.Services);
+            }
 
             // Exception handlers (Validation → 400, unhandled → SYS_001 / 500)
             app.UseExceptionHandler();
+
+            // 14.1.4 — baseline security headers (HSTS/CSP-for-HTML at reverse proxy)
+            app.UseSubifySecurityHeaders();
 
             // Structured HTTP request logging (method/path/status/elapsed only — no body/secrets)
             app.UseSubifySerilogRequestLogging();

@@ -15,6 +15,8 @@ public static class SerilogExtensions
     {
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
+            // 14.1.2 — mask secret-like properties when objects are destructured (@)
+            .Destructure.With<SensitiveDataDestructuringPolicy>()
             .Enrich.FromLogContext()
             .Enrich.WithProperty("Application", "Subify.Api")
             .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)

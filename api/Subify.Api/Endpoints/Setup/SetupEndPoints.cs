@@ -4,6 +4,7 @@ using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
 using Subify.Application.Features.Setup.CompleteSetup;
 using Subify.Application.Features.Setup.CreateSetupAdmin;
+using Subify.Application.Features.Setup.CreateSetupUser;
 using Subify.Application.Features.Setup.GetSetupStatus;
 using Subify.Application.Features.Setup.UpdateSetupAi;
 using Subify.Application.Features.Setup.UpdateSetupInstance;
@@ -70,6 +71,30 @@ public sealed class SetupEndPoints : IEndpoint
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequireAuthorization(AuthPolicies.SuperAdmin);
 
+        // 3S.4.1 — optional extra users while wizard is open
+        group.MapPost("/users", async (
+                [FromBody] CreateSetupUserCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(
+                    r => Results.Created($"/api/admin/users/{r.Id}", r),
+                    httpContext.Request.Path.Value);
+            })
+            .WithName("CreateSetupUser")
+            .WithSummary("Setup: add user")
+            .WithDescription(
+                "SuperAdmin only while setup incomplete. Email + fullName + password. " +
+                "Role User (default) or Admin. Never SuperAdmin. Skip step if none needed.")
+            .Produces<SetupUserResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization(AuthPolicies.SuperAdmin);
+
         group.MapPut("/smtp", async (
                 [FromBody] UpdateSetupSmtpCommand command,
                 IMediator mediator,
@@ -80,7 +105,7 @@ public sealed class SetupEndPoints : IEndpoint
                 return result.MapResult(() => Results.NoContent(), httpContext.Request.Path.Value);
             })
             .WithName("UpdateSetupSmtp")
-            .WithSummary("Setup: save SMTP (no send)")
+            .WithSummary("Setup: save SMTP settings")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)

@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.RateLimiting;
 using Subify.Api.Common.Abstractions;
 using Subify.Api.Common.Extensions;
 using Subify.Api.Common.RateLimiting;
-using Subify.Application.Features.Auth.AdminResetPassword;
+using Subify.Application.Features.Auth.AcceptInvite;
 using Subify.Application.Features.Auth.ChangePassword;
+using Subify.Application.Features.Auth.ForgotPassword;
 using Subify.Application.Features.Auth.Login;
 using Subify.Application.Features.Auth.Logout;
 using Subify.Application.Features.Auth.Refresh;
 using Subify.Application.Features.Auth.Register;
+using Subify.Application.Features.Auth.ResetPasswordWithToken;
 using Subify.Infrastructure.Authorization;
 
 namespace Subify.Api.Endpoints.Auth;
@@ -47,6 +49,29 @@ public class AuthEndPoints : IEndpoint
 
         MapRefreshEndpoint(group, "/refresh-token", "RefreshToken");
         MapRefreshEndpoint(group, "/refresh", "RefreshTokenAlias");
+
+        // 7.2.3 / 7.2.5 — public accept (works when public registration is off)
+        group.MapPost("/accept-invite", async (
+                [FromBody] AcceptInviteCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(
+                    onSuccess: r => Results.Ok(r),
+                    instance: httpContext.Request.Path.Value);
+            })
+            .WithName("AcceptInvite")
+            .WithSummary("Accept invite and create account")
+            .WithDescription(
+                "Body: token + fullName + password. Creates User role. " +
+                "Single-use + expiry enforced (AUTH_015). No public registration required.")
+            .Produces<AcceptInviteResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireRateLimiting(RateLimitingOptions.RegisterPolicy)
+            .AllowAnonymous();
 
         group.MapPost("/logout", async (
                 [FromBody] LogoutCommand command,
@@ -113,33 +138,54 @@ public class AuthEndPoints : IEndpoint
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .RequireAuthorization(AuthPolicies.Authenticated);
 
-        // Admin reset lives under /api/admin (task 3.2.15)
-        var admin = app.MapGroup("/api/admin")
-            .WithTags("Admin");
-
-        admin.MapPost("/users/{id:guid}/reset-password", async (
-                Guid id,
-                [FromBody] AdminResetPasswordBody body,
+        // 15.2.1 / 3.2.7 — forgot password (email when SMTP configured)
+        group.MapPost("/forgot-password", async (
+                [FromBody] ForgotPasswordCommand command,
                 IMediator mediator,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var result = await mediator.Send(
-                    new AdminResetPasswordCommand(id, body.NewPassword),
-                    cancellationToken);
+                var result = await mediator.Send(command, cancellationToken);
                 return result.MapResult(
                     onSuccess: () => Results.NoContent(),
                     instance: httpContext.Request.Path.Value);
             })
-            .WithName("AdminResetPassword")
-            .WithSummary("SuperAdmin reset user password")
-            .WithDescription("Sets a new password without email. Revokes target user sessions. Task 3.2.15.")
+            .WithName("ForgotPassword")
+            .WithSummary("Request password reset email")
+            .WithDescription(
+                "Always 204 for valid email format (no account enumeration). " +
+                "Sends ResetPassword template when user exists and SMTP is configured. " +
+                "No email confirm. Rate limited.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(AuthPolicies.SuperAdmin);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .RequireRateLimiting(RateLimitingOptions.LoginPolicy)
+            .AllowAnonymous();
+
+        // 15.2.1 / 3.2.8 — reset with token from email
+        group.MapPost("/reset-password", async (
+                [FromBody] ResetPasswordWithTokenCommand command,
+                IMediator mediator,
+                HttpContext httpContext,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.Send(command, cancellationToken);
+                return result.MapResult(
+                    onSuccess: () => Results.NoContent(),
+                    instance: httpContext.Request.Path.Value);
+            })
+            .WithName("ResetPasswordWithToken")
+            .WithSummary("Reset password with email token")
+            .WithDescription(
+                "Body: email + token + newPassword. Invalid/expired token → AUTH_009. " +
+                "Revokes refresh sessions on success.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .RequireRateLimiting(RateLimitingOptions.LoginPolicy)
+            .AllowAnonymous();
+
+        // Admin password reset: AdminUserEndPoints POST /api/admin/users/{id}/reset-password (3.2.15 / 7.5.1)
     }
 
     private static void MapRefreshEndpoint(RouteGroupBuilder group, string route, string name)
@@ -166,6 +212,4 @@ public class AuthEndPoints : IEndpoint
             .RequireRateLimiting(RateLimitingOptions.LoginPolicy)
             .AllowAnonymous();
     }
-
-    public sealed record AdminResetPasswordBody(string NewPassword);
 }

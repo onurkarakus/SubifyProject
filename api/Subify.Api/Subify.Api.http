@@ -293,3 +293,542 @@ Accept: application/json
 {
   "newPassword": "TempPass123!"
 }
+
+###
+
+### ---------------------------------------------------------------------------
+### Subscriptions (Faz 4.2) — requires Bearer after setup + login
+### ---------------------------------------------------------------------------
+
+# @name listSubscriptions
+GET {{host}}/api/subscriptions?includeArchived=false&page=1&pageSize=20
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name upcomingSubscriptions
+GET {{host}}/api/subscriptions/upcoming?days=7
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name createSubscription
+POST {{host}}/api/subscriptions
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "Netflix",
+  "price": 149.99,
+  "currency": "TRY",
+  "billingCycle": "monthly",
+  "sharedWithCount": 4,
+  "nextRenewalDate": "2026-08-15",
+  "notes": "Family plan"
+}
+
+###
+
+@subscriptionId = {{createSubscription.response.body.$.id}}
+
+# @name getSubscription
+GET {{host}}/api/subscriptions/{{subscriptionId}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name updateSubscription
+PUT {{host}}/api/subscriptions/{{subscriptionId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "Netflix Premium",
+  "price": 199.99,
+  "currency": "TRY",
+  "billingCycle": "monthly",
+  "sharedWithCount": 4,
+  "nextRenewalDate": "2026-08-20",
+  "notes": "Upgraded"
+}
+
+###
+
+# @name archiveSubscription
+DELETE {{host}}/api/subscriptions/{{subscriptionId}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name reactivateSubscription
+POST {{host}}/api/subscriptions/{{subscriptionId}}/reactivate
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Categories (Faz 5.1) — system catalog, localized names
+### ---------------------------------------------------------------------------
+
+# @name listSystemCategories
+GET {{host}}/api/categories?locale=tr
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+Accept-Language: tr-TR,tr;q=0.9,en;q=0.8
+
+###
+
+# @name listUserCategories
+GET {{host}}/api/categories/user
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name createUserCategory
+POST {{host}}/api/categories/user
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "VPN Servisleri",
+  "icon": "shield",
+  "color": "#6C5CE7"
+}
+
+###
+
+@userCategoryId = {{createUserCategory.response.body.$.id}}
+
+# @name updateUserCategory
+PUT {{host}}/api/categories/user/{{userCategoryId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "VPN & Security",
+  "icon": "shield",
+  "color": "#6C5CE7"
+}
+
+###
+
+# @name deleteUserCategory
+DELETE {{host}}/api/categories/user/{{userCategoryId}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Providers (Faz 5.2) — active catalog
+### ---------------------------------------------------------------------------
+
+# @name listProviders
+GET {{host}}/api/providers?search=net&region=TR
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name getProvider
+GET {{host}}/api/providers/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Admin · Providers (5.2.3) — SuperAdmin only
+### ---------------------------------------------------------------------------
+
+# @name adminCreateProvider
+POST {{host}}/api/admin/providers
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "Netflix",
+  "slug": "netflix",
+  "currency": "TRY",
+  "billingCycle": "monthly",
+  "region": "TR",
+  "price": 149.99,
+  "logoUrl": null,
+  "sourceUrl": "https://www.netflix.com"
+}
+
+###
+
+@adminProviderId = {{adminCreateProvider.response.body.$.id}}
+
+# @name adminUpdateProvider
+PUT {{host}}/api/admin/providers/{{adminProviderId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "name": "Netflix",
+  "slug": "netflix",
+  "currency": "TRY",
+  "billingCycle": "monthly",
+  "region": "TR",
+  "price": 159.99,
+  "isActive": true
+}
+
+###
+
+# @name adminDeleteProvider
+DELETE {{host}}/api/admin/providers/{{adminProviderId}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### ---------------------------------------------------------------------------
+### Profile (Faz 5.3)
+### ---------------------------------------------------------------------------
+
+# @name getProfile
+GET {{host}}/api/profile
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name updateProfile
+PUT {{host}}/api/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "fullName": "Onur Karakuş",
+  "locale": "tr",
+  "mainCurrency": "TRY",
+  "monthlyBudget": 500,
+  "applicationThemeColor": "Royal Purple",
+  "darkTheme": true
+}
+
+###
+
+# @name getNotificationSettings
+GET {{host}}/api/profile/notifications
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name updateNotificationSettings
+PUT {{host}}/api/profile/notifications
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "pushEnabled": true,
+  "daysBeforeRenewal": 5,
+  "emailEnabled": true
+}
+
+###
+
+### ---------------------------------------------------------------------------
+### Activity (Faz 5.4)
+### ---------------------------------------------------------------------------
+
+# @name listActivity
+GET {{host}}/api/activity?page=1&pageSize=10&entityType=Subscription
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### ---------------------------------------------------------------------------
+### Reports (Faz 6.1)
+### ---------------------------------------------------------------------------
+
+# @name monthlySpend
+GET {{host}}/api/reports/monthly-spend?months=12&currency=TRY
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name categoryBreakdown
+GET {{host}}/api/reports/category-breakdown?currency=TRY&lang=tr
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name currencyDistribution
+GET {{host}}/api/reports/currency-distribution?currency=TRY
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+
+### ---------------------------------------------------------------------------
+### Exchange rates (Faz 6.2)
+### ---------------------------------------------------------------------------
+
+# @name exchangeRates
+GET {{host}}/api/exchange-rates?base=TRY
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name exchangeRatesUsd
+GET {{host}}/api/exchange-rates?base=USD
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+
+### ---------------------------------------------------------------------------
+### Resources / i18n (Faz 6.3)
+### ---------------------------------------------------------------------------
+
+# @name getResources
+GET {{host}}/api/resources?lang=tr
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name getResourcesDelta
+GET {{host}}/api/resources?lang=tr&since=2020-01-01T00:00:00Z
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name listAdminResources
+GET {{host}}/api/admin/resources?lang=tr&pageName=Dashboard
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name createAdminResource
+POST {{host}}/api/admin/resources
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "pageName": "Dashboard",
+  "name": "custom_tip",
+  "languageCode": "tr",
+  "value": "Özel ipucu"
+}
+
+###
+
+@resourceId = {{createAdminResource.response.body.$.id}}
+
+# @name updateAdminResource
+PUT {{host}}/api/admin/resources/{{resourceId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "pageName": "Dashboard",
+  "name": "custom_tip",
+  "languageCode": "tr",
+  "value": "Güncellenmiş ipucu"
+}
+
+###
+
+# @name deleteAdminResource
+DELETE {{host}}/api/admin/resources/{{resourceId}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+
+### ---------------------------------------------------------------------------
+### Admin · Users (Faz 7.1)
+### ---------------------------------------------------------------------------
+
+# @name listAdminUsers
+GET {{host}}/api/admin/users?page=1&pageSize=20&search=
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name createAdminUser
+POST {{host}}/api/admin/users
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "email": "member@example.com",
+  "fullName": "Family Member",
+  "password": "Password1",
+  "role": "User"
+}
+
+###
+
+@adminUserId = {{createAdminUser.response.body.$.id}}
+
+# @name patchAdminUserLock
+PATCH {{host}}/api/admin/users/{{adminUserId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "isLocked": true
+}
+
+###
+
+# @name patchAdminUserDisable
+PATCH {{host}}/api/admin/users/{{adminUserId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "isDisabled": true
+}
+
+###
+
+# @name patchAdminUserRole
+PATCH {{host}}/api/admin/users/{{adminUserId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "role": "Admin",
+  "isLocked": false,
+  "isDisabled": false
+}
+
+###
+
+# @name adminResetPassword
+# 7.5.1 — Şifre sıfırla (admin users table action)
+POST {{host}}/api/admin/users/{{adminUserId}}/reset-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "newPassword": "NewPassword1"
+}
+
+
+### ---------------------------------------------------------------------------
+### Admin · Invites (Faz 7.2)
+### ---------------------------------------------------------------------------
+
+# @name createInvite
+POST {{host}}/api/admin/invites
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "email": "family@example.com",
+  "expiryDays": 7
+}
+
+###
+
+@inviteToken = {{createInvite.response.body.$.token}}
+
+# @name listInvites
+GET {{host}}/api/admin/invites
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name acceptInvite
+POST {{host}}/api/auth/accept-invite
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "token": "{{inviteToken}}",
+  "fullName": "Family Member",
+  "password": "Password1"
+}
+
+
+### ---------------------------------------------------------------------------
+### Admin · SystemSettings (Faz 7.3)
+### ---------------------------------------------------------------------------
+
+# @name getSystemSettings
+GET {{host}}/api/admin/settings
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# @name updateSystemSettings
+PUT {{host}}/api/admin/settings
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "instanceName": "Home Subify",
+  "defaultLocale": "tr",
+  "defaultCurrency": "TRY",
+  "timeZoneId": "Europe/Istanbul",
+  "allowPublicRegistration": false,
+  "aiProvider": "openai",
+  "aiApiKey": "sk-example-do-not-commit",
+  "aiModel": "gpt-4o-mini",
+  "smtpEnabled": false,
+  "smtpHost": "smtp.example.com",
+  "smtpPort": 587,
+  "smtpUser": "noreply@example.com",
+  "smtpPassword": "",
+  "smtpFromName": "Subify",
+  "smtpFromEmail": "noreply@example.com"
+}
+
+
+### ---------------------------------------------------------------------------
+### AI (Faz 9)
+### ---------------------------------------------------------------------------
+
+# @name aiAnalyze
+POST {{host}}/api/ai/analyze
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "lang": "tr"
+}
+
+###
+
+# @name aiHistory
+GET {{host}}/api/ai/history?page=1&pageSize=10
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+

@@ -16,9 +16,14 @@ public sealed class SetupGateMiddleware
         new("/api/setup"),
         new("/api/auth/login"),
         new("/api/auth/register"),
+        new("/api/auth/accept-invite"),
+        new("/api/auth/forgot-password"),
+        new("/api/auth/reset-password"),
         new("/api/auth/refresh"),
         new("/api/auth/refresh-token"),
         new("/api/auth/logout"),
+        // 3S.6.3 — optional AI ping during wizard (still SuperAdmin-authorized on endpoint)
+        new("/api/admin/settings/test-ai"),
         new("/openapi"),
         new("/scalar")
     ];
