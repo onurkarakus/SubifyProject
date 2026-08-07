@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Interfaces;
 using Subify.Application.Features.Subscriptions.CreateSubscription;
 using Subify.Domain.Constants;
+using Subify.Domain.Entities;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
 
@@ -69,6 +70,8 @@ public sealed class UpdateSubscriptionHandler
         }
 
         var oldValues = SubscriptionActivitySnapshots.Capture(entity);
+        var oldPrice = entity.Price;
+        var oldCurrency = entity.Currency;
 
         var update = entity.Update(
             name: request.Name,
@@ -80,12 +83,25 @@ public sealed class UpdateSubscriptionHandler
             providerId: request.ProviderId,
             categoryId: request.CategoryId,
             userCategoryId: request.UserCategoryId,
-            lastUsedAt: request.LastUsedAt,
             notes: request.Notes);
 
         if (update.IsFailure)
         {
             return Result.Failure<SubscriptionResponse>(update.Error);
+        }
+
+        // 16.4.1 — price/currency change audit
+        var priceChanged = oldPrice != entity.Price
+            || !string.Equals(oldCurrency, entity.Currency, StringComparison.OrdinalIgnoreCase);
+        if (priceChanged)
+        {
+            _db.SubscriptionPriceHistories.Add(SubscriptionPriceHistory.Create(
+                subscriptionId: entity.Id,
+                userId: userId,
+                oldPrice: oldPrice,
+                oldCurrency: oldCurrency,
+                newPrice: entity.Price,
+                newCurrency: entity.Currency));
         }
 
         await _activityLogger.LogAsync(
@@ -106,6 +122,21 @@ public sealed class UpdateSubscriptionHandler
             .IncludeDetails()
             .FirstAsync(s => s.Id == entity.Id, cancellationToken);
 
-        return Result.Success(SubscriptionResponse.FromEntity(loaded));
+        // Materialize then order (SQLite DateTimeOffset ORDER BY safety)
+        var history = await _db.SubscriptionPriceHistories
+            .AsNoTracking()
+            .Where(h => h.SubscriptionId == entity.Id)
+            .ToListAsync(cancellationToken);
+
+        var dtos = history
+            .OrderByDescending(h => h.ChangedAt)
+            .ThenByDescending(h => h.Id)
+            .Take(20)
+            .Select(SubscriptionPriceChangeDto.FromEntity)
+            .ToList();
+        return Result.Success(SubscriptionResponse.FromEntity(
+            loaded,
+            latestPriceChange: dtos.FirstOrDefault(),
+            priceHistory: dtos));
     }
 }

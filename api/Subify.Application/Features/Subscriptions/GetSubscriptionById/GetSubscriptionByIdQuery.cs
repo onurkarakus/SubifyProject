@@ -50,6 +50,21 @@ public sealed class GetSubscriptionByIdHandler
             return Result.Failure<SubscriptionResponse>(DomainErrors.Subscription.SubscriptionAccessDenied);
         }
 
-        return Result.Success(SubscriptionResponse.FromEntity(entity));
+        // Materialize then order (SQLite DateTimeOffset ORDER BY safety)
+        var history = await _db.SubscriptionPriceHistories
+            .AsNoTracking()
+            .Where(h => h.SubscriptionId == entity.Id && h.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        var dtos = history
+            .OrderByDescending(h => h.ChangedAt)
+            .ThenByDescending(h => h.Id)
+            .Take(20)
+            .Select(SubscriptionPriceChangeDto.FromEntity)
+            .ToList();
+        return Result.Success(SubscriptionResponse.FromEntity(
+            entity,
+            latestPriceChange: dtos.FirstOrDefault(),
+            priceHistory: dtos));
     }
 }
