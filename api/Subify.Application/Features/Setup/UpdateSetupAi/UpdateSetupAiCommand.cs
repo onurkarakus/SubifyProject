@@ -12,14 +12,16 @@ namespace Subify.Application.Features.Setup.UpdateSetupAi;
 public sealed record UpdateSetupAiCommand(
     string? AiProvider,
     string? AiApiKey,
-    string? AiModel) : IRequest<Result>;
+    string? AiModel,
+    string? AiBaseUrl = null) : IRequest<Result>;
 
 public sealed class UpdateSetupAiValidator : AbstractValidator<UpdateSetupAiCommand>
 {
     public UpdateSetupAiValidator()
     {
         RuleFor(x => x.AiProvider).MaximumLength(100).When(x => x.AiProvider is not null);
-        RuleFor(x => x.AiModel).MaximumLength(100).When(x => x.AiModel is not null);
+        RuleFor(x => x.AiModel).MaximumLength(200).When(x => x.AiModel is not null);
+        RuleFor(x => x.AiBaseUrl).MaximumLength(500).When(x => x.AiBaseUrl is not null);
     }
 }
 
@@ -55,7 +57,8 @@ public sealed class UpdateSetupAiHandler : IRequestHandler<UpdateSetupAiCommand,
         settings.UpdateAi(
             aiProvider: request.AiProvider,
             aiApiKey: request.AiApiKey,
-            aiModel: request.AiModel);
+            aiModel: request.AiModel,
+            aiBaseUrl: request.AiBaseUrl);
 
         await _db.SaveChangesAsync(cancellationToken);
         return Result.Success();

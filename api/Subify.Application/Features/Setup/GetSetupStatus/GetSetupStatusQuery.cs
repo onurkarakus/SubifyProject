@@ -22,7 +22,9 @@ public sealed record SetupStatusResponse(
     string? DefaultCurrency,
     bool HasSmtpConfigured,
     bool HasAiConfigured,
-    string Version);
+    string Version,
+    string? DefaultApplicationThemeColor = null,
+    bool DefaultDarkTheme = false);
 
 public sealed class GetSetupStatusHandler : IRequestHandler<GetSetupStatusQuery, Result<SetupStatusResponse>>
 {
@@ -67,6 +69,8 @@ public sealed class GetSetupStatusHandler : IRequestHandler<GetSetupStatusQuery,
             DefaultCurrency: settings?.DefaultCurrency,
             HasSmtpConfigured: settings?.HasSmtpConfigured ?? false,
             HasAiConfigured: settings?.HasAiConfigured ?? false,
-            Version: ApiVersion));
+            Version: ApiVersion,
+            DefaultApplicationThemeColor: settings?.DefaultApplicationThemeColor,
+            DefaultDarkTheme: settings?.DefaultDarkTheme ?? false));
     }
 }

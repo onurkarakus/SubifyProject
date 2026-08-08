@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Interfaces;
+using Subify.Domain.Constants;
 using Subify.Domain.Entities;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
@@ -12,6 +13,7 @@ namespace Subify.Application.Features.Auth.Login;
 /// <summary>
 /// Email/password login (tasks 3.2.2 / 3.2.10). Issues tokens + user summary.
 /// Does <b>not</b> require EmailConfirmed. Uses Identity lockout.
+/// Logs successful login as activity (5.4.3).
 /// </summary>
 public sealed class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
@@ -19,17 +21,20 @@ public sealed class LoginHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly ITokenService _tokenService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ISubifyDbContext _dbContext;
+    private readonly IActivityLogger _activityLogger;
 
     public LoginHandler(
         UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
         IHttpContextAccessor httpContextAccessor,
-        ISubifyDbContext dbContext)
+        ISubifyDbContext dbContext,
+        IActivityLogger activityLogger)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _httpContextAccessor = httpContextAccessor;
         _dbContext = dbContext;
+        _activityLogger = activityLogger;
     }
 
     public async Task<Result<LoginResponse>> Handle(
@@ -42,6 +47,12 @@ public sealed class LoginHandler : IRequestHandler<LoginCommand, Result<LoginRes
         if (user is null)
         {
             return Result.Failure<LoginResponse>(DomainErrors.Auth.InvalidCredentials);
+        }
+
+        // 7.1.5 — soft-disabled accounts cannot sign in (distinct from temporary lockout)
+        if (user.IsDisabled)
+        {
+            return Result.Failure<LoginResponse>(DomainErrors.UserErrors.AccountDisabled);
         }
 
         if (await _userManager.IsLockedOutAsync(user))
@@ -74,6 +85,15 @@ public sealed class LoginHandler : IRequestHandler<LoginCommand, Result<LoginRes
             userAgent: ResolveUserAgent());
 
         await _dbContext.AddRefreshTokenAsync(refreshEntity, cancellationToken);
+
+        // 5.4.3 — successful login only (no failed-login noise / user enumeration)
+        await _activityLogger.LogAndSaveAsync(
+            userId: user.Id,
+            entityType: ActivityLogConstants.EntityTypes.Auth,
+            action: ActivityLogConstants.Actions.AuthLogin,
+            description: "User signed in.",
+            entityId: user.Id,
+            cancellationToken: cancellationToken);
 
         var roles = await _userManager.GetRolesAsync(user);
         var setupComplete = await _dbContext.SystemSettings
