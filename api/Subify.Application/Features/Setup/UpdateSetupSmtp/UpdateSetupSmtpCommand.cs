@@ -8,7 +8,7 @@ using Subify.Domain.Shared;
 
 namespace Subify.Application.Features.Setup.UpdateSetupSmtp;
 
-/// <summary>Setup step: persist SMTP only (3S.5.1). Send is Faz 15.</summary>
+/// <summary>Setup step: persist SMTP settings (3S.5.1). Sending happens later via SmtpEmailSender when enabled.</summary>
 public sealed record UpdateSetupSmtpCommand(
     bool? SmtpEnabled,
     string? SmtpHost,

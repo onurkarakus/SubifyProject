@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Subify.Application.Common.Interfaces;
+using Subify.Domain.Constants;
 using Subify.Domain.Entities;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
@@ -11,6 +12,7 @@ namespace Subify.Application.Features.Auth.Logout;
 /// <summary>
 /// Logout (task 3.2.4): revoke refresh token(s) with reason <c>logout</c>.
 /// Idempotent — unknown/already-revoked token still returns success (no session leak).
+/// Logs successful logout as activity (5.4.3).
 /// </summary>
 public sealed class LogoutHandler : IRequestHandler<LogoutCommand, Result>
 {
@@ -18,17 +20,20 @@ public sealed class LogoutHandler : IRequestHandler<LogoutCommand, Result>
     private readonly ITokenService _tokenService;
     private readonly ICurrentUserService _currentUser;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IActivityLogger _activityLogger;
 
     public LogoutHandler(
         ISubifyDbContext db,
         ITokenService tokenService,
         ICurrentUserService currentUser,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IActivityLogger activityLogger)
     {
         _db = db;
         _tokenService = tokenService;
         _currentUser = currentUser;
         _httpContextAccessor = httpContextAccessor;
+        _activityLogger = activityLogger;
     }
 
     public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
@@ -53,6 +58,7 @@ public sealed class LogoutHandler : IRequestHandler<LogoutCommand, Result>
             }
 
             await _db.SaveChangesAsync(cancellationToken);
+            await WriteLogoutActivityAsync(userId, allSessions: true, cancellationToken);
             return Result.Success();
         }
 
@@ -79,10 +85,20 @@ public sealed class LogoutHandler : IRequestHandler<LogoutCommand, Result>
         {
             existing.Revoke(RefreshToken.ReasonLogout, ip);
             await _db.SaveChangesAsync(cancellationToken);
+            await WriteLogoutActivityAsync(existing.UserId, allSessions: false, cancellationToken);
         }
 
         return Result.Success();
     }
+
+    private Task WriteLogoutActivityAsync(Guid userId, bool allSessions, CancellationToken cancellationToken) =>
+        _activityLogger.LogAndSaveAsync(
+            userId: userId,
+            entityType: ActivityLogConstants.EntityTypes.Auth,
+            action: ActivityLogConstants.Actions.AuthLogout,
+            description: allSessions ? "User signed out of all sessions." : "User signed out.",
+            entityId: userId,
+            cancellationToken: cancellationToken);
 
     private string ResolveClientIp()
     {

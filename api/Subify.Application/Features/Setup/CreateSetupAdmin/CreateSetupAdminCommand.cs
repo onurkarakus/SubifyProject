@@ -74,6 +74,15 @@ public sealed class CreateSetupAdminHandler
         user.ApplyRegistrationProfile(fullName, email);
         user.EmailConfirmed = true;
 
+        if (settings is not null)
+        {
+            user.ApplyInstanceDefaults(
+                locale: settings.DefaultLocale,
+                mainCurrency: settings.DefaultCurrency,
+                applicationThemeColor: settings.DefaultApplicationThemeColor,
+                darkTheme: settings.DefaultDarkTheme);
+        }
+
         var create = await _userManager.CreateAsync(user, request.Password);
         if (!create.Succeeded)
         {

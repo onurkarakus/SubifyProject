@@ -14,7 +14,9 @@ public sealed record UpdateSetupInstanceCommand(
     string? DefaultLocale,
     string? DefaultCurrency,
     string? TimeZoneId,
-    bool? AllowPublicRegistration) : IRequest<Result>;
+    bool? AllowPublicRegistration,
+    string? DefaultApplicationThemeColor = null,
+    bool? DefaultDarkTheme = null) : IRequest<Result>;
 
 public sealed class UpdateSetupInstanceValidator : AbstractValidator<UpdateSetupInstanceCommand>
 {
@@ -35,6 +37,10 @@ public sealed class UpdateSetupInstanceValidator : AbstractValidator<UpdateSetup
         RuleFor(x => x.TimeZoneId)
             .MaximumLength(100)
             .When(x => x.TimeZoneId is not null);
+
+        RuleFor(x => x.DefaultApplicationThemeColor)
+            .Must(c => c is null || ThemeColors.IsSupported(c))
+            .WithMessage("Theme color is not in the supported preset list.");
     }
 }
 
@@ -72,7 +78,9 @@ public sealed class UpdateSetupInstanceHandler : IRequestHandler<UpdateSetupInst
             defaultLocale: request.DefaultLocale,
             defaultCurrency: request.DefaultCurrency,
             timeZoneId: request.TimeZoneId,
-            allowPublicRegistration: request.AllowPublicRegistration);
+            allowPublicRegistration: request.AllowPublicRegistration,
+            defaultApplicationThemeColor: request.DefaultApplicationThemeColor,
+            defaultDarkTheme: request.DefaultDarkTheme);
 
         await _db.SaveChangesAsync(cancellationToken);
         return Result.Success();

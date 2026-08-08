@@ -51,6 +51,16 @@ public sealed class RegisterHandler : IRequestHandler<RegisterCommand, Result<Re
         user.ApplyRegistrationProfile(fullName, email);
         user.EmailConfirmed = true;
 
+        var settings = await _db.SystemSettings.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        if (settings is not null)
+        {
+            user.ApplyInstanceDefaults(
+                locale: settings.DefaultLocale,
+                mainCurrency: settings.DefaultCurrency,
+                applicationThemeColor: settings.DefaultApplicationThemeColor,
+                darkTheme: settings.DefaultDarkTheme);
+        }
+
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
