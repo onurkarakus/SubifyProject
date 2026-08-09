@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FxStatusBanner } from "@/components/fx/fx-status-banner";
+import { MoneyDual } from "@/components/ui/money-dual";
 import { PageLoader } from "@/components/ui/spinner";
 import { api, ApiError } from "@/lib/api/client";
 import type {
@@ -14,9 +16,10 @@ import type {
   CategoryBreakdownResponse,
   ListSubscriptionsResponse,
   MonthlySpendResponse,
-  UpcomingItem,
+  UpcomingResponse,
 } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/context";
+import { useFxRates } from "@/lib/fx/use-fx-rates";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatDate, formatMoney } from "@/lib/utils";
 import {
@@ -54,7 +57,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [subs, setSubs] = useState<ListSubscriptionsResponse | null>(null);
-  const [upcoming, setUpcoming] = useState<UpcomingItem[]>([]);
+  const [upcomingRes, setUpcomingRes] = useState<UpcomingResponse | null>(null);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [monthly, setMonthly] = useState<MonthlySpendResponse | null>(null);
   const [categories, setCategories] =
@@ -67,13 +70,13 @@ export default function DashboardPage() {
           api.get<ListSubscriptionsResponse>(
             "/subscriptions?page=1&pageSize=5",
           ),
-          api.get<{ data: UpcomingItem[] }>("/subscriptions/upcoming?days=30"),
+          api.get<UpcomingResponse>("/subscriptions/upcoming?days=30"),
           api.get<{ data: ActivityItem[] }>("/activity?page=1&pageSize=8"),
           api.get<MonthlySpendResponse>("/reports/monthly-spend?months=6"),
           api.get<CategoryBreakdownResponse>("/reports/category-breakdown"),
         ]);
         setSubs(s);
-        setUpcoming(u.data ?? (u as unknown as UpcomingItem[]));
+        setUpcomingRes(u);
         setActivity(a.data ?? []);
         setMonthly(m);
         setCategories(c);
@@ -94,10 +97,16 @@ export default function DashboardPage() {
     return Math.round(((curr - prev) / prev) * 100);
   }, [monthly]);
 
-  if (loading) return <PageLoader />;
-
   const summary = subs?.summary;
   const currency = summary?.currency ?? monthly?.currency ?? "TRY";
+  const {
+    snapshot: fxRates,
+    isStale: fxStale,
+    lastUpdated: fxUpdated,
+  } = useFxRates(loading ? null : currency);
+
+  if (loading) return <PageLoader />;
+
   const budget = summary?.monthlyBudget;
   const monthlyTotal = summary?.monthlyTotal ?? 0;
   const activeCount = subs?.pagination?.totalItems ?? subs?.data?.length ?? 0;
@@ -109,7 +118,11 @@ export default function DashboardPage() {
     user?.fullName?.trim().split(/\s+/)[0] ||
     user?.email?.split("@")[0] ||
     "";
-
+  const upcoming = upcomingRes?.data ?? [];
+  const fxItems = [
+    ...(subs?.data ?? []).map((s) => ({ currency: s.currency })),
+    ...upcoming.map((u) => ({ currency: u.currency })),
+  ];
   const mom = monthOverMonth;
   const momUp = mom != null && mom > 0;
   const momDown = mom != null && mom < 0;
@@ -146,16 +159,32 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
+      <FxStatusBanner
+        mainCurrency={currency}
+        items={fxItems}
+        rates={fxRates}
+        isStale={fxStale}
+        lastUpdated={fxUpdated}
+        apiHasUnconverted={
+          !!summary?.hasUnconvertedAmounts ||
+          !!upcomingRes?.hasUnconvertedAmounts
+        }
+      />
+
       {/* 12-col mockup grid */}
       <div className="grid gap-4 lg:grid-cols-12">
         {/* —— Main column —— */}
         <div className="flex flex-col gap-4 lg:col-span-8">
-          {/* KPI row */}
+          {/* KPI row — totals already in MainCurrency from API */}
           <div className="grid gap-3 sm:grid-cols-3">
             <StatCard
               label={t("monthlyTotal")}
               icon={Wallet}
-              value={formatMoney(monthlyTotal, currency, locale)}
+              value={
+                <span className="tabular-nums">
+                  {formatMoney(monthlyTotal, currency, locale)}
+                </span>
+              }
               hint={
                 mom != null ? (
                   <span
@@ -186,7 +215,9 @@ export default function DashboardPage() {
               hint={
                 <span className="text-muted">
                   {t("yearlyTotal")}:{" "}
-                  {formatMoney(summary?.yearlyTotal ?? 0, currency, locale)}
+                  <span className="tabular-nums font-medium text-foreground">
+                    {formatMoney(summary?.yearlyTotal ?? 0, currency, locale)}
+                  </span>
                 </span>
               }
             />
@@ -281,42 +312,66 @@ export default function DashboardPage() {
                 {upcoming.length === 0 ? (
                   <EmptyState title={t("empty")} className="py-8" />
                 ) : (
-                  upcoming.slice(0, 5).map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/subscriptions/${item.id}`}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition hover:border-primary/30 hover:bg-primary-soft/30",
-                        item.isOverdue && "card-overdue",
-                        item.isUpcoming && !item.isOverdue && "card-soon",
-                      )}
-                    >
-                      <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
-                        style={{ background: brandColor(item.name) }}
-                      >
-                        {item.name.slice(0, 1).toUpperCase()}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-muted">
-                          {formatDate(item.nextRenewalDate, locale)}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-0.5">
-                        {item.isOverdue ? (
-                          <Badge variant="danger">{t("overdue")}</Badge>
-                        ) : item.isUpcoming ? (
-                          <Badge variant="warning">{t("soon")}</Badge>
-                        ) : null}
-                        <span className="text-sm font-semibold tabular-nums">
-                          {formatMoney(item.price, item.currency, locale)}
-                        </span>
-                      </div>
-                    </Link>
-                  ))
+                  <>
+                    {upcoming.slice(0, 5).map((item) => {
+                      const amount = item.userShare ?? item.price;
+                      return (
+                        <Link
+                          key={item.id}
+                          href={`/subscriptions/${item.id}`}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 transition hover:border-primary/30 hover:bg-primary-soft/30",
+                            item.isOverdue && "card-overdue",
+                            item.isUpcoming && !item.isOverdue && "card-soon",
+                          )}
+                        >
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
+                            style={{ background: brandColor(item.name) }}
+                          >
+                            {item.name.slice(0, 1).toUpperCase()}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {item.name}
+                            </p>
+                            <p className="text-xs text-muted">
+                              {formatDate(item.nextRenewalDate, locale)}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 flex-col items-end gap-0.5">
+                            {item.isOverdue ? (
+                              <Badge variant="danger">{t("overdue")}</Badge>
+                            ) : item.isUpcoming ? (
+                              <Badge variant="warning">{t("soon")}</Badge>
+                            ) : null}
+                            <MoneyDual
+                              amount={amount}
+                              currency={item.currency}
+                              mainCurrency={currency}
+                              rates={fxRates}
+                              size="sm"
+                              stacked
+                              className="items-end text-right"
+                            />
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    {upcomingRes && upcomingRes.total > 0 ? (
+                      <p className="border-t border-border pt-2 text-xs text-muted">
+                        {t("cashflowTotal")}:{" "}
+                        <strong className="tabular-nums text-foreground">
+                          {formatMoney(
+                            upcomingRes.total,
+                            upcomingRes.currency || currency,
+                            locale,
+                          )}
+                        </strong>
+                        <span className="text-muted"> · 30d</span>
+                      </p>
+                    ) : null}
+                  </>
                 )}
               </CardContent>
             </Card>

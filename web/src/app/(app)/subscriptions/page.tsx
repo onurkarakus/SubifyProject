@@ -5,14 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { FxStatusBanner } from "@/components/fx/fx-status-banner";
+import { MoneyDual } from "@/components/ui/money-dual";
 import { PageLoader } from "@/components/ui/spinner";
 import { api, ApiError } from "@/lib/api/client";
 import type { ListSubscriptionsResponse, SubscriptionItem } from "@/lib/api/types";
+import { useFxRates } from "@/lib/fx/use-fx-rates";
 import { useI18n } from "@/lib/i18n/context";
+import {
+  draftToCreateBody,
+  importDraftIsValid,
+  importTemplateCsv,
+  parseSubscriptionCsv,
+  type ImportRowDraft,
+} from "@/lib/subscriptions/import-csv";
+import {
+  downloadTextFile,
+  stampFilename,
+} from "@/lib/reports/export-csv";
 import { cn, formatDate, formatMoney, normalizeBillingCycle } from "@/lib/utils";
-import { Archive, Pencil, Plus } from "lucide-react";
+import { Archive, Pencil, Plus, Upload } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 function cardState(item: SubscriptionItem) {
@@ -33,6 +47,18 @@ export default function SubscriptionsPage() {
   const [search, setSearch] = useState("");
   const [includeArchived, setIncludeArchived] = useState(false);
   const [data, setData] = useState<ListSubscriptionsResponse | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importDrafts, setImportDrafts] = useState<ImportRowDraft[]>([]);
+  const [importHeaderOk, setImportHeaderOk] = useState(true);
+  const [importBusy, setImportBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const mainCurrency = data?.summary?.currency ?? "TRY";
+  const {
+    snapshot: fxRates,
+    isStale: fxStale,
+    lastUpdated: fxUpdated,
+  } = useFxRates(data?.summary?.currency ?? null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -69,18 +95,164 @@ export default function SubscriptionsPage() {
     }
   }
 
+  const importValidCount = importDrafts.filter(importDraftIsValid).length;
+
+  async function onImportFile(file: File) {
+    const text = await file.text();
+    const parsed = parseSubscriptionCsv(text);
+    setImportHeaderOk(parsed.headerOk);
+    setImportDrafts(parsed.drafts);
+    setImportOpen(true);
+    if (!parsed.headerOk) {
+      toast.error(t("importHeaderError"));
+    } else if (!parsed.drafts.length) {
+      toast.error(t("importEmpty"));
+    }
+  }
+
+  async function runImport() {
+    const valid = importDrafts.filter(importDraftIsValid);
+    if (!valid.length) {
+      toast.error(t("importEmpty"));
+      return;
+    }
+    setImportBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const d of valid) {
+      try {
+        await api.post("/subscriptions", draftToCreateBody(d));
+        ok += 1;
+      } catch {
+        fail += 1;
+      }
+    }
+    setImportBusy(false);
+    toast.success(
+      t("importDone")
+        .replace("{ok}", String(ok))
+        .replace("{fail}", String(fail)),
+    );
+    setImportDrafts([]);
+    setImportOpen(false);
+    await load();
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="page-title">{t("subscriptions")}</h1>
-        <Link
-          href="/subscriptions/new"
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-white shadow-[var(--shadow-glow)] hover:bg-primary-hover"
-        >
-          <Plus className="h-4 w-4" />
-          {t("addSubscription")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void onImportFile(f);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => fileRef.current?.click()}
+          >
+            <Upload className="h-4 w-4" />
+            {t("importCsv")}
+          </Button>
+          <button
+            type="button"
+            className="text-xs font-medium text-primary hover:underline"
+            onClick={() => {
+              downloadTextFile(
+                stampFilename("subify-import-template"),
+                importTemplateCsv(),
+              );
+              toast.success(t("exportDownloaded"));
+            }}
+          >
+            {t("importTemplate")}
+          </button>
+          <Link
+            href="/subscriptions/new"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-white shadow-[var(--shadow-glow)] hover:bg-primary-hover"
+          >
+            <Plus className="h-4 w-4" />
+            {t("addSubscription")}
+          </Link>
+        </div>
       </div>
+
+      {importOpen && importDrafts.length > 0 ? (
+        <Card>
+          <CardContent className="space-y-3 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="font-semibold">{t("importDryRun")}</p>
+                <p className="text-xs text-muted">
+                  {t("importReady")
+                    .replace("{n}", String(importValidCount))
+                    .replace("{t}", String(importDrafts.length))}
+                  {!importHeaderOk ? ` · ${t("importHeaderError")}` : ""}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setImportOpen(false);
+                    setImportDrafts([]);
+                  }}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={importBusy || importValidCount === 0}
+                  onClick={() => void runImport()}
+                >
+                  {importBusy ? t("loading") : t("importConfirm")}
+                </Button>
+              </div>
+            </div>
+            <div className="max-h-56 overflow-auto rounded-xl border border-border">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/20 text-muted">
+                  <tr>
+                    <th className="px-2 py-1.5">#</th>
+                    <th className="px-2 py-1.5">{t("name")}</th>
+                    <th className="px-2 py-1.5">{t("price")}</th>
+                    <th className="px-2 py-1.5">{t("currency")}</th>
+                    <th className="px-2 py-1.5">{t("status")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importDrafts.map((d) => (
+                    <tr key={d.line} className="border-t border-border">
+                      <td className="px-2 py-1.5 text-muted">{d.line}</td>
+                      <td className="px-2 py-1.5 font-medium">{d.name || "—"}</td>
+                      <td className="px-2 py-1.5 tabular-nums">{d.price}</td>
+                      <td className="px-2 py-1.5">{d.currency}</td>
+                      <td className="px-2 py-1.5">
+                        {importDraftIsValid(d) ? (
+                          <span className="text-success">{t("importRowOk")}</span>
+                        ) : (
+                          <span className="text-danger">
+                            {d.errors.join(", ")}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -110,6 +282,17 @@ export default function SubscriptionsPage() {
             )}
           </strong>
         </p>
+      ) : null}
+
+      {data ? (
+        <FxStatusBanner
+          mainCurrency={mainCurrency}
+          items={data.data ?? []}
+          rates={fxRates}
+          isStale={fxStale}
+          lastUpdated={fxUpdated}
+          apiHasUnconverted={data.summary?.hasUnconvertedAmounts}
+        />
       ) : null}
 
       {loading ? (
@@ -148,21 +331,43 @@ export default function SubscriptionsPage() {
                         {item.category?.name || item.provider?.name || "—"}
                       </p>
                     </div>
-                    {state === "overdue" ? (
-                      <Badge variant="danger">{t("overdue")}</Badge>
-                    ) : state === "soon" ? (
-                      <Badge variant="warning">{t("soon")}</Badge>
-                    ) : (
-                      <Badge variant="muted">{t("normal")}</Badge>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      {state === "overdue" ? (
+                        <Badge variant="danger">{t("overdue")}</Badge>
+                      ) : state === "soon" ? (
+                        <Badge variant="warning">{t("soon")}</Badge>
+                      ) : (
+                        <Badge variant="muted">{t("normal")}</Badge>
+                      )}
+                      {item.latestPriceChange?.isIncrease ? (
+                        <Badge variant="danger">{t("priceIncreaseBadge")}</Badge>
+                      ) : item.latestPriceChange?.isDecrease ? (
+                        <Badge variant="muted">{t("priceDecreaseBadge")}</Badge>
+                      ) : item.latestPriceChange ? (
+                        <Badge variant="muted">{t("priceChangeBadge")}</Badge>
+                      ) : null}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">
-                      {formatMoney(item.price, item.currency, locale)}
-                    </p>
+                  <div className="space-y-1">
+                    <MoneyDual
+                      amount={item.price}
+                      currency={item.currency}
+                      mainCurrency={mainCurrency}
+                      rates={fxRates}
+                      size="lg"
+                      stacked
+                    />
                     <p className="text-xs text-muted">
                       {t("yourShare")}:{" "}
-                      {formatMoney(item.userShare, item.currency, locale)} ·{" "}
+                      <MoneyDual
+                        amount={item.userShare}
+                        currency={item.currency}
+                        mainCurrency={mainCurrency}
+                        rates={fxRates}
+                        size="sm"
+                        className="align-baseline"
+                      />{" "}
+                      ·{" "}
                       {normalizeBillingCycle(item.billingCycle) === "yearly"
                         ? t("yearly")
                         : t("monthly")}
@@ -171,7 +376,7 @@ export default function SubscriptionsPage() {
                   <p className="text-sm text-muted">
                     {t("nextRenewal")}: {formatDate(item.nextRenewalDate, locale)}
                   </p>
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex flex-wrap gap-2 pt-1">
                     <Link
                       href={`/subscriptions/${item.id}`}
                       className="inline-flex h-8 items-center gap-1 rounded-md border border-border px-3 text-xs"

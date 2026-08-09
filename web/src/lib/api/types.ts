@@ -28,6 +28,52 @@ export type PaginationInfo = {
   totalPages: number;
 };
 
+/** GET /api/exchange-rates — 1 base = rates[target] target */
+export type ExchangeRatesResponse = {
+  base: string;
+  rates: Record<string, number>;
+  lastUpdated?: string | null;
+  source?: string | null;
+  isStale: boolean;
+  fromFallback: boolean;
+  message?: string | null;
+};
+
+/** POST /api/admin/jobs/exchange-rates/sync — SuperAdmin force live fetch */
+export type RunExchangeRateSyncResponse = {
+  base: string;
+  succeeded: boolean;
+  usedExistingFallback: boolean;
+  ratesPersisted: number;
+  fetchedAt?: string | null;
+  source?: string | null;
+  isStale: boolean;
+  rates: Record<string, number>;
+  message?: string | null;
+  errorMessage?: string | null;
+};
+
+/** POST /api/admin/providers/import */
+export type ImportProviderItem = {
+  name: string;
+  slug: string;
+  currency: string;
+  billingCycle: string;
+  region: string;
+  price?: number | null;
+  priceBefore?: number | null;
+  sourceUrl?: string | null;
+  logoUrl?: string | null;
+};
+
+export type ImportAdminProvidersResponse = {
+  created: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  results: { slug: string; status: string; message?: string | null }[];
+};
+
 export type SubscriptionSummary = {
   monthlyTotal: number;
   yearlyTotal: number;
@@ -36,6 +82,18 @@ export type SubscriptionSummary = {
   isBudgetExceeded: boolean;
   warnings?: string[];
   hasUnconvertedAmounts?: boolean;
+};
+
+/** Price/currency change audit (16.4) */
+export type SubscriptionPriceChange = {
+  id: string;
+  oldPrice: number;
+  oldCurrency: string;
+  newPrice: number;
+  newCurrency: string;
+  changedAt: string;
+  isIncrease: boolean;
+  isDecrease: boolean;
 };
 
 export type SubscriptionItem = {
@@ -49,7 +107,6 @@ export type SubscriptionItem = {
   userShare: number;
   monthlyEquivalentShare: number;
   nextRenewalDate: string;
-  lastUsedAt?: string | null;
   notes?: string | null;
   archived: boolean;
   categoryId?: string | null;
@@ -57,6 +114,8 @@ export type SubscriptionItem = {
   providerId?: string | null;
   category?: { id: string; slug: string; name: string; color?: string | null } | null;
   provider?: { id: string; name: string; slug: string } | null;
+  latestPriceChange?: SubscriptionPriceChange | null;
+  priceHistory?: SubscriptionPriceChange[] | null;
 };
 
 export type ListSubscriptionsResponse = {
@@ -70,11 +129,23 @@ export type UpcomingItem = {
   name: string;
   price: number;
   currency: string;
+  userShare?: number;
   nextRenewalDate: string;
   daysUntilRenewal: number;
   isOverdue: boolean;
   isUpcoming: boolean;
   monthlyEquivalentShare?: number;
+};
+
+export type UpcomingResponse = {
+  data: UpcomingItem[];
+  total: number;
+  currency: string;
+  days: number;
+  overdueCount: number;
+  upcomingCount: number;
+  warnings?: string[];
+  hasUnconvertedAmounts?: boolean;
 };
 
 export type ActivityItem = {
@@ -97,7 +168,7 @@ export type ProfileResponse = {
   darkTheme: boolean;
 };
 
-/** GET/PUT /api/profile/notifications — email send is Faz 15 (always false). */
+/** GET/PUT /api/profile/notifications — emailEnabled controls renewal reminder mail when SMTP is configured. */
 export type NotificationSettingsResponse = {
   emailEnabled: boolean;
   pushEnabled: boolean;
@@ -208,6 +279,19 @@ export type CategoryBreakdownResponse = {
   message?: string | null;
 };
 
+export type CurrencyDistributionResponse = {
+  data: {
+    currency: string;
+    monthlyTotal: number;
+    convertedMonthlyTotal: number;
+    percentage: number;
+    count: number;
+  }[];
+  grandTotal: number;
+  currency: string;
+  message?: string | null;
+};
+
 export type AiAnalyzeResponse = {
   summary: string;
   tips: {
@@ -237,4 +321,23 @@ export type AiHistoryResponse = {
 export type AiHistoryDetailResponse = AiAnalyzeResponse & {
   id: string;
   createdAt: string;
+};
+
+/** POST /api/ai/report-commentary */
+export type AiReportCommentaryResponse = {
+  summary: string;
+  highlights: string[];
+  trend: "up" | "down" | "stable" | string;
+  budgetNote?: string | null;
+  months: number;
+  currency: string;
+  generatedAt: string;
+};
+
+/** POST /api/reports/email-summary */
+export type SendReportSummaryResponse = {
+  toEmail: string;
+  months: number;
+  currency: string;
+  sentAt: string;
 };

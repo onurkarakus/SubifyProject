@@ -1,6 +1,7 @@
 "use client";
 
 import { SubifyLogo } from "@/components/brand/logo";
+import { SidebarFxRates } from "@/components/shell/sidebar-fx-rates";
 import { Button } from "@/components/ui/button";
 import { PageLoader } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
@@ -110,26 +111,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   const sidebarFooter = (
-    <div className="border-t border-border p-3">
-      <div className="flex items-center gap-3 rounded-xl px-2 py-2">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary">
-          {(user?.fullName || user?.email || "?").charAt(0).toUpperCase()}
+    <div className="mt-auto shrink-0">
+      <SidebarFxRates />
+      <div className="border-t border-border p-3">
+        <div className="flex items-center gap-3 rounded-xl px-2 py-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary">
+            {(user?.fullName || user?.email || "?").charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">
+              {user?.fullName || user?.email}
+            </p>
+            <p className="truncate text-xs text-muted">{user?.email}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => logout()}
+            aria-label={t("logout")}
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
-            {user?.fullName || user?.email}
-          </p>
-          <p className="truncate text-xs text-muted">{user?.email}</p>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0"
-          onClick={() => logout()}
-          aria-label={t("logout")}
-        >
-          <LogOut className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
