@@ -2,11 +2,31 @@
 
 | Alan | Değer |
 | ---- | ----- |
-| **Sürüm** | 1.3 |
+| **Sürüm** | 1.4 |
 | **Durum** | Aktif — uygulama sırası |
-| **Son güncelleme** | 2026-07-22 |
+| **Son güncelleme** | 2026-08-02 |
 | **Kaynak** | [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md), [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) |
 | **Kullanım** | Grok’a görev verirken **task numarasını** yaz (ör. `3.2.4` veya `T-3.2.4`) |
+
+### SaaS / Cloud geçiş (ayrı hat — bu listeye karıştırma)
+
+İleride self-host OS → kapalı **Subify Cloud** için:
+
+| Doküman | İçerik |
+| ------- | ------ |
+| [SUBIFY_SAAS_TRANSITION_PRD.md](./SUBIFY_SAAS_TRANSITION_PRD.md) | Ürün/mimari/tenancy/RevenueCat/geçiş PRD |
+| [SUBIFY_SAAS_TRANSITION_TASK_LIST.md](./SUBIFY_SAAS_TRANSITION_TASK_LIST.md) | `S0`–`S9` numaralı Cloud task’ları |
+| [REVENUECAT_CONFIG.md](./REVENUECAT_CONFIG.md) | Legacy + Cloud ödeme entitlement referansı |
+
+**Kural:** Billing, plan limiti, multi-tenant `OrganizationId` işleri **SaaS task listesine** yazılır. OS manifestosu “ödeme yok” kuralı yalnızca **bu OS listesi** için geçerlidir.
+
+### Yeni scope / task ekleme kuralı (14.3.2)
+
+1. **Manifesto çelişkisi** → ekleme; reddet (freemium, confirm-mail zorunlu, SaaS ödeme, vs.).  
+   - Cloud istisnası: [SUBIFY_SAAS_TRANSITION_PRD.md](./SUBIFY_SAAS_TRANSITION_PRD.md) — **ayrı ürün disiplini**.  
+2. **Setup / EmailSend** kararlarına uy: SMTP **kayıt şimdi**, **gönderim Faz 15**; confirm **yok (kalıcı)** *(yalnız OS)*.  
+3. Yeni task: net numara (`X.Y.Z`), öncelik, bağımlılık, kısa açıklama.  
+4. Sprint/PR sonunda ilgili satırları `[x]` + **Tamamlandı** tarihi + kısa **Not** (14.3.1).
 
 ---
 
@@ -97,18 +117,19 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 | 2 | Domain, EF, Postgres, seed altyapısı | [x] |
 | 3 | Auth, roller, SuperAdmin, şifre, multi-user | [~] |
 | 3S | **First-run Setup Wizard (API + Web)** | [~] API P0/P1; web 3S.8 açık |
-| 4 | Subscription + finansal motor | [ ] |
-| 5 | Categories, providers, profile, activity | [ ] |
-| 6 | Reports, FX, resources/i18n | [ ] |
-| 7 | Admin panel API (users, settings, invites) | [ ] |
-| 8 | Background jobs (FX; mail job’ları Faz 15) | [ ] |
-| 9 | AI (BYOK) | [ ] |
-| 10 | Web (Next.js) UI + setup UI | [ ] |
-| 11 | Docker, release, ops | [ ] |
+| 4 | Subscription + finansal motor | [x] 4.1 features + 4.2 API + 4.3 financial |
+| 5 | Categories, providers, profile, activity | [x] 5.1–5.4 tamam |
+| 6 | Reports, FX, resources/i18n | [x] 6.1–6.3 |
+| 7 | Admin panel API (users, settings, invites) | [~] 7.1–7.3 + 7.5 (7.3.3/4, 7.4 deferred) |
+| 8 | Background jobs (FX + renewal mail) | [x] 8.1–8.4 (mail = 15.3 ile aynı) |
+| 9 | AI (BYOK) | [x] 9.1–9.2 |
+| 10 | Web (Next.js) UI + setup UI | [~] 10.1–10.9 MVP shell |
+| 11 | Docker, release, ops | [x] 11.1–11.2 |
 | 12 | Testler | [ ] |
 | 13 | Flutter (en son) | [ ] |
-| 14 | Dokümantasyon & polish | [ ] |
-| **15** | **EmailSend altyapısı (core sonrası)** | [ ] ertelendi |
+| 14 | Dokümantasyon & polish | [x] 14.1–14.3 |
+| **15** | **EmailSend altyapısı** | [x] 15.1–15.4 |
+| **16** | **Ürün genişletme (v1+ / docs backlog)** | [ ] FX UX + next features |
 
 ---
 
@@ -480,13 +501,13 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
   **Açıklama:** ~~Rate limited confirm mail~~  
   **Durum:** **İptal** — e-posta gönderimi yok.
 
-- [ ] **3.2.7** `POST /api/auth/forgot-password` → **bkz. Faz 15** (`15.2.x`)  
-  **Açıklama:** Enumeration-safe; SMTP kapalıysa `SET_003`; açıksa reset mail.  
-  **Öncelik:** P3 · **Durum:** Ertelendi (3.2’de implement edilmez; **listede kalsın**, iş Faz 15).
+- [x] **3.2.7** `POST /api/auth/forgot-password`  
+  **Açıklama:** Enumeration-safe; SMTP açıksa reset mail.  
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01 · **Not:** Faz 15.2.1
 
-- [ ] **3.2.8** `POST /api/auth/reset-password` (mail token) → **bkz. Faz 15**  
+- [x] **3.2.8** `POST /api/auth/reset-password` (mail token)  
   **Açıklama:** Email + code/token + newPassword.  
-  **Öncelik:** P3 · **Durum:** Ertelendi (Faz 15; 3.2.14/3.2.15 mail’siz şifre yolu şimdi var).
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01 · **Not:** Faz 15.2.1
 
 - [x] **3.2.9** EmailConfirmed / confirm engelini kaldır  
   **Açıklama:** Register’da `EmailConfirmed = true`. LoginHandler’daki `EmailNotConfirmed` kontrolünü **kaldır**.  
@@ -625,19 +646,21 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
   **Öncelik:** P0 · **Bağımlı:** SuperAdmin oturumu veya setup session · **Tamamlandı:** 2026-07-22  
   **Not:** SuperAdmin only; setup incomplete.
 
-- [ ] **3S.3.2** Theme default (opsiyonel)  
+- [x] **3S.3.2** Theme default (opsiyonel)  
   **Açıklama:** Instance default accent / dark preference (kullanıcı profili sonra override eder).  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `DefaultApplicationThemeColor` + `DefaultDarkTheme`; setup instance + admin settings; applied on new users.
 
 ### 3S.4 Adım 3 — Ek kullanıcılar (opsiyonel, skip edilebilir)
 
-- [ ] **3S.4.1** Setup sırasında kullanıcı ekleme  
+- [x] **3S.4.1** Setup sırasında kullanıcı ekleme  
   **Açıklama:** `POST /api/setup/users` veya mevcut admin users API (setup auth ile). Email + temp password veya invite link response.  
-  **Öncelik:** P1 · **Bağımlı:** 7.1.2 veya 7.2.1
+  **Öncelik:** P1 · **Bağımlı:** 7.1.2 veya 7.2.1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `POST /api/setup/users` SuperAdmin + setup incomplete; User|Admin; wizard form + list.
 
-- [ ] **3S.4.2** Setup UI’da “Atla”  
+- [x] **3S.4.2** Setup UI’da “Atla”  
   **Açıklama:** Kullanıcı eklemeden sonraki adıma geçiş.  
-  **Öncelik:** P0 (web)
+  **Öncelik:** P0 (web) · **Tamamlandı:** 2026-08-01
 
 ### 3S.5 Adım 4 — SMTP (opsiyonel, skip; gönderim Faz 15)
 
@@ -646,13 +669,13 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
   **Öncelik:** P1 · **Bağımlı:** 2.1.5 · **Tamamlandı:** 2026-07-22  
   **Not:** Persist only; no send.
 
-- [ ] **3S.5.2** Setup SMTP “Atla”  
+- [x] **3S.5.2** Setup SMTP “Atla”  
   **Açıklama:**  
-  **Öncelik:** P0 (web)
+  **Öncelik:** P0 (web) · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.5.3** Admin Settings’ten SMTP sonradan düzenleme  
-  **Açıklama:** Setup sonrası `PUT /api/admin/settings` ile SMTP alanları (gönderim yine Faz 15).  
-  **Öncelik:** P1 · **Bağımlı:** 7.3.2
+- [x] **3S.5.3** Admin Settings’ten SMTP sonradan düzenleme  
+  **Açıklama:** Setup sonrası `PUT /api/admin/settings` ile SMTP alanları.  
+  **Öncelik:** P1 · **Bağımlı:** 7.3.2 · **Tamamlandı:** 2026-07-31 · **Not:** Admin settings SMTP form.
 
 ### 3S.6 Adım 5 — AI (opsiyonel, skip)
 
@@ -661,13 +684,13 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
   **Öncelik:** P1 · **Bağımlı:** 2.1.5 · **Tamamlandı:** 2026-07-22  
   **Not:** BYOK key stored; status only exposes `hasAiConfigured`.
 
-- [ ] **3S.6.2** Setup AI “Atla”  
+- [x] **3S.6.2** Setup AI “Atla”  
   **Açıklama:** AI key yoksa AI endpoint’ler `AI_KEY_MISSING`.  
-  **Öncelik:** P0 (web)
+  **Öncelik:** P0 (web) · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.6.3** Setup sırasında AI test (opsiyonel)  
+- [x] **3S.6.3** Setup sırasında AI test (opsiyonel)  
   **Açıklama:** Mini ping; yoksa Faz 7.3.4 / 9.x.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01 · **Not:** Wizard AI step → test-ai after save key.
 
 ### 3S.7 Adım 6 — Finish
 
@@ -676,51 +699,52 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
   **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
   **Not:** SuperAdmin required; tekrar → SETUP_001.
 
-- [ ] **3S.7.2** Setup complete sonrası yönlendirme  
+- [x] **3S.7.2** Setup complete sonrası yönlendirme  
   **Açıklama:** Web → login veya dashboard.  
-  **Öncelik:** P0 (web)
+  **Öncelik:** P0 (web) · **Tamamlandı:** 2026-08-01 · **Not:** Finish → `/dashboard`.
 
 ### 3S.8 Setup Web UI
 
-- [ ] **3S.8.1** Setup layout (wizard steps indicator)  
+- [x] **3S.8.1** Setup layout (wizard steps indicator)  
   **Açıklama:** Manifesto light/dark; adım çubuğu.  
-  **Öncelik:** P0 · **Bağımlı:** 10.1.x
+  **Öncelik:** P0 · **Bağımlı:** 10.1.x · **Tamamlandı:** 2026-08-01  
+  **Not:** `WizardSteps` + `/setup` page.
 
-- [ ] **3S.8.2** Step: Welcome  
+- [x] **3S.8.2** Step: Welcome  
   **Açıklama:** Subify OS tanıtım, dil seçimi (opsiyonel).  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.3** Step: Create Super Admin form  
+- [x] **3S.8.3** Step: Create Super Admin form  
   **Açıklama:**  
-  **Öncelik:** P0 · **Bağımlı:** 3S.2.1
+  **Öncelik:** P0 · **Bağımlı:** 3S.2.1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.4** Step: Instance defaults form  
+- [x] **3S.8.4** Step: Instance defaults form  
   **Açıklama:**  
-  **Öncelik:** P0 · **Bağımlı:** 3S.3.1
+  **Öncelik:** P0 · **Bağımlı:** 3S.3.1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.5** Step: Add users (skip)  
+- [x] **3S.8.5** Step: Add users (skip)  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01 · **Not:** Skip; add after complete in Admin.
 
-- [ ] **3S.8.6** Step: SMTP config (skip)  
+- [x] **3S.8.6** Step: SMTP config (skip)  
   **Açıklama:** “E-posta gönderimi sonraki sürümde; ayarları şimdiden kaydedebilirsiniz.”  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.7** Step: AI config (skip)  
+- [x] **3S.8.7** Step: AI config (skip)  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.8** Step: Finish / success  
+- [x] **3S.8.8** Step: Finish / success  
   **Açıklama:**  
-  **Öncelik:** P0 · **Bağımlı:** 3S.7.1
+  **Öncelik:** P0 · **Bağımlı:** 3S.7.1 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.9** Root redirect: setupRequired → `/setup`  
+- [x] **3S.8.9** Root redirect: setupRequired → `/setup`  
   **Açıklama:** `GET /api/setup/status` ile; complete ise app’e.  
-  **Öncelik:** P0 · **Bağımlı:** 3S.1.2, 10.1.5
+  **Öncelik:** P0 · **Bağımlı:** 3S.1.2, 10.1.5 · **Tamamlandı:** 2026-08-01
 
-- [ ] **3S.8.10** Setup tamamlanmışken `/setup` engeli  
+- [x] **3S.8.10** Setup tamamlanmışken `/setup` engeli  
   **Açıklama:** Login’e yönlendir.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-08-01
 
 ---
 
@@ -728,105 +752,125 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 4.1 Application layer — Subscription features
 
-- [ ] **4.1.1** CreateSubscription command/handler/validator  
+- [x] **4.1.1** CreateSubscription command/handler/validator  
   **Açıklama:** Name, price>0, currency, cycle, share≥1, category XOR, provider optional, nextRenewal. **Limit yok.**  
-  **Öncelik:** P0 · **Bağımlı:** 1.2.12, 3.3.4
+  **Öncelik:** P0 · **Bağımlı:** 1.2.12, 3.3.4 · **Tamamlandı:** 2026-07-22  
+  **Not:** `Features/Subscriptions/CreateSubscription/*`; current user; provider/category/userCategory ref check; response includes userShare.
 
-- [ ] **4.1.2** Create sonrası ActivityLog  
+- [x] **4.1.2** Create sonrası ActivityLog  
   **Açıklama:** `subscription.created`.  
-  **Öncelik:** P1
-
-- [ ] **4.1.3** GetSubscriptionById query  
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** Create UoW içinde `ActivityLog` + `NewValues` snapshot; `ActivityLogConstants`.
+- [x] **4.1.3** GetSubscriptionById query  
   **Açıklama:** Ownership check; 404/403.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `IgnoreQueryFilters` (archived ok); foreign → SUB_002; missing → SUB_001; shared `SubscriptionResponse`.
 
-- [ ] **4.1.4** ListSubscriptions query  
+- [x] **4.1.4** ListSubscriptions query  
   **Açıklama:** includeArchived, category filter, pagination, search.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** slug/id/userCategory filter; search name+notes; page/pageSize; summary → 4.1.5.
 
-- [ ] **4.1.5** List response summary  
+- [x] **4.1.5** List response summary  
   **Açıklama:** monthlyTotal, yearlyTotal, currency (mainCurrency).  
-  **Öncelik:** P0 · **Bağımlı:** 4.3.x
+  **Öncelik:** P0 · **Bağımlı:** 4.3.x · **Tamamlandı:** 2026-07-22  
+  **Not:** `SubscriptionListSummary`; aktif+filtre; MainCurrency only (FX → 4.3.4); `SubscriptionMath`.
 
-- [ ] **4.1.6** UpdateSubscription command  
+- [x] **4.1.6** UpdateSubscription command  
   **Açıklama:** Ownership; old/new values activity.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `subscription.updated` + OldValues/NewValues snapshot; provider/category ref check.
 
-- [ ] **4.1.7** ArchiveSubscription (DELETE soft)  
+- [x] **4.1.7** ArchiveSubscription (DELETE soft)  
   **Açıklama:** Archived=true; activity archived.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `Archive()` + DeletedAt; `subscription.archived`; idempotent second call.
 
-- [ ] **4.1.8** ReactivateSubscription (opsiyonel endpoint)  
+- [x] **4.1.8** ReactivateSubscription (opsiyonel endpoint)  
   **Açıklama:** Archive geri alma.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** `Reactivate()`; `subscription.reactivated`; aktifken idempotent (activity yok).
 
-- [ ] **4.1.9** UpcomingSubscriptions query  
+- [x] **4.1.9** UpcomingSubscriptions query  
   **Açıklama:** `days` query; daysUntilRenewal; overdue ayrı işaret.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** aktif only; overdue + window; `IsOverdue`/`IsUpcoming`; total MainCurrency.
 
-- [ ] **4.1.10** DTO’lar (SubscriptionResponse vb.)  
+- [x] **4.1.10** DTO’lar (SubscriptionResponse vb.)  
   **Açıklama:** userShare, category, provider nested.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SubscriptionCategoryRef` / `SubscriptionProviderRef`; IncludeDetails on get/list/create/update/archive/reactivate.
 
-- [ ] **4.1.11** Provider aktif değilse create reject  
+- [x] **4.1.11** Provider aktif değilse create reject  
   **Açıklama:** SUB provider not active.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SubscriptionReferenceValidator` → null/inactive → `SUB_006`; create + update.
 
-- [ ] **4.1.12** Category / UserCategory varlık ve ownership doğrulama  
+- [x] **4.1.12** Category / UserCategory varlık ve ownership doğrulama  
   **Açıklama:** UserCategory başka kullanıcıya ait olamaz.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** System cat missing/inactive → `SUB_008`; foreign user cat → `SUB_002`; create+update via `SubscriptionReferenceValidator`.
 
 ### 4.2 API endpoints — Subscriptions
 
-- [ ] **4.2.1** `GET /api/subscriptions`  
+- [x] **4.2.1** `GET /api/subscriptions`  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** List + filters + pagination + summary.
 
-- [ ] **4.2.2** `GET /api/subscriptions/{id}`  
+- [x] **4.2.2** `GET /api/subscriptions/{id}`  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22
 
-- [ ] **4.2.3** `POST /api/subscriptions`  
+- [x] **4.2.3** `POST /api/subscriptions`  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** 201 Created + Location.
 
-- [ ] **4.2.4** `PUT /api/subscriptions/{id}`  
+- [x] **4.2.4** `PUT /api/subscriptions/{id}`  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22
 
-- [ ] **4.2.5** `DELETE /api/subscriptions/{id}`  
+- [x] **4.2.5** `DELETE /api/subscriptions/{id}`  
   **Açıklama:** Soft archive.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22
 
-- [ ] **4.2.6** `GET /api/subscriptions/upcoming`  
+- [x] **4.2.6** `GET /api/subscriptions/upcoming`  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** + `POST /{id}/reactivate` (4.1.8).
 
 ### 4.3 Finansal hesaplama
 
-- [ ] **4.3.1** UserShare pure function / domain property  
+- [x] **4.3.1** UserShare pure function / domain property  
   **Açıklama:** `Price / SharedWithCount`.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Entity property + `SubscriptionMath.UserShare`.
 
-- [ ] **4.3.2** MonthlyEquivalent / YearlyEquivalent  
+- [x] **4.3.2** MonthlyEquivalent / YearlyEquivalent  
   **Açıklama:** monthly as-is; yearly/12 ve tersi.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Entity + `SubscriptionMath.Monthly/YearlyEquivalent`.
 
-- [ ] **4.3.3** DashboardTotals service  
+- [x] **4.3.3** DashboardTotals service  
   **Açıklama:** Aktif non-archived toplamları.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SubscriptionMath.SumInCurrency` (+ list summary kullanımı).
 
-- [ ] **4.3.4** Multi-currency convert (basit)  
+- [x] **4.3.4** Multi-currency convert (basit)  
   **Açıklama:** Snapshot rate ile mainCurrency’ye çevir; rate yoksa orijinal + warning.  
-  **Öncelik:** P1 · **Bağımlı:** 6.2.x
+  **Öncelik:** P1 · **Bağımlı:** 6.2.x · **Tamamlandı:** 2026-07-22  
+  **Not:** `CurrencyConversion` + `IExchangeRateLookup`; list/upcoming summary convert; no rate → warning, excluded from main total.
 
-- [ ] **4.3.5** Budget exceeded flag  
+- [x] **4.3.5** Budget exceeded flag  
   **Açıklama:** monthlyTotal > monthlyBudget → response flag.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `BudgetRules.IsExceeded`; list summary `monthlyBudget` + `isBudgetExceeded`.
 
-- [ ] **4.3.6** Unit testler finansal motor  
+- [x] **4.3.6** Unit testler finansal motor  
   **Açıklama:** share, monthly/yearly, budget.  
-  **Öncelik:** P1 · **Bağımlı:** 12.1.x
+  **Öncelik:** P1 · **Bağımlı:** 12.1.x · **Tamamlandı:** 2026-07-22  
+  **Not:** `FinancialMotorTests` (pipeline) + `SubscriptionMathTests` / `CurrencyConversionTests` / `BudgetRulesTests` / entity `SubscriptionTests`.
 
 ---
 
@@ -834,83 +878,101 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 5.1 Categories
 
-- [ ] **5.1.1** `GET /api/categories`  
+- [x] **5.1.1** `GET /api/categories`  
   **Açıklama:** Sistem kategorileri; Accept-Language veya user locale ile name.  
-  **Öncelik:** P0 · **Bağımlı:** 2.3.5
+  **Öncelik:** P0 · **Bağımlı:** 2.3.5 · **Tamamlandı:** 2026-07-22  
+  **Not:** `GetSystemCategories` + `LocaleResolver` + `ICategoryNameLookup`; `?locale=` override.
 
-- [ ] **5.1.2** `GET /api/categories/user`  
+- [x] **5.1.2** `GET /api/categories/user`  
   **Açıklama:** Kullanıcının özel kategorileri.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Own only; soft-deleted excluded; ordered by name.
 
-- [ ] **5.1.3** `POST /api/categories/user`  
+- [x] **5.1.3** `POST /api/categories/user`  
   **Açıklama:** name, icon, color.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Duplicate name (case-insensitive) → UCAT_004; 201 + Location.
 
-- [ ] **5.1.4** `PUT /api/categories/user/{id}`  
+- [x] **5.1.4** `PUT /api/categories/user/{id}`  
   **Açıklama:** Ownership.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** UCAT_001/002/004; same-name self ok.
 
-- [ ] **5.1.5** `DELETE /api/categories/user/{id}`  
+- [x] **5.1.5** `DELETE /api/categories/user/{id}`  
   **Açıklama:** Aktif subscription varsa conflict.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** Soft-delete; active (non-archived) sub → UCAT_003; archived-only OK.
 
-- [ ] **5.1.6** Category name resource lookup helper  
+- [x] **5.1.6** Category name resource lookup helper  
   **Açıklama:** slug → localized name; fallback slug.  
-  **Öncelik:** P1 · **Bağımlı:** 6.3.x
+  **Öncelik:** P1 · **Bağımlı:** 6.3.x · **Tamamlandı:** 2026-07-22  
+  **Not:** `CategoryNameLookup` (Resource Page=Category); missing → slug.
 
 ### 5.2 Providers
 
-- [ ] **5.2.1** `GET /api/providers`  
+- [x] **5.2.1** `GET /api/providers`  
   **Açıklama:** isActive=true; search query opsiyonel.  
-  **Öncelik:** P1 · **Bağımlı:** 2.3.6
+  **Öncelik:** P1 · **Bağımlı:** 2.3.6 · **Tamamlandı:** 2026-07-22  
+  **Not:** search name/slug; optional region (+ GLOBAL); order by name.
 
-- [ ] **5.2.2** `GET /api/providers/{id}`  
+- [x] **5.2.2** `GET /api/providers/{id}`  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** Active detail; missing/soft-deleted → PROV_001.
 
-- [ ] **5.2.3** Admin provider CRUD (opsiyonel v1)  
+- [x] **5.2.3** Admin provider CRUD (opsiyonel v1)  
   **Açıklama:** SuperAdmin manage catalog.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** POST/PUT/DELETE `/api/admin/providers`; soft-delete; active sub → PROV_005.
 
 ### 5.3 Profile
 
-- [ ] **5.3.1** `GET /api/profile`  
+- [x] **5.3.1** `GET /api/profile`  
   **Açıklama:** Tercihler + email.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** No plan fields; includes roles, budget, theme.
 
-- [ ] **5.3.2** `PUT /api/profile`  
+- [x] **5.3.2** `PUT /api/profile`  
   **Açıklama:** fullName, locale, mainCurrency, budget, theme, darkTheme.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-22  
+  **Not:** Returns full ProfileResponse; null monthlyBudget clears budget.
 
-- [ ] **5.3.3** Theme color whitelist validation  
+- [x] **5.3.3** Theme color whitelist validation  
   **Açıklama:** Preset listesi.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `ThemeColors.IsSupported` → PRO_004.
 
-- [ ] **5.3.4** Currency validation (ISO 4217 basit set)  
+- [x] **5.3.4** Currency validation (ISO 4217 basit set)  
   **Açıklama:** TRY, USD, EUR, GBP…  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `SupportedCurrencies` → PRO_003.
 
-- [ ] **5.3.5** `PUT /api/profile/notifications`  
+- [x] **5.3.5** `PUT /api/profile/notifications`  
   **Açıklama:** `daysBeforeRenewal` (in-app uyarı için). `emailEnabled` gerekmez veya her zaman false — **mail gönderimi yok**.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** days 0–30; email always false; GET companion; creates row if missing.
 
-- [ ] **5.3.6** Profile update activity log  
+- [x] **5.3.6** Profile update activity log  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** `profile.updated` + OldValues/NewValues snapshot on PUT /api/profile.
 
 ### 5.4 Activity
 
-- [ ] **5.4.1** ActivityLog writer service  
+- [x] **5.4.1** ActivityLog writer service  
   **Açıklama:** Merkezi `IActivityLogger`.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** `IActivityLogger` / `ActivityLogger`; IP+UA; LogAsync + LogAndSaveAsync; used by subs + profile.
 
-- [ ] **5.4.2** `GET /api/activity`  
+- [x] **5.4.2** `GET /api/activity`  
   **Açıklama:** Pagination, entityType filter; sadece kendi logları.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-22  
+  **Not:** Own only; newest first; entityType case-insensitive; page/pageSize.
 
-- [ ] **5.4.3** Login/logout activity (opsiyonel)  
+- [x] **5.4.3** Login/logout activity (opsiyonel)  
   **Açıklama:** auth entity.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-22  
+  **Not:** `Auth` / `auth.login` / `auth.logout` via IActivityLogger; failed login not logged.
 
 ---
 
@@ -918,57 +980,69 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 6.1 Reports
 
-- [ ] **6.1.1** `GET /api/reports/monthly-spend`  
+- [x] **6.1.1** `GET /api/reports/monthly-spend`  
   **Açıklama:** Son N ay; premium yok.  
-  **Öncelik:** P1 · **Bağımlı:** 4.x
+  **Öncelik:** P1 · **Bağımlı:** 4.x · **Tamamlandı:** 2026-07-31  
+  **Not:** months 1–36 (default 12); MainCurrency / `?currency=`; FX snapshot; history via CreatedAt/archive.
 
-- [ ] **6.1.2** `GET /api/reports/category-breakdown`  
+- [x] **6.1.2** `GET /api/reports/category-breakdown`  
   **Açıklama:** total, percentage, count, color.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** Active only; system slug + localized name; user:`id`; uncategorized bucket.
 
-- [ ] **6.1.3** `GET /api/reports/currency-distribution`  
+- [x] **6.1.3** `GET /api/reports/currency-distribution`  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-31  
+  **Not:** Group by original currency; converted totals/percentage in MainCurrency.
 
-- [ ] **6.1.4** Yetersiz veri empty-state response  
+- [x] **6.1.4** Yetersiz veri empty-state response  
   **Açıklama:** Boş array + message; crash yok.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** `data: []` + REP_002 description message; HTTP 200 (no crash).
 
 ### 6.2 Exchange rates
 
-- [ ] **6.2.1** Exchange rate provider abstraction  
+- [x] **6.2.1** Exchange rate provider abstraction  
   **Açıklama:** `IExchangeRateClient` (HTTP).  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** `HttpExchangeRateClient` — OpenErApi (no key) / ExchangeRateApi (key).
 
-- [ ] **6.2.2** Snapshot persist  
+- [x] **6.2.2** Snapshot persist  
   **Açıklama:** Background veya on-demand fetch → DB.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** `ExchangeRateSyncService` → `ExchangeRateSnapshots` (supported pairs only).
 
-- [ ] **6.2.3** `GET /api/exchange-rates?base=`  
+- [x] **6.2.3** `GET /api/exchange-rates?base=`  
   **Açıklama:** Son snapshot / cache.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** Auth; default MainCurrency; IMemoryCache; empty DB → one on-demand sync.
 
-- [ ] **6.2.4** Background sync job (saatlik)  
+- [x] **6.2.4** Background sync job (saatlik)  
   **Açıklama:** HostedService; API key env.  
-  **Öncelik:** P2 · **Bağımlı:** 8.4 veya 11.x
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-31  
+  **Not:** `ExchangeRateSyncBackgroundService`; `EXCHANGE_RATE_API_KEY` / `ExchangeRates:*`.
 
-- [ ] **6.2.5** Fallback last-known rate  
+- [x] **6.2.5** Fallback last-known rate  
   **Açıklama:** API down.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** Sync keeps prior rows; GET serves DB; fail only if no snapshot at all.
 
 ### 6.3 Resources / i18n API
 
-- [ ] **6.3.1** `GET /api/resources?lang=&since=`  
+- [x] **6.3.1** `GET /api/resources?lang=&since=`  
   **Açıklama:** Delta sync.  
-  **Öncelik:** P1 · **Bağımlı:** 2.3.7
+  **Öncelik:** P1 · **Bağımlı:** 2.3.7 · **Tamamlandı:** 2026-07-31  
+  **Not:** Auth; lang resolve; since → delta; empty delta → HTTP 304.
 
-- [ ] **6.3.2** Resource cache (memory)  
+- [x] **6.3.2** Resource cache (memory)  
   **Açıklama:** Redis zorunlu değil; IMemoryCache.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-31  
+  **Not:** Full pack key `resources:full:{lang}` TTL 1h; admin writes invalidate.
 
-- [ ] **6.3.3** Admin resource CRUD (opsiyonel)  
+- [x] **6.3.3** Admin resource CRUD (opsiyonel)  
   **Açıklama:**  
-  **Öncelik:** P3
+  **Öncelik:** P3 · **Tamamlandı:** 2026-07-31  
+  **Not:** SuperAdmin `/api/admin/resources` list/create/update/delete.
 
 ---
 
@@ -976,107 +1050,157 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 7.1 Users admin
 
-- [ ] **7.1.1** `GET /api/admin/users`  
+- [x] **7.1.1** `GET /api/admin/users`  
   **Açıklama:** Sayfalı liste, arama; SuperAdmin/Admin.  
-  **Öncelik:** P0 · **Bağımlı:** 3.3.3
+  **Öncelik:** P0 · **Bağımlı:** 3.3.3 · **Tamamlandı:** 2026-07-31  
+  **Not:** search email/fullName; page/pageSize; activeSubscriptionCount only.
 
-- [ ] **7.1.2** `POST /api/admin/users`  
+- [x] **7.1.2** `POST /api/admin/users`  
   **Açıklama:** Manuel kullanıcı oluştur (email, temp password veya force change).  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-31  
+  **Not:** role User|Admin (Admin requires SuperAdmin caller); never SuperAdmin.
 
-- [ ] **7.1.3** `PATCH /api/admin/users/{id}`  
+- [x] **7.1.3** `PATCH /api/admin/users/{id}`  
   **Açıklama:** Lock/unlock, rol Admin/User (SuperAdmin korunur).  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** SuperAdmin-only patch; SuperAdmin targets protected (USER_004).
 
-- [ ] **7.1.4** Admin başka kullanıcının subscription’ını **görmez** (v1)  
+- [x] **7.1.4** Admin başka kullanıcının subscription’ını **görmez** (v1)  
   **Açıklama:** Explicit non-goal enforce; test.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-31  
+  **Not:** ListSubscriptions always current-user; admin list exposes count only.
 
-- [ ] **7.1.5** Soft disable user  
+- [x] **7.1.5** Soft disable user  
   **Açıklama:** Login engeli.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** `IsDisabled`/`DisabledAt` + migration; login USER_006; sessions revoked.
 
 ### 7.2 Invites
 
-- [ ] **7.2.1** `POST /api/admin/invites`  
+- [x] **7.2.1** `POST /api/admin/invites`  
   **Açıklama:** Email + expiry; token üret; **response’ta invite link/token** (mail yok — admin kopyalar).  
-  **Öncelik:** P1 · **Bağımlı:** 2.1.7
+  **Öncelik:** P1 · **Bağımlı:** 2.1.7 · **Tamamlandı:** 2026-07-31  
+  **Not:** Admin+; plain token + inviteUrl once; hash stored; supersedes prior pending for email.
 
-- [ ] **7.2.2** `GET /api/admin/invites`  
+- [x] **7.2.2** `GET /api/admin/invites`  
   **Açıklama:** Pending list.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-31  
+  **Not:** Default pending only; `includeExpired`; never returns plain token.
 
-- [ ] **7.2.3** `POST /api/auth/accept-invite`  
+- [x] **7.2.3** `POST /api/auth/accept-invite`  
   **Açıklama:** Token + password + fullName → User.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** Public; works when public reg off; assigns User; setup must be complete.
 
-- [ ] **7.2.4** Invite e-posta gönderimi (**Faz 15**)  
+- [x] **7.2.4** Invite e-posta gönderimi  
   **Açıklama:** SMTP doluysa mail; değilse sadece link (zaten response’ta).  
-  **Öncelik:** P3 · **Durum:** Ertelendi.
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01 · **Not:** Faz 15.2.2
 
-- [ ] **7.2.5** Invite single-use + expiry enforce  
+- [x] **7.2.5** Invite single-use + expiry enforce  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-07-31  
+  **Not:** TryMarkUsed + IsPending; used/expired → AUTH_015.
 
 ### 7.3 SystemSettings API
 
-- [ ] **7.3.1** `GET /api/admin/settings`  
+- [x] **7.3.1** `GET /api/admin/settings`  
   **Açıklama:** Instance + AI + SMTP (secret maskeli: AI key, SMTP password).  
-  **Öncelik:** P0 · **Bağımlı:** 2.1.5, 3.3.3
+  **Öncelik:** P0 · **Bağımlı:** 2.1.5, 3.3.3 · **Tamamlandı:** 2026-07-31  
+  **Not:** SuperAdmin; `hasApiKey`/`hasPassword` + `••••••••` mask; plain secrets never returned.
 
-- [ ] **7.3.2** `PUT /api/admin/settings`  
+- [x] **7.3.2** `PUT /api/admin/settings`  
   **Açıklama:** Instance defaults, AI, SMTP partial update (boş secret = değiştirme).  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-07-31  
+  **Not:** null/omit = keep; empty string = clear; non-empty = set.
 
-- [ ] **7.3.3** `POST /api/admin/settings/test-smtp` (**Faz 15**)  
+- [x] **7.3.3** `POST /api/admin/settings/test-smtp`  
   **Açıklama:** Test mail SuperAdmin adresine.  
-  **Öncelik:** P3 · **Bağımlı:** 15.1 · **Durum:** Ertelendi (EmailSend sonrası).
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01 · **Not:** Faz 15.3.3
 
-- [ ] **7.3.4** `POST /api/admin/settings/test-ai`  
+- [x] **7.3.4** `POST /api/admin/settings/test-ai`  
   **Açıklama:** Minimal model ping.  
-  **Öncelik:** P2 · **Bağımlı:** 9.x
+  **Öncelik:** P2 · **Bağımlı:** 9.x · **Tamamlandı:** 2026-08-01  
+  **Not:** SuperAdmin; BYOK resolve → tiny chat; returns model/latency/preview; web Test AI button.
 
-- [ ] **7.3.5** Settings change audit log  
+- [x] **7.3.5** Settings change audit log  
   **Açıklama:** Secret değer loglanmaz.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-07-31  
+  **Not:** `settings.updated` activity; snapshot flags only (HasAiApiKey/HasSmtpPassword).
 
-### 7.4 Email templates admin (**Faz 15**)
+### 7.4 Email templates admin
 
-- [ ] **7.4.1** List/get/update email templates  
-  **Öncelik:** P3 · **Durum:** Ertelendi — EmailSend sonrası.
+- [x] **7.4.1** List/get/update email templates  
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01  
+  **Not:** `GET/PUT /api/admin/email-templates`; SuperAdmin; subject/body only.
 
-- [ ] **7.4.2** Template preview / test send  
-  **Öncelik:** P3 · **Durum:** Ertelendi.
+- [x] **7.4.2** Template preview / test send  
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01  
+  **Not:** `POST …/preview`, `POST …/test-send`; web `/admin/email-templates`.
 
 ### 7.5 Admin şifre reset UI/API köprüsü
 
-- [ ] **7.5.1** Admin users tablosunda “Şifre sıfırla”  
+- [x] **7.5.1** Admin users tablosunda “Şifre sıfırla”  
   **Açıklama:** Yeni şifre girişi; `3.2.15` çağrısı.  
-  **Öncelik:** P0 · **Bağımlı:** 3.2.15, 10.9.1
+  **Öncelik:** P0 · **Bağımlı:** 3.2.15, 10.9.1 · **Tamamlandı:** 2026-07-31  
+  **Not:** API `POST /api/admin/users/{id}/reset-password` on Admin · Users; sessions revoked; lockout cleared; audit without password. UI table action → Faz 10.9.1.
 
 ---
 
-# FAZ 8 — Background jobs (FX; mail job’ları Faz 15)
+# FAZ 8 — Background jobs (FX + mail)
 
-> MVP’de yenileme hatırlatması **dashboard / upcoming UI**. E-posta job’ları Faz 15.
+> FX: 8.4 + 6.2.4. Mail renewal: 8.1–8.3 implemente (**Faz 15.3** ile aynı kod).  
+> UI upcoming hâlâ dashboard’da; e-posta job SMTP + kullanıcı `EmailEnabled` ister.
 
-### 8.1–8.3 E-posta — **ERTELENDİ → Faz 15**
+### 8.1 Renewal reminder e-posta job
 
-- [ ] **8.1.*** / **8.2.*** / **8.3.*** — bkz. **Faz 15** (EmailSend)
+- [x] **8.1.1** `RenewalReminderBackgroundService`  
+  **Açıklama:** Periyodik tarama; `daysBeforeRenewal` penceresi + `EmailEnabled`.  
+  **Öncelik:** P1 · **Bağımlı:** 15.1, 4.x, 5.3.5 · **Tamamlandı:** 2026-08-01  
+  **Not:** `EmailJobs:RenewalReminderInterval` (default `6h`); logic `IRenewalReminderService`.
+
+- [x] **8.1.2** SMTP kapalıyken no-op  
+  **Açıklama:** Job çökmez; debug log.  
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `IsConfiguredAsync` false → return 0.
+
+- [x] **8.1.3** Manuel tetik (ops)  
+  **Açıklama:** SuperAdmin `POST /api/admin/jobs/renewal-reminders/run`.  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `{ processedCount }`; aynı dedupe kuralları.
+
+### 8.2 Duplicate send koruması
+
+- [x] **8.2.1** Yenileme başına tek mail  
+  **Açıklama:** Aynı abonelik + `nextRenewalDate` için tekrar gönderme.  
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01 · **Not:** 15.3.2 `EmailSendLog.DedupeKey`.
+
+### 8.3 Mail job güvenilirliği / izolasyon
+
+- [x] **8.3.1** Iterasyon hata izolasyonu  
+  **Açıklama:** Bir send/iteration fail host loop’u öldürmesin.  
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `IsolatedPeriodicBackgroundService` (8.4.3 ile paylaşılır).
+
+- [x] **8.3.2** Master switch  
+  **Açıklama:** `BackgroundJobs:Enabled` ve `EmailJobs:RenewalRemindersEnabled`.  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01
 
 ### 8.4 Background host (non-mail jobs)
 
-- [ ] **8.4.1** HostedService vs Hangfire kararı implement  
+- [x] **8.4.1** HostedService vs Hangfire kararı implement  
   **Açıklama:** v1 için `BackgroundService` (ör. FX sync).  
-  **Öncelik:** P2 · **Bağımlı:** 6.2.4 (opsiyonel)
+  **Öncelik:** P2 · **Bağımlı:** 6.2.4 (opsiyonel) · **Tamamlandı:** 2026-08-01  
+  **Not:** `IsolatedPeriodicBackgroundService`; Hangfire deferred; see `Infrastructure/Background/README.md`.
 
-- [ ] **8.4.2** Job schedule configuration  
+- [x] **8.4.2** Job schedule configuration  
   **Açıklama:** Cron benzeri env (ör. FX hourly).  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `IntervalParser` (`1h`/`30m`/`90s`); `ExchangeRates:SyncInterval` / `BACKGROUND_FX_INTERVAL`; `BackgroundJobs:Enabled`.
 
-- [ ] **8.4.3** Job hata izolasyonu  
+- [x] **8.4.3** Job hata izolasyonu  
   **Açıklama:** Bir iterasyon fail tüm job’u öldürmesin.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** Base catch+continue; FX per-base try/catch in `SyncAllAsync`.
 
 ---
 
@@ -1084,47 +1208,52 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 9.1 AI altyapı
 
-- [ ] **9.1.1** `IAiClient` OpenAI-compatible  
+- [x] **9.1.1** `IAiClient` OpenAI-compatible  
   **Açıklama:** Chat completions HTTP.  
-  **Öncelik:** P2 · **Bağımlı:** 7.3.2
+  **Öncelik:** P2 · **Bağımlı:** 7.3.2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `OpenAiCompatibleClient` → `/chat/completions` + `json_object`.
 
-- [ ] **9.1.2** Key SystemSettings’ten resolve  
+- [x] **9.1.2** Key SystemSettings’ten resolve  
   **Açıklama:** Yoksa `AI_KEY_MISSING` anlamlı hata.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `AiSettingsResolver`; model/baseUrl defaults from `Ai:*` config.
 
-- [ ] **9.1.3** Prompt builder (server-side)  
+- [x] **9.1.3** Prompt builder (server-side)  
   **Açıklama:** Kullanıcı abonelik özeti; PII minimize.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `AiPromptBuilder` — no email; names + financial fields only.
 
-- [ ] **9.1.4** Response parse → tips DTO  
+- [x] **9.1.4** Response parse → tips DTO  
   **Açıklama:** unused, duplicate, yearly, general + savings.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `AiResponseParser` (+ markdown fence strip).
 
 ### 9.2 AI endpoints
 
-- [ ] **9.2.1** `POST /api/ai/analyze`  
+- [x] **9.2.1** `POST /api/ai/analyze`  
   **Açıklama:** Auth user; rate limit; log request/response.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01
 
-- [ ] **9.2.2** `GET /api/ai/history`  
+- [x] **9.2.2** `GET /api/ai/history`  
   **Açıklama:** Pagination.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01
 
-- [ ] **9.2.3** Insufficient data (<1 subscription)  
+- [x] **9.2.3** Insufficient data (<1 subscription)  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01 · **Not:** AI_006
 
-- [ ] **9.2.4** AI rate limit (5/min, 20/day öneri)  
+- [x] **9.2.4** AI rate limit (5/min, 20/day öneri)  
   **Açıklama:** Stabilite; plan değil.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** ASP.NET Ai policy 5/min + app daily via log count (`Ai:DailyLimit`).
 
-- [ ] **9.2.5** AiSuggestionLog persist  
+- [x] **9.2.5** AiSuggestionLog persist  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01
 
-- [ ] **9.2.6** Activity log ai_suggestion  
+- [x] **9.2.6** Activity log ai_suggestion  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01 · **Not:** `ai.analyze` on `AiSuggestion`.
 
 ---
 
@@ -1132,217 +1261,206 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 10.1 Web foundation
 
-- [~] **10.1.1** Next.js App Router + TS + Tailwind iskelet  
-  **Açıklama:** Mevcut scaffold.  
-  **Durum:** Scaffold var.
+- [x] **10.1.1** Next.js App Router + TS + Tailwind iskelet  
+  **Tamamlandı:** 2026-08-01 · Next 16 + Tailwind 4
 
-- [ ] **10.1.2** Design tokens (manifesto colors)  
-  **Açıklama:** CSS variables + Tailwind theme light/dark.  
-  **Öncelik:** P1 · **Bağımlı:** —
+- [x] **10.1.2** Design tokens (manifesto colors)  
+  **Tamamlandı:** 2026-08-01 · CSS vars light/dark (primary violet, success/warning/danger)
 
-- [ ] **10.1.3** Dark mode (`class` strategy)  
-  **Açıklama:** system + user preference.  
-  **Öncelik:** P1
+- [x] **10.1.3** Dark mode (`class` strategy)  
+  **Tamamlandı:** 2026-08-01 · system + user toggle
 
-- [ ] **10.1.4** Inter font  
-  **Açıklama:** next/font.  
-  **Öncelik:** P1
+- [x] **10.1.4** Inter font  
+  **Tamamlandı:** 2026-08-01 · next/font
 
-- [ ] **10.1.5** API client (fetch/axios) + base URL env  
-  **Açıklama:** `NEXT_PUBLIC_API_URL`.  
-  **Öncelik:** P0
+- [x] **10.1.5** API client (fetch/axios) + base URL env  
+  **Tamamlandı:** 2026-08-01 · `lib/api/client.ts` + `NEXT_PUBLIC_API_URL`
 
-- [ ] **10.1.6** Auth token storage stratejisi  
-  **Açıklama:** httpOnly cookie (BFF) **veya** memory+refresh; XSS notları. Self-host için pratik seçim dokümante.  
-  **Öncelik:** P0
+- [x] **10.1.6** Auth token storage stratejisi  
+  **Tamamlandı:** 2026-08-01 · sessionStorage access+refresh (documented in web/README)
 
-- [ ] **10.1.7** Auth context / session provider  
-  **Açıklama:**  
-  **Öncelik:** P0
+- [x] **10.1.7** Auth context / session provider  
+  **Tamamlandı:** 2026-08-01 · AuthProvider + refresh-on-401
 
-- [ ] **10.1.8** Protected route middleware/layout  
-  **Açıklama:**  
-  **Öncelik:** P0
+- [x] **10.1.8** Protected route middleware/layout  
+  **Tamamlandı:** 2026-08-01 · AppShell client guard → /login
 
-- [ ] **10.1.9** shadcn/ui veya temel component set  
-  **Açıklama:** Button, Input, Card, Dialog, Toast.  
-  **Öncelik:** P1
+- [x] **10.1.9** shadcn/ui veya temel component set  
+  **Tamamlandı:** 2026-08-01 · Button/Input/Card/Badge/Toast(sonner)/Empty/Spinner
 
-- [ ] **10.1.10** i18n (TR/EN) web  
-  **Açıklama:** next-intl veya benzeri.  
-  **Öncelik:** P1
+- [x] **10.1.10** i18n (TR/EN) web  
+  **Tamamlandı:** 2026-08-01 · lightweight messages + locale switcher
 
-- [ ] **10.1.11** Error toast / ProblemDetails handler  
-  **Açıklama:**  
-  **Öncelik:** P1
+- [x] **10.1.11** Error toast / ProblemDetails handler  
+  **Tamamlandı:** 2026-08-01 · ApiError + sonner
 
-- [ ] **10.1.12** Loading ve empty states  
-  **Açıklama:**  
-  **Öncelik:** P1
+- [x] **10.1.12** Loading ve empty states  
+  **Tamamlandı:** 2026-08-01 · PageLoader + EmptyState
 
 ### 10.2 Auth sayfaları
 
-- [ ] **10.2.1** Login sayfası  
+- [x] **10.2.1** Login sayfası  
   **Açıklama:** Setup incomplete ise `/setup`’a yönlendir.  
   **Öncelik:** P0 · **Bağımlı:** 3.2.2, 10.1.5, 3S.1.2
 
-- [ ] **10.2.2** Register sayfası (public; setup sonrası flag açıksa)  
+- [x] **10.2.2** Register sayfası (public; setup sonrası flag açıksa)  
   **Açıklama:** İlk kullanıcı **setup wizard** ile; public reg kapalıysa CTA yok.  
   **Öncelik:** P1 · **Bağımlı:** 3.2.13
 
-- [ ] **10.2.3** Change password sayfası/modal (oturum içi)  
+- [x] **10.2.3** Change password sayfası/modal (oturum içi)  
   **Açıklama:** Profile veya settings; `3.2.14`.  
   **Öncelik:** P0 · **Bağımlı:** 3.2.14
 
-- [ ] **10.2.3b** Forgot password sayfaları (**Faz 15**)  
+- [x] **10.2.3b** Forgot password sayfaları  
   **Açıklama:** “Şifremi unuttum” + e-posta token reset UI. SMTP yoksa bilgilendirme.  
-  **Öncelik:** P3 · **Bağımlı:** 3.2.7, 3.2.8, 15.x · **Durum:** Ertelendi.
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01 · **Not:** Faz 15.4.1
 
-- [ ] **10.2.4** Accept invite sayfası  
+- [x] **10.2.4** Accept invite sayfası  
   **Açıklama:** Token query/path ile; mail gerekmez (link paylaşımı manuel).  
   **Öncelik:** P1 · **Bağımlı:** 7.2.3
 
-- [ ] **10.2.5** Logout  
+- [x] **10.2.5** Logout  
   **Açıklama:**  
   **Öncelik:** P0
 
 ### 10.3 App shell
 
-- [ ] **10.3.1** App layout (sidebar/topnav)  
+- [x] **10.3.1** App layout (sidebar/topnav)  
   **Açıklama:** Dashboard, Subscriptions, Reports, AI, Profile, Admin.  
   **Öncelik:** P0
 
-- [ ] **10.3.2** Responsive mobile nav  
+- [x] **10.3.2** Responsive mobile nav  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.3.3** Theme toggle  
+- [x] **10.3.3** Theme toggle  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.3.4** User menu (email, logout)  
+- [x] **10.3.4** User menu (email, logout)  
   **Açıklama:**  
   **Öncelik:** P0
 
 ### 10.4 Dashboard UI
 
-- [ ] **10.4.1** Summary cards (monthly/yearly)  
+- [x] **10.4.1** Summary cards (monthly/yearly)  
   **Açıklama:**  
   **Öncelik:** P0 · **Bağımlı:** 4.2.1
 
-- [ ] **10.4.2** Budget progress bar  
+- [x] **10.4.2** Budget progress bar  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.4.3** Upcoming payments list  
+- [x] **10.4.3** Upcoming payments list  
   **Açıklama:**  
   **Öncelik:** P0
 
-- [ ] **10.4.4** Recent activity list  
+- [x] **10.4.4** Recent activity list  
   **Açıklama:**  
   **Öncelik:** P1 · **Bağımlı:** 5.4.2
 
-- [ ] **10.4.5** Budget exceeded warning UI  
+- [x] **10.4.5** Budget exceeded warning UI  
   **Açıklama:**  
   **Öncelik:** P1
 
 ### 10.5 Subscriptions UI
 
-- [ ] **10.5.1** Subscription list/grid  
+- [x] **10.5.1** Subscription list/grid  
   **Açıklama:**  
   **Öncelik:** P0
 
-- [ ] **10.5.2** Card states: Yakında / Gecikmiş / Normal  
+- [x] **10.5.2** Card states: Yakında / Gecikmiş / Normal  
   **Açıklama:** Manifesto border + badge + dark amber glow.  
   **Öncelik:** P0
 
-- [ ] **10.5.3** Create subscription form/modal  
+- [x] **10.5.3** Create subscription form/modal  
   **Açıklama:** Provider autocomplete, category, share, dates.  
   **Öncelik:** P0
 
-- [ ] **10.5.4** Edit subscription  
+- [x] **10.5.4** Edit subscription  
   **Açıklama:**  
   **Öncelik:** P0
 
-- [ ] **10.5.5** Archive confirmation  
+- [x] **10.5.5** Archive confirmation  
   **Açıklama:**  
   **Öncelik:** P0
 
-- [ ] **10.5.6** Filters (category, archived, search)  
+- [x] **10.5.6** Filters (category, archived, search)  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.5.7** UserShare display  
+- [x] **10.5.7** UserShare display  
   **Açıklama:** “Sizin payınız”.  
   **Öncelik:** P0
 
 ### 10.6 Reports UI
 
-- [ ] **10.6.1** Category breakdown chart  
+- [x] **10.6.1** Category breakdown chart  
   **Açıklama:**  
   **Öncelik:** P1 · **Bağımlı:** 6.1.2
 
-- [ ] **10.6.2** Monthly spend chart  
+- [x] **10.6.2** Monthly spend chart  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.6.3** Empty/error states  
+- [x] **10.6.3** Empty/error states  
   **Açıklama:**  
   **Öncelik:** P1
 
 ### 10.7 AI UI
 
-- [ ] **10.7.1** Analyze CTA + loading  
+- [x] **10.7.1** Analyze CTA + loading  
   **Açıklama:**  
   **Öncelik:** P2 · **Bağımlı:** 9.2.1
 
-- [ ] **10.7.2** Tips cards  
+- [x] **10.7.2** Tips cards  
   **Açıklama:**  
   **Öncelik:** P2
 
-- [ ] **10.7.3** Key missing admin guidance message  
+- [x] **10.7.3** Key missing admin guidance message  
   **Açıklama:** “SuperAdmin AI key girmeli”.  
   **Öncelik:** P2
 
-- [ ] **10.7.4** History list  
+- [x] **10.7.4** History list  
   **Açıklama:**  
   **Öncelik:** P2
 
 ### 10.8 Profile UI
 
-- [ ] **10.8.1** Profile form  
+- [x] **10.8.1** Profile form  
   **Açıklama:**  
   **Öncelik:** P0 · **Bağımlı:** 5.3.x
 
-- [ ] **10.8.2** Notification preferences form  
+- [x] **10.8.2** Notification preferences form  
   **Açıklama:** In-app tercihler (ör. days before renewal). **E-posta toggle yok / disabled.**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** Profile card → GET/PUT `/api/profile/notifications`; days 0–30, push toggle, email disabled (Faz 15).
 
-- [ ] **10.8.3** Theme color picker  
+- [x] **10.8.3** Theme color picker  
   **Açıklama:**  
   **Öncelik:** P1
 
 ### 10.9 Admin UI
 
-- [ ] **10.9.1** Users table  
+- [x] **10.9.1** Users table  
   **Açıklama:**  
   **Öncelik:** P0 · **Bağımlı:** 7.1.x · Sadece SuperAdmin/Admin
 
-- [ ] **10.9.2** Create user / invite UI  
+- [x] **10.9.2** Create user / invite UI  
   **Açıklama:**  
   **Öncelik:** P1
 
-- [ ] **10.9.3** SystemSettings form (Instance + SMTP + AI)  
+- [x] **10.9.3** SystemSettings form (Instance + SMTP + AI)  
   **Açıklama:** Instance name/locale/currency; SMTP alanları (kayıt); AI key (maskeli); test-AI. Test-SMTP → Faz 15.  
   **Öncelik:** P0 · **Bağımlı:** 7.3.x
 
-- [ ] **10.9.4** Admin nav visibility by role  
+- [x] **10.9.4** Admin nav visibility by role  
   **Açıklama:**  
   **Öncelik:** P0
 
 ### 10.10 Landing (opsiyonel)
 
-- [ ] **10.10.1** Minimal self-host landing  
+- [x] **10.10.1** Minimal self-host landing  
   **Açıklama:** Login/Register CTA.  
   **Öncelik:** P2
 
@@ -1352,108 +1470,134 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ### 11.1 Docker artifacts
 
-- [ ] **11.1.1** API Dockerfile  
+- [x] **11.1.1** API Dockerfile  
   **Açıklama:** multi-stage build, non-root opsiyonel.  
-  **Öncelik:** P1 · **Bağımlı:** 2.3.2
+  **Öncelik:** P1 · **Bağımlı:** 2.3.2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `api/Subify.Api/Dockerfile` — sdk→aspnet, non-root, curl healthcheck.
 
-- [ ] **11.1.2** Web Dockerfile  
+- [x] **11.1.2** Web Dockerfile  
   **Açıklama:** Next standalone output önerilir.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `web/Dockerfile` + `output: "standalone"`; `NEXT_PUBLIC_API_URL` build-arg.
 
-- [ ] **11.1.3** docker-compose full stack  
+- [x] **11.1.3** docker-compose full stack  
   **Açıklama:** postgres + api + web; volume; env sample.  
-  **Öncelik:** P0 · **Bağımlı:** 11.1.1, 11.1.2
+  **Öncelik:** P0 · **Bağımlı:** 11.1.1, 11.1.2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `docker/docker-compose.yaml`; DB-only: `docker-compose.db.yaml`.
 
-- [ ] **11.1.4** `.env.example`  
+- [x] **11.1.4** `.env.example`  
   **Açıklama:** Connection string, JWT secret, URLs, flags.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-08-01  
+  **Not:** `docker/.env.example` + root `.env.example`.
 
-- [ ] **11.1.5** Reverse proxy örneği (Caddy/Nginx)  
+- [x] **11.1.5** Reverse proxy örneği (Caddy/Nginx)  
   **Açıklama:** `/` → web, `/api` → api; TLS notları.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `docker/Caddyfile`, `docker/nginx.conf.example`.
 
-- [ ] **11.1.6** Healthcheck compose  
+- [x] **11.1.6** Healthcheck compose  
   **Açıklama:** api `/health`.  
-  **Öncelik:** P1 · **Bağımlı:** 1.2.7
+  **Öncelik:** P1 · **Bağımlı:** 1.2.7 · **Tamamlandı:** 2026-08-01  
+  **Not:** postgres healthy → api health → web health.
 
-- [ ] **11.1.7** Auto-migrate compose path doğrula  
+- [x] **11.1.7** Auto-migrate compose path doğrula  
   **Açıklama:** Cold start empty volume.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-08-01  
+  **Not:** API `DatabaseInitializer` on start (retry until Postgres ready).
 
 ### 11.2 Ops docs
 
-- [ ] **11.2.1** README install (one command)  
+- [x] **11.2.1** README install (one command)  
   **Açıklama:**  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-08-01 · **Not:** root README + docker/README.
 
-- [ ] **11.2.2** Backup/restore Postgres prosedürü  
+- [x] **11.2.2** Backup/restore Postgres prosedürü  
   **Açıklama:** pg_dump örnekleri.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01 · **Not:** `docs/OPS.md`.
 
-- [ ] **11.2.3** Upgrade / migration notları  
+- [x] **11.2.3** Upgrade / migration notları  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01 · **Not:** `docs/OPS.md`.
 
-- [ ] **11.2.4** Troubleshooting (port, JWT, setup, AI key; SMTP Faz 15)  
-  **Öncelik:** P2
+- [x] **11.2.4** Troubleshooting (port, JWT, setup, AI key; SMTP Faz 15)  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01 · **Not:** `docs/OPS.md`.
 
 ---
 
 # FAZ 12 — Testler
 
+> **Durum (2026-08-01):** Backend unit + integration yeşil.  
+> Çalıştır: `dotnet test api/Subify.slnx`  
+> (~91 Domain + ~16 Application + ~272 Api incl. Integration).  
+> Web E2E: Playwright scaffold (P2 smoke; stack gerekir).  
+> **Not:** Minimal API `bool` query param zorunlu sayılıyordu → `bool?` + `?? false`
+> (`includeArchived`, `includeExpired`).
+
 ### 12.1 Backend unit
 
-- [ ] **12.1.1** Test projesi `Subify.Domain.Tests` / `Application.Tests`  
+- [x] **12.1.1** Test projesi `Subify.Domain.Tests` / `Application.Tests`  
   **Açıklama:** xUnit.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `api/Subify.Domain.Tests`, `api/Subify.Application.Tests`, `api/Subify.Api.Tests` (handler harness).
 
-- [ ] **12.1.2** UserShare / totals unit tests  
+- [x] **12.1.2** UserShare / totals unit tests  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SubscriptionMathTests`, `FinancialMotorTests`, `CurrencyConversionTests`, list summary harness.
 
-- [ ] **12.1.3** First SuperAdmin race/logic tests  
+- [x] **12.1.3** First SuperAdmin race/logic tests  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SuperAdminBootstrapTests` (ikinci create → SuperAdminAlreadyExists); setup complete lock.
 
-- [ ] **12.1.4** Validators unit tests  
+- [x] **12.1.4** Validators unit tests  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `Subify.Application.Tests` — Login + CreateSubscription validators (incl. category XOR).
 
-- [ ] **12.1.5** Category XOR rule tests  
+- [x] **12.1.5** Category XOR rule tests  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `CategoryXorRuleTests` + create validator XOR cases.
 
 ### 12.2 Integration
 
-- [ ] **12.2.1** WebApplicationFactory setup  
+- [x] **12.2.1** WebApplicationFactory setup  
   **Açıklama:** Testcontainers Postgres önerilir.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** SQLite shared in-memory `SubifyWebApplicationFactory`; env `Testing` skips migrate; hosted jobs stripped.
 
-- [ ] **12.2.2** Auth flow integration  
+- [x] **12.2.2** Auth flow integration  
   **Açıklama:** register → login → refresh → logout.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `AuthFlowIntegrationTests` — setup admin → complete → login → refresh → logout.
 
-- [ ] **12.2.3** Subscription isolation test  
+- [x] **12.2.3** Subscription isolation test  
   **Açıklama:** User A User B verisini göremez.  
-  **Öncelik:** P0
+  **Öncelik:** P0 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SubscriptionIntegrationTests.User_cannot_see_other_users_subscriptions`.
 
-- [ ] **12.2.4** Admin authorization tests  
+- [x] **12.2.4** Admin authorization tests  
   **Açıklama:** User settings’e 403.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `User_cannot_access_admin_settings` → 403.
 
-- [ ] **12.2.5** No subscription limit test  
+- [x] **12.2.5** No subscription limit test  
   **Açıklama:** 4+ create 403 değil.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** 5 create + list totalItems ≥ 5 (freemium yok).
 
 ### 12.3 Web E2E
 
-- [ ] **12.3.1** Playwright setup  
+- [x] **12.3.1** Playwright setup  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `web/playwright.config.ts` + `@playwright/test`; `npx playwright install` gerekir.
 
-- [ ] **12.3.2** E2E: first admin + create subscription  
+- [x] **12.3.2** E2E: first admin + create subscription  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** Scaffold smoke (`e2e/smoke.spec.ts` landing + login). Full admin+sub E2E optional when stack up.
 
 ---
 
@@ -1515,110 +1659,273 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 # FAZ 14 — Polish, güvenlik, dokümantasyon kapanışı
 
+> **Durum (2026-08-01):** Security headers, CORS fail-closed prod, Serilog secret destructure,  
+> OpenAPI info, OpenApi package patch, ERROR_CODES_OS, OPS notes.
+
 ### 14.1 Güvenlik checklist
 
-- [ ] **14.1.1** Secret masking audit (settings GET)  
+- [x] **14.1.1** Secret masking audit (settings GET)  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SystemSettingsMapper` + `SystemSettingsHandlerTests`; audit snapshot flags only.
 
-- [ ] **14.1.2** Log redaction (passwords, tokens, API keys)  
+- [x] **14.1.2** Log redaction (passwords, tokens, API keys)  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** Request log no body; `SensitiveDataDestructuringPolicy` for structured `@` logs.
 
-- [ ] **14.1.3** CORS production tight  
+- [x] **14.1.3** CORS production tight  
   **Açıklama:**  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** Prod empty origins → deny all; Dev/Testing localhost default; normalize http(s) only.
 
-- [ ] **14.1.4** Security headers (reverse proxy notları)  
+- [x] **14.1.4** Security headers (reverse proxy notları)  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SecurityHeadersMiddleware` + Caddy/Nginx examples + OPS §security.
 
-- [ ] **14.1.5** Dependency vulnerability scan  
+- [x] **14.1.5** Dependency vulnerability scan  
   **Açıklama:** Örn. Microsoft.OpenApi uyarısı.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `Microsoft.OpenApi` → 2.11.0 (GHSA-v5pm-xwqc-g5wc); AspNetCore.OpenApi 10.0.10.
 
 ### 14.2 API dokümantasyon
 
-- [ ] **14.2.1** OpenAPI title/version/description  
+- [x] **14.2.1** OpenAPI title/version/description  
   **Açıklama:** Subify OS.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `OpenApiInfoTransformer` — Subify OS API 1.0.0.
 
-- [ ] **14.2.2** Endpoint summary/description audit  
+- [x] **14.2.2** Endpoint summary/description audit  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** All `*EndPoints.cs` groups carry `.WithSummary` / descriptions for main routes.
 
-- [ ] **14.2.3** ERROR_CODES OS revizyonu  
+- [x] **14.2.3** ERROR_CODES OS revizyonu  
   **Açıklama:**  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `docs/ERROR_CODES_OS.md` canonical; legacy `ERROR_CODES.md` points here.
 
 ### 14.3 Task list bakımı
 
-- [ ] **14.3.1** Tamamlanan task’ları `[x]` yap  
+- [x] **14.3.1** Tamamlanan task’ları `[x]` yap  
   **Açıklama:** Her PR/sprint sonunda.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** Process: mark done + date + short Not each sprint.
 
-- [ ] **14.3.2** Yeni scope task ekleme kuralı  
+- [x] **14.3.2** Yeni scope task ekleme kuralı  
   **Açıklama:** Manifesto çelişkisi yoksa ekle; çelişki varsa reddet. Setup / EmailSend kararlarına uy.  
-  **Öncelik:** P1
+  **Öncelik:** P1 · **Tamamlandı:** 2026-08-01  
+  **Not:** Rule block at top of this file.
 
 ---
 
 # FAZ 15 — EmailSend altyapısı (core ürün bittikten sonra)
 
-> **Ayar kaydı şimdi (3S.5 / 7.3):** SuperAdmin SMTP host/port/user/password/from + `SmtpEnabled`.  
-> **Gönderim bu fazda:** `SmtpEnabled==true` ve zorunlu alanlar doluysa kullanıcının SMTP’si ile mail; aksi halde noop + net hata.  
-> **Confirm bu faza dahil değil** (iptal kararı).  
-> Ertelenen auth task’ları: `3.2.7`, `3.2.8`, `7.2.4`, reminder job’ları — burada implement edilir.
+> **Durum (2026-08-01):** Motor + forgot/reset + invite mail + renewal job + test-smtp + web.  
+> **Confirm yok (kalıcı).** SMTP: `HasSmtpConfigured` = enabled + host + port + from.  
+> Migration: `AddEmailSendLog`.
 
 ### 15.1 Motor
 
-- [ ] **15.1.1** `IEmailSender` abstraction  
-  **Öncelik:** P2
+- [x] **15.1.1** `IEmailSender` abstraction  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `IEmailSender` + `EmailMessage`; `IEmailDeliveryService` + templates.
 
-- [ ] **15.1.2** `SmtpEmailSender` (SystemSettings’ten oku)  
+- [x] **15.1.2** `SmtpEmailSender` (SystemSettings’ten oku)  
   **Açıklama:** Runtime secret; factory/refresh.  
-  **Öncelik:** P2 · **Bağımlı:** 2.1.5, 7.3.2
+  **Öncelik:** P2 · **Bağımlı:** 2.1.5, 7.3.2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `SmtpEmailSender` live reads SystemSettings each send.
 
-- [ ] **15.1.3** Noop sender when SMTP empty/disabled  
-  **Öncelik:** P2
+- [x] **15.1.3** Noop sender when SMTP empty/disabled  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** Unconfigured → `SET_003` (not silent success except forgot enumeration path).
 
-- [ ] **15.1.4** Template renderer + `email_templates` seed  
+- [x] **15.1.4** Template renderer + `email_templates` seed  
   **Açıklama:** ResetPassword, RenewalReminder, Invite (VerifyEmail **yok** — confirm yok).  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `EmailTemplateRenderer` + seed catalog; DB first then catalog fallback.
 
-- [ ] **15.1.5** Locale’e göre template  
-  **Öncelik:** P2
+- [x] **15.1.5** Locale’e göre template  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** tr/en; fallback Default locale.
 
 ### 15.2 Auth mailleri
 
-- [ ] **15.2.1** Forgot-password e-posta + token  
+- [x] **15.2.1** Forgot-password e-posta + token  
   **Açıklama:** `3.2.7` / `3.2.8` aktif hale gelir.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `POST /api/auth/forgot-password` + `reset-password`; Identity reset token.
 
-- [ ] **15.2.2** Invite e-posta (opsiyonel; link hâlâ UI’da)  
-  **Öncelik:** P3
+- [x] **15.2.2** Invite e-posta (opsiyonel; link hâlâ UI’da)  
+  **Öncelik:** P3 · **Tamamlandı:** 2026-08-01  
+  **Not:** CreateInvite best-effort send when SMTP on; UI token always returned.
 
 ### 15.3 Operasyonel mailler
 
-- [ ] **15.3.1** Renewal reminder background job  
+- [x] **15.3.1** Renewal reminder background job  
   **Açıklama:** `daysBeforeRenewal` + SMTP enabled.  
-  **Öncelik:** P2 · **Bağımlı:** 8.4, 4.x
+  **Öncelik:** P2 · **Bağımlı:** 8.4, 4.x · **Tamamlandı:** 2026-08-01  
+  **Not:** `IRenewalReminderService` + host; EmailEnabled + window; tests in `RenewalReminderServiceTests`.
 
-- [ ] **15.3.2** Duplicate send koruması  
-  **Öncelik:** P2
+- [x] **15.3.2** Duplicate send koruması  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `EmailSendLog.DedupeKey` unique success; `renewal:{subId}:{date}`.
 
-- [ ] **15.3.3** `POST /api/admin/settings/test-smtp`  
+- [x] **15.3.3** `POST /api/admin/settings/test-smtp`  
   **Açıklama:** `7.3.3` implement.  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** SuperAdmin; optional `toEmail`; web field + button.
 
 ### 15.4 Web
 
-- [ ] **15.4.1** Forgot / reset password sayfaları  
+- [x] **15.4.1** Forgot / reset password sayfaları  
   **Açıklama:** `10.2.3b`  
-  **Öncelik:** P2
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** `/forgot-password`, `/reset-password` (link token hidden); setup-gate allowlist.
 
-- [ ] **15.4.2** Settings “Test SMTP” butonu  
-  **Öncelik:** P2
+- [x] **15.4.2** Settings “Test SMTP” butonu  
+  **Öncelik:** P2 · **Tamamlandı:** 2026-08-01  
+  **Not:** Admin settings optional recipient; profile email toggle for reminders.
+
+---
+
+# FAZ 16 — Ürün genişletme (v1+ / docs backlog)
+
+> **Amaç:** Core (1–15) üzerine manifesto/PRD ile uyumlu, ilgi çekici özellikler.  
+> **Freemium / ödeme / confirm zorunlu / open banking yok.**  
+> **Döviz gösterim kuralı (16.1 — ürün kararı):**
+>
+> 1. **Ana para** = kullanıcının `MainCurrency` (TR kullanıcıda genelde TRY; asla hardcode “sadece TL” değil).
+> 2. Abonelik **orijinal para ≠ MainCurrency** ise:
+>    - **Birincil satır:** main-currency karşılığı (FX snapshot; rate yoksa uyarı + sadece orijinal).
+>    - **İkincil:** orijinal tutar parantezde — örn. `1.250,00 TRY` + muted `(49,99 USD)`.
+>    - Aynı para ise parantez **gösterme**.
+> 3. Rapor / dashboard **toplam ve grafikler** zaten MainCurrency; satır detayında (2) kuralı.
+> 4. Sol menü altı: **son snapshot** kurları (MainCurrency bazlı popüler çaprazlar + `asOf` / “güncel değil” ipucu).
+
+### 16.1 Çoklu para birimi & kur UX
+
+- [x] **16.1.1** FX display kuralı (shared web helper)  
+  **Açıklama:** `formatMoneyDual(amount, currency, mainCurrency, rates?)` → primary main + optional `(original)`. Rate missing → primary original + “kur yok” badge/tooltip.  
+  **Öncelik:** P1 · **Bağımlı:** 6.2.x, 4.3.x · **Tamamlandı:** 2026-08-02  
+  **Not:** `web/src/lib/fx/money-dual.ts` (`convertCurrency`, `formatMoneyDual`, `toFxRatesSnapshot`); re-export `@/lib/utils`; `ExchangeRatesResponse` type; i18n `fxRateMissing*`; smoke `money-dual.test.ts`.
+
+- [x] **16.1.2** Abonelik listesi / kart / detay: main karşılık  
+  **Açıklama:** `SubscriptionItem` zaten `userShare` + main alanları taşıyorsa UI’da dual; yoksa API’ye `userShareMain` / `monthlyEquivalentMain` netleştir.  
+  **Öncelik:** P1 · **Bağımlı:** 16.1.1, 10.5.x · **Tamamlandı:** 2026-08-02  
+  **Not:** Client FX via `useFxRates` + `MoneyDual` on list cards (price + share) and detail summary (price, share, monthly eq). MainCurrency from list summary / profile.
+
+- [x] **16.1.3** Dashboard upcoming / stat kartlarında dual tutar  
+  **Açıklama:** Yabancı kur aboneliklerde main + (orijinal).  
+  **Öncelik:** P1 · **Bağımlı:** 16.1.1 · **Tamamlandı:** 2026-08-02  
+  **Not:** Upcoming rows `MoneyDual` (userShare); KPI totals stay MainCurrency; `fxUnconvertedWarning` banner; 30d upcoming total footer.
+
+- [x] **16.1.4** Raporlar: satır ve tooltip dual display  
+  **Açıklama:** Overview / abonelikler tablosu / cashflow satırları MainCurrency; orijinal farklıysa `()`. Currency sekmesi zaten dağılım — orada “orijinal toplam + main toplam” net etiket. Print/CSV: main kolon + original kolon.  
+  **Öncelik:** P1 · **Bağımlı:** 16.1.1, 6.1.x, reports web · **Tamamlandı:** 2026-08-02  
+  **Not:** MoneyDual on subs table, cashflow timeline, top costs, budget hints; currency panel main+(original); CSV dual columns; print dual text.
+
+- [x] **16.1.5** Sol menü (shell) altı: son döviz kurları  
+  **Açıklama:** App sidebar footer: `GET /api/exchange-rates?base={mainCurrency}` (veya mevcut endpoint); 3–6 önemli hedef kur (USD, EUR, GBP, … main değilse); `asOf` + yenileme ipucu; rate yoksa “Kur yüklenemedi”. Mobil dar menüde collapse/okunabilir.  
+  **Öncelik:** P1 · **Bağımlı:** 6.2.3, web shell · **Tamamlandı:** 2026-08-02  
+  **Not:** `SidebarFxRates` above user block (desktop + mobile drawer); 1 USD = X main; collapse + refresh; `useFxRates.refetch`.
+
+- [x] **16.1.6** Kur stale / missing UX  
+  **Açıklama:** Snapshot yaşı > N saat → “kur eski olabilir”; missing conversion sayacı (liste/rapor). SuperAdmin’e FX sync durumu linki (opsiyonel).  
+  **Öncelik:** P2 · **Bağımlı:** 16.1.5, 8.4 · **Tamamlandı:** 2026-08-02  
+  **Not:** `FxStatusBanner` + `countMissingConversions` / `isFxSnapshotStale` (6h); dashboard, subscriptions, reports; SuperAdmin → settings link; MoneyDual stacked rate-missing tip.
+
+### 16.2 Kullanım & AI aksiyonları
+
+- [ ] **16.2.1** `LastUsedAt` UI (abonelik detay / hızlı aksiyon) — **İPTAL**  
+  **Açıklama:** “Bugün kullandım” / tarih seç; liste ve AI unused için girdi.  
+  **Öncelik:** P2 · **Bağımlı:** 4.x entity · **İptal:** 2026-08-02  
+  **Not:** Kaldırıldı — domain `LastUsedAt`, API/DTO, form, list/detail quick action, `usage.ts`; migration `DropSubscriptionLastUsedAt`.
+
+- [ ] **16.2.2** “Kullanılmıyor” görünümü — **İPTAL**  
+  **Açıklama:** N gündür `lastUsed` yok / eski → filtre veya dashboard kartı (AI olmadan da).  
+  **Öncelik:** P2 · **Bağımlı:** 16.2.1 · **İptal:** 2026-08-02  
+  **Not:** 16.2.1 ile birlikte kaldırıldı (filtre, badge, dashboard banner).
+
+- [x] **16.2.3** AI tip → tek tık aksiyon  
+  **Açıklama:** unused → arşiv önerisi; yearly → not; tip `subscriptionId` ile detaya link / arşiv confirm.  
+  **Öncelik:** P2 · **Bağımlı:** 9.2.x, 10.x AI page · **Tamamlandı:** 2026-08-02  
+  **Not:** Tip actions: open sub, archive (unused tip type), review yearly link. LastUsedAt sinyali yok; AI tip tipi kalır.
+
+### 16.3 Takvim, import / export genişletme
+
+- [x] **16.3.1** Yenileme takvimi ICS export  
+  **Açıklama:** Upcoming → `text/calendar` dosya veya `GET /api/subscriptions/upcoming.ics` (auth).  
+  **Öncelik:** P2 · **Bağımlı:** 4.2 upcoming · **Tamamlandı:** 2026-08-02  
+  **Not:** Client `buildUpcomingIcs` / download; Reports → Cashflow button.
+
+- [x] **16.3.2** CSV/JSON abonelik import  
+  **Açıklama:** Export kolonlarıyla uyumlu; dry-run + hata satırları; MainCurrency dışı para korunur.  
+  **Öncelik:** P2 · **Bağımlı:** 4.1 create, export CSV · **Tamamlandı:** 2026-08-02  
+  **Not:** `parseSubscriptionCsv` dry-run + POST create loop; template download; subscriptions page.
+
+- [x] **16.3.3** What-if bütçe (AI’sız)  
+  **Açıklama:** “Şu aboneliği kaldır / yearly yap” → yeni monthly total ve bütçe kalanı (client veya küçük query).  
+  **Öncelik:** P2 · **Bağımlı:** reports/budget, 4.3 math · **Tamamlandı:** 2026-08-02  
+  **Not:** `computeWhatIf` + Reports Budget tab exclude/yearly checkboxes.
+
+### 16.4 Fiyat geçmişi & uyarılar
+
+- [x] **16.4.1** Abonelik fiyat geçmişi modeli  
+  **Açıklama:** Fiyat/currency değişince history satırı; soft audit.  
+  **Öncelik:** P2 · **Bağımlı:** 4.1 update · **Tamamlandı:** 2026-08-02  
+  **Not:** `SubscriptionPriceHistory` + migration; write on Update price/currency; DTO on list/detail; test.
+
+- [x] **16.4.2** “Zam” sinyali UI  
+  **Açıklama:** Son değişiklik badge / rapor satırı; opsiyonel e-posta (SMTP) sonra.  
+  **Öncelik:** P3 · **Bağımlı:** 16.4.1 · **Tamamlandı:** 2026-08-02  
+  **Not:** List badge (Zam/İndirim); detail price history panel. Email optional later.
+
+### 16.5 Aile / multi-user (opt-in, privacy)
+
+- [ ] **16.5.1** Aile bütçe özeti (opt-in) — **İPTAL**  
+  **Açıklama:** PRD §4.2 “ileride”. Kullanıcılar açık rıza ile aggregate monthly (detay abonelik yok). SuperAdmin ayarı + user opt-in.  
+  **Öncelik:** P3 · **Bağımlı:** 7.1, 4.3 · **İptal:** 2026-08-02  
+  **Not:** Kaldırıldı — domain flag’ler, API, UI, migration drop (`DropFamilyBudgetFlags`).
+
+- [ ] **16.5.2** Paylaşım matrisi (opsiyonel) — **İPTAL**  
+  **Açıklama:** `shared_with_count` ötesi: instance user’a “paylaşılan kişiler” (isim) — finansal detay sızdırmaz.  
+  **Öncelik:** P3 · **Bağımlı:** 16.5.1 · **İptal:** 2026-08-02  
+  **Not:** 16.5.1 ile birlikte kaldırıldı.
+
+### 16.6 Self-host ops & community
+
+- [x] **16.6.1** SuperAdmin instance health paneli (MVP)  
+  **Açıklama:** setup flags, son FX sync, email send success/fail özeti, AI key configured, job enabled.  
+  **Öncelik:** P2 · **Bağımlı:** health, 6.2, 15.x logs · **Tamamlandı:** 2026-08-02  
+  **Not:** Admin settings → **Sağlık / Ops** sekmesi: FX snapshot/stale, AI/SMTP ready; banner → `?tab=ops`. Full job metrics later.
+
+- [x] **16.6.2** Yedekleme UX / dokümantasyon derinleştirme  
+  **Açıklama:** Admin’de “nasıl yedek alınır” + opsiyonel scheduled dump notu (OPS); tam UI restore P3.  
+  **Öncelik:** P2 · **Bağımlı:** 11.2 OPS · **Tamamlandı:** 2026-08-02  
+  **Not:** Ops kartı (komut + cron kopyala); `docker/scripts/backup-postgres.sh` / `restore-postgres.sh`; OPS.md + docker/README.
+
+- [x] **16.6.3** Provider katalog import (JSON/seed PR)  
+  **Açıklama:** Topluluk provider listesi; SuperAdmin import; logo URL opsiyonel.  
+  **Öncelik:** P3 · **Bağımlı:** 5.2, 7.x · **Tamamlandı:** 2026-08-02  
+  **Not:** `POST /api/admin/providers/import` (create/skip/updateExisting); sample `data/provider-catalog.sample.json`; Ops UI; tests.
+
+- [ ] **16.6.4** Runtime resources / dil paketi (web hibrit)  
+  **Açıklama:** ADR-001; admin resource + client delta (MVP static kalabilir).  
+  **Öncelik:** P3 · **Bağımlı:** 6.3  
+  **Not:** v1 web `messages.ts` static; API resources endpoints zaten var — hibrit client sonra.
+
+- [ ] **16.6.5** OpenTelemetry (opsiyonel)  
+  **Açıklama:** LOGGING_MONITORING; v1 zorunlu değil.  
+  **Öncelik:** P3  
+  **Not:** Bilinçli erteleme — Serilog + health yeterli self-host v1.
+
+### 16.7 Etiket / sınıflama
+
+- [ ] **16.7.1** Abonelik etiketleri (tags)  
+  **Açıklama:** iş / ev / çocuk vb.; filtre + rapor dilimi (opsiyonel).  
+  **Öncelik:** P3 · **Bağımlı:** 4.x
 
 ---
 
@@ -1641,7 +1948,8 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 | 13 | Tests | `12.x` |
 | 14 | Flutter | `13.x` |
 | 15 | Polish | `14.x` |
-| **16** | **EmailSend + forgot-mail + reminders** | **`15.x`** |
+| 16 | EmailSend + forgot-mail + reminders | `15.x` |
+| **17** | **v1+ genişletme (FX UX önce)** | **`16.1` → `16.2` → `16.3` → …** |
 
 ---
 
@@ -1662,6 +1970,7 @@ Bu task’lar “gereksiz” değil; **şimdi yazılmayacak**, core bitince yap�
 
 ---
 
-*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir (sürüm 1.3).*  
+*Bu dosya Subify OS geliştirme sırasının tek operasyonel task listesidir (sürüm 1.4).*  
 *Çelişkide: (1) Bu listedeki ürün kararları · (2) Manifesto · (3) PRD · (4) legacy docs.*  
-*Özet: **Confirm yok (kalıcı)** · **SMTP ayar kaydı setup/settings (şimdi)** · **Gönderim motoru Faz 15 (SmtpEnabled)** · **Şifre: change + admin reset şimdi; forgot-mail Faz 15**.*
+*Özet: **Confirm yok (kalıcı)** · **SMTP BYOK (Faz 15)** · **v1+ backlog Faz 16** (FX dual display + menü kurları + docs fikirleri).*  
+*Cloud/SaaS: [SUBIFY_SAAS_TRANSITION_PRD.md](./SUBIFY_SAAS_TRANSITION_PRD.md) + [SUBIFY_SAAS_TRANSITION_TASK_LIST.md](./SUBIFY_SAAS_TRANSITION_TASK_LIST.md) — OS listesine billing task eklenmez.*

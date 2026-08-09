@@ -66,6 +66,39 @@ public class UpdateSubscriptionHandlerTests
     }
 
     [Fact]
+    public async Task Update_price_change_writes_history_and_latest()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var userId = await harness.SeedUserAsync("owner@subify.local");
+        harness.SetUser(userId);
+
+        var created = await harness.CreateAsync(new CreateSubscriptionCommand(
+            "Spotify", 50m, "TRY", "monthly", 1, Today.AddDays(10)));
+        Assert.True(created.IsSuccess);
+
+        var updated = await harness.UpdateAsync(new UpdateSubscriptionCommand(
+            Id: created.Value.Id,
+            Name: "Spotify",
+            Price: 80m,
+            Currency: "TRY",
+            BillingCycle: "monthly",
+            SharedWithCount: 1,
+            NextRenewalDate: Today.AddDays(10)));
+
+        Assert.True(updated.IsSuccess, updated.IsFailure ? updated.Error.Code : null);
+        Assert.NotNull(updated.Value.LatestPriceChange);
+        Assert.Equal(50m, updated.Value.LatestPriceChange!.OldPrice);
+        Assert.Equal(80m, updated.Value.LatestPriceChange.NewPrice);
+        Assert.True(updated.Value.LatestPriceChange.IsIncrease);
+        Assert.NotNull(updated.Value.PriceHistory);
+        Assert.Single(updated.Value.PriceHistory!);
+
+        using var scope = harness.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
+        Assert.Equal(1, await db.SubscriptionPriceHistories.CountAsync(h => h.SubscriptionId == created.Value.Id));
+    }
+
+    [Fact]
     public async Task Update_missing_returns_not_found()
     {
         await using var harness = await Harness.CreateAsync();

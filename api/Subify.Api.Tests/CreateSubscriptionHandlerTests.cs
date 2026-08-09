@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Subify.Application.Common.Activity;
 using Subify.Application.Common.Interfaces;
 using Subify.Application.Features.Subscriptions.CreateSubscription;
 using Subify.Domain.Constants;
@@ -264,6 +265,7 @@ public class CreateSubscriptionHandlerTests
             services.AddHttpContextAccessor();
             services.AddSingleton<ICurrentUserService, FakeCurrentUser>();
             services.AddScoped<ISubifyDbContext>(sp => sp.GetRequiredService<SubifyDbContext>());
+            services.AddScoped<IActivityLogger, ActivityLogger>();
             services.AddScoped<CreateSubscriptionHandler>();
 
             var provider = services.BuildServiceProvider();

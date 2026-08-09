@@ -2,22 +2,23 @@
 
 Bu doküman, Subify API'sinin döndürdüğü tüm hata kodlarını ve çözüm önerilerini içerir.
 
-> ## 🔄 Subify OS uyumluluk notu
+> ## ✅ Subify OS — güncel katalog (14.2.3)
 >
-> **Geçerli ürün modeli:** [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) · [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md).  
-> **Kaynak kod kataloğu:** `api/Subify.Domain/Errors/DomainErrors.cs` (**task 1.2.4 — OS temizliği uygulandı**).
+> **Canonical (use this):** [ERROR_CODES_OS.md](./ERROR_CODES_OS.md)  
+> **Source of truth in code:** `api/Subify.Domain/Errors/DomainErrors.cs`  
+> **PRD:** [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) · [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md)
 >
 > | Kod / grup | Eski SaaS | Subify OS (güncel) |
 > | ---------- | --------- | ------------------ |
-> | Abonelik limiti | `SUB_001` Free max 3 | **Kaldırıldı** — limit yok |
-> | `SUB_001`… | limit + diğerleri | NotFound = `SUB_001`, AccessDenied = `SUB_002`, … (yeniden numaralandı) |
-> | AI premium | `AI_001` Premium Required | **`AI_KEY_MISSING`** — SystemSettings’te LLM key yok |
+> | Abonelik limiti | `SUB_001` Free max 3 | **Kaldırıldı** — limit yok; `SUB_001` = Not Found |
+> | AI premium | `AI_001` Premium Required | **`AI_KEY_MISSING`** — SystemSettings LLM key |
 > | Rapor premium | `REP_001` Premium | **Kaldırıldı** — `REP_001` = InvalidDateRange |
-> | Push premium | `PRO_006` | **Kaldırıldı** |
-> | `PAY_*` | Ödeme | **Kaldırıldı** (sınıf yok) |
-> | SystemSettings | — | `SET_001`…`SET_004` eklendi |
+> | `PAY_*` | Ödeme | **Kaldırıldı** |
+> | SystemSettings | — | `SET_001`…`SET_004` |
+> | Setup / refresh reuse | — | `SETUP_*`, `AUTH_016`…`AUTH_019` |
 >
-> Aşağıdaki eski tablolar tarihsel referans içerebilir; **uygulama için `DomainErrors.cs` geçerlidir.**
+> Aşağıdaki tablolar **tarihsel** referans içerebilir (eski numaralandırma).  
+> **Uygulama ve yeni entegrasyonlar için `ERROR_CODES_OS.md` + `DomainErrors.cs` geçerlidir.**
 
 > **Referanslar:**
 >
