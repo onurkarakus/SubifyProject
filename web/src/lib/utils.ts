@@ -17,6 +17,18 @@ export function formatMoney(amount: number, currency = "TRY", locale = "tr") {
   }
 }
 
+/** Multi-currency dual display (task 16.1.1). */
+export {
+  convertCurrency,
+  formatMoneyDual,
+  toFxRatesSnapshot,
+  type ConvertCurrencyResult,
+  type FormatMoneyDualOptions,
+  type FxRatesSnapshot,
+  type MoneyDualKind,
+  type MoneyDualResult,
+} from "@/lib/fx/money-dual";
+
 export function formatDate(value: string | Date, locale = "tr") {
   const d = typeof value === "string" ? new Date(value) : value;
   return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "tr-TR", {

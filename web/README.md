@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Subify OS Web
 
-## Getting Started
+Next.js 16 (App Router) + TypeScript + Tailwind CSS 4.
 
-First, run the development server:
+## Setup
 
 ```bash
+cd web
+cp .env.example .env.local
+# edit NEXT_PUBLIC_API_URL if needed (default http://localhost:5240/api)
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Auth storage (10.1.6)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Access + refresh tokens live in **sessionStorage** (cleared when the tab closes).
 
-## Learn More
+- Practical for self-host without a BFF/httpOnly cookie layer
+- XSS still matters: do not render untrusted HTML; use CSP in production
+- Alternative later: memory-only access token + httpOnly refresh via BFF
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Description |
+| ------- | ----------- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## App routes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Path | Notes |
+| ---- | ----- |
+| `/` | Landing |
+| `/login`, `/register`, `/accept-invite` | Auth |
+| `/dashboard` | Summary, upcoming, activity |
+| `/subscriptions` | List / create / edit / archive |
+| `/reports` | Monthly + category charts (CSS bars) |
+| `/ai` | Analyze + history |
+| `/profile` | Profile + change password |
+| `/admin/users` | Users, create, invite, reset password |
+| `/admin/settings` | Instance + AI + SMTP (SuperAdmin) |
