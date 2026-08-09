@@ -2,9 +2,14 @@
 
 Bu doküman, RevenueCat ödeme entegrasyonu için gerekli ürün ve entitlement yapılandırmasını detaylandırır.
 
+> **Durum (2026-08):** Subify **OS** hattında ödeme **yok** (manifesto). Bu dosya **legacy + gelecekteki Subify Cloud (SaaS)** referansıdır.  
+> Cloud geçiş planı: [SUBIFY_SAAS_TRANSITION_PRD.md](./SUBIFY_SAAS_TRANSITION_PRD.md) · task’lar: [SUBIFY_SAAS_TRANSITION_TASK_LIST.md](./SUBIFY_SAAS_TRANSITION_TASK_LIST.md) (`S3` RevenueCat).  
+> Cloud’da önerilen model: **organization-billed**, `app_user_id = organizationId`; entitlement set Free/Plus/Pro (yalnız `premium` değil) — PRD ile güncellenecek.
+
 > **Referanslar:**
 >
-> - [Ana PRD](./Subify.Web.Uygulamasi.v2.PRD.md)
+> - [Ana PRD (legacy web)](./Subify.Web.Uygulamasi.v2.PRD.md)
+> - [SaaS Transition PRD](./SUBIFY_SAAS_TRANSITION_PRD.md)
 > - [SEQUENCE_DIAGRAMS.md](./diagrams/SEQUENCE_DIAGRAMS.md)
 
 ---

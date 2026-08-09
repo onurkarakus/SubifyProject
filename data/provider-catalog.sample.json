@@ -1,0 +1,105 @@
+{
+  "updateExisting": false,
+  "providers": [
+    {
+      "name": "Netflix",
+      "slug": "netflix",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 229.99,
+      "sourceUrl": "https://www.netflix.com/tr/",
+      "logoUrl": null
+    },
+    {
+      "name": "Spotify",
+      "slug": "spotify",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 79.99,
+      "sourceUrl": "https://www.spotify.com/tr/",
+      "logoUrl": null
+    },
+    {
+      "name": "YouTube Premium",
+      "slug": "youtube-premium",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 89.99,
+      "sourceUrl": "https://www.youtube.com/premium",
+      "logoUrl": null
+    },
+    {
+      "name": "Disney+",
+      "slug": "disney-plus",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 149.99,
+      "sourceUrl": "https://www.disneyplus.com/",
+      "logoUrl": null
+    },
+    {
+      "name": "Apple One",
+      "slug": "apple-one",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 179.99,
+      "sourceUrl": "https://www.apple.com/apple-one/",
+      "logoUrl": null
+    },
+    {
+      "name": "Microsoft 365",
+      "slug": "microsoft-365",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 199.99,
+      "sourceUrl": "https://www.microsoft.com/microsoft-365",
+      "logoUrl": null
+    },
+    {
+      "name": "ChatGPT Plus",
+      "slug": "chatgpt-plus",
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "region": "US",
+      "price": 20,
+      "sourceUrl": "https://chatgpt.com/",
+      "logoUrl": null
+    },
+    {
+      "name": "GitHub Pro",
+      "slug": "github-pro",
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "region": "US",
+      "price": 4,
+      "sourceUrl": "https://github.com/pricing",
+      "logoUrl": null
+    },
+    {
+      "name": "Notion Plus",
+      "slug": "notion-plus",
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "region": "US",
+      "price": 10,
+      "sourceUrl": "https://www.notion.so/pricing",
+      "logoUrl": null
+    },
+    {
+      "name": "iCloud+",
+      "slug": "icloud-plus",
+      "currency": "TRY",
+      "billingCycle": "monthly",
+      "region": "TR",
+      "price": 34.99,
+      "sourceUrl": "https://www.apple.com/icloud/",
+      "logoUrl": null
+    }
+  ]
+}

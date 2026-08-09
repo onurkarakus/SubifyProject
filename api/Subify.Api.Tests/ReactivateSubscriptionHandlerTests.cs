@@ -6,183 +6,103 @@ using Microsoft.Extensions.DependencyInjection;
 using Subify.Application.Common.Activity;
 using Subify.Application.Common.Interfaces;
 using Subify.Application.Features.Subscriptions;
+using Subify.Application.Features.Subscriptions.ArchiveSubscription;
 using Subify.Application.Features.Subscriptions.CreateSubscription;
-using Subify.Application.Features.Subscriptions.UpdateSubscription;
+using Subify.Application.Features.Subscriptions.ReactivateSubscription;
 using Subify.Domain.Constants;
 using Subify.Domain.Entities;
-using Subify.Domain.Enums;
 using Subify.Domain.Errors;
 using Subify.Domain.Shared;
 using Subify.Infrastructure.Persistence;
 
 namespace Subify.Api.Tests;
 
-/// <summary>Task 4.1.6 — UpdateSubscription ownership + activity old/new.</summary>
-public class UpdateSubscriptionHandlerTests
+/// <summary>Task 4.1.8 — ReactivateSubscription restore + activity.</summary>
+public class ReactivateSubscriptionHandlerTests
 {
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.UtcNow);
 
     [Fact]
-    public async Task Update_own_subscription_persists_and_logs_activity()
+    public async Task Reactivate_archived_restores_and_writes_activity()
     {
         await using var harness = await Harness.CreateAsync();
         var userId = await harness.SeedUserAsync("owner@subify.local");
         harness.SetUser(userId);
 
         var created = await harness.CreateAsync(new CreateSubscriptionCommand(
-            "Netflix", 100m, "TRY", "monthly", 1, Today.AddDays(10)));
-        Assert.True(created.IsSuccess);
+            "Disney+", 80m, "TRY", "monthly", 1, Today.AddDays(10)));
+        Assert.True((await harness.ArchiveAsync(created.Value.Id)).IsSuccess);
 
-        var updated = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            Id: created.Value.Id,
-            Name: "Netflix Premium",
-            Price: 200m,
-            Currency: "TRY",
-            BillingCycle: "yearly",
-            SharedWithCount: 2,
-            NextRenewalDate: Today.AddDays(30),
-            Notes: "Upgraded"));
-
-        Assert.True(updated.IsSuccess, updated.IsFailure ? updated.Error.Code : null);
-        Assert.Equal("Netflix Premium", updated.Value.Name);
-        Assert.Equal(200m, updated.Value.Price);
-        Assert.Equal(BillingCycle.Yearly, updated.Value.BillingCycle);
-        Assert.Equal(100m, updated.Value.UserShare); // 200/2
-        Assert.Equal("Upgraded", updated.Value.Notes);
+        var reactivated = await harness.ReactivateAsync(created.Value.Id);
+        Assert.True(reactivated.IsSuccess, reactivated.IsFailure ? reactivated.Error.Code : null);
+        Assert.False(reactivated.Value.Archived);
 
         using var scope = harness.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
+        var row = await db.Subscriptions.SingleAsync(s => s.Id == created.Value.Id);
+        Assert.False(row.Archived);
+        Assert.Null(row.DeletedAt);
+
         var log = await db.ActivityLogs.SingleAsync(a =>
             a.EntityId == created.Value.Id
-            && a.Action == ActivityLogConstants.Actions.SubscriptionUpdated);
-
-        Assert.NotNull(log.OldValues);
-        Assert.NotNull(log.NewValues);
-        Assert.Contains("Netflix", log.OldValues, StringComparison.Ordinal);
-        Assert.True(
-            log.NewValues.Contains("Netflix Premium", StringComparison.Ordinal)
-            || log.NewValues.Contains("Premium", StringComparison.Ordinal));
-        Assert.Contains("200", log.NewValues, StringComparison.Ordinal);
+            && a.Action == ActivityLogConstants.Actions.SubscriptionReactivated);
+        Assert.Contains("\"archived\":true", log.OldValues!, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"archived\":false", log.NewValues!, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task Update_price_change_writes_history_and_latest()
-    {
-        await using var harness = await Harness.CreateAsync();
-        var userId = await harness.SeedUserAsync("owner@subify.local");
-        harness.SetUser(userId);
-
-        var created = await harness.CreateAsync(new CreateSubscriptionCommand(
-            "Spotify", 50m, "TRY", "monthly", 1, Today.AddDays(10)));
-        Assert.True(created.IsSuccess);
-
-        var updated = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            Id: created.Value.Id,
-            Name: "Spotify",
-            Price: 80m,
-            Currency: "TRY",
-            BillingCycle: "monthly",
-            SharedWithCount: 1,
-            NextRenewalDate: Today.AddDays(10)));
-
-        Assert.True(updated.IsSuccess, updated.IsFailure ? updated.Error.Code : null);
-        Assert.NotNull(updated.Value.LatestPriceChange);
-        Assert.Equal(50m, updated.Value.LatestPriceChange!.OldPrice);
-        Assert.Equal(80m, updated.Value.LatestPriceChange.NewPrice);
-        Assert.True(updated.Value.LatestPriceChange.IsIncrease);
-        Assert.NotNull(updated.Value.PriceHistory);
-        Assert.Single(updated.Value.PriceHistory!);
-
-        using var scope = harness.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
-        Assert.Equal(1, await db.SubscriptionPriceHistories.CountAsync(h => h.SubscriptionId == created.Value.Id));
-    }
-
-    [Fact]
-    public async Task Update_missing_returns_not_found()
-    {
-        await using var harness = await Harness.CreateAsync();
-        harness.SetUser(await harness.SeedUserAsync("u@subify.local"));
-
-        var result = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            Guid.CreateVersion7(), "X", 10m, "TRY", "monthly", 1, Today.AddDays(1)));
-
-        Assert.Equal(DomainErrors.Subscription.SubscriptionNotFound.Code, result.Error.Code);
-    }
-
-    [Fact]
-    public async Task Update_foreign_returns_access_denied()
-    {
-        await using var harness = await Harness.CreateAsync();
-        var owner = await harness.SeedUserAsync("owner@subify.local");
-        var other = await harness.SeedUserAsync("other@subify.local");
-
-        harness.SetUser(owner);
-        var created = await harness.CreateAsync(new CreateSubscriptionCommand(
-            "Private", 50m, "TRY", "monthly", 1, Today.AddDays(5)));
-
-        harness.SetUser(other);
-        var result = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            created.Value.Id, "Hacked", 1m, "TRY", "monthly", 1, Today.AddDays(5)));
-
-        Assert.Equal(DomainErrors.Subscription.SubscriptionAccessDenied.Code, result.Error.Code);
-    }
-
-    [Fact]
-    public async Task Update_rejects_inactive_provider()
+    public async Task Reactivate_active_is_idempotent_without_activity()
     {
         await using var harness = await Harness.CreateAsync();
         var userId = await harness.SeedUserAsync("u@subify.local");
         harness.SetUser(userId);
 
         var created = await harness.CreateAsync(new CreateSubscriptionCommand(
-            "Tool", 10m, "USD", "monthly", 1, Today.AddDays(5)));
-        var inactiveProvider = await harness.SeedProviderAsync(active: false);
+            "Active", 10m, "TRY", "monthly", 1, Today.AddDays(3)));
 
-        var result = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            created.Value.Id,
-            "Tool",
-            10m,
-            "USD",
-            "monthly",
-            1,
-            Today.AddDays(5),
-            ProviderId: inactiveProvider));
+        Assert.True((await harness.ReactivateAsync(created.Value.Id)).IsSuccess);
+        Assert.True((await harness.ReactivateAsync(created.Value.Id)).IsSuccess);
 
-        Assert.Equal(DomainErrors.Subscription.ProviderNotActive.Code, result.Error.Code);
+        using var scope = harness.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
+        var count = await db.ActivityLogs.CountAsync(a =>
+            a.EntityId == created.Value.Id
+            && a.Action == ActivityLogConstants.Actions.SubscriptionReactivated);
+        Assert.Equal(0, count);
     }
 
     [Fact]
-    public async Task Update_rejects_foreign_user_category()
+    public async Task Reactivate_missing_returns_not_found()
+    {
+        await using var harness = await Harness.CreateAsync();
+        harness.SetUser(await harness.SeedUserAsync("u@subify.local"));
+
+        var result = await harness.ReactivateAsync(Guid.CreateVersion7());
+        Assert.Equal(DomainErrors.Subscription.SubscriptionNotFound.Code, result.Error.Code);
+    }
+
+    [Fact]
+    public async Task Reactivate_foreign_returns_access_denied()
     {
         await using var harness = await Harness.CreateAsync();
         var owner = await harness.SeedUserAsync("owner@subify.local");
         var other = await harness.SeedUserAsync("other@subify.local");
-        var foreignCat = await harness.SeedUserCategoryAsync(other, "Not yours");
 
         harness.SetUser(owner);
         var created = await harness.CreateAsync(new CreateSubscriptionCommand(
-            "Gym", 50m, "TRY", "monthly", 1, Today.AddDays(5)));
+            "Private", 20m, "TRY", "monthly", 1, Today.AddDays(5)));
+        await harness.ArchiveAsync(created.Value.Id);
 
-        var result = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            created.Value.Id,
-            "Gym",
-            50m,
-            "TRY",
-            "monthly",
-            1,
-            Today.AddDays(5),
-            UserCategoryId: foreignCat));
-
+        harness.SetUser(other);
+        var result = await harness.ReactivateAsync(created.Value.Id);
         Assert.Equal(DomainErrors.Subscription.SubscriptionAccessDenied.Code, result.Error.Code);
     }
 
     [Fact]
-    public async Task Update_unauthenticated_fails()
+    public async Task Reactivate_unauthenticated_fails()
     {
         await using var harness = await Harness.CreateAsync();
-        var result = await harness.UpdateAsync(new UpdateSubscriptionCommand(
-            Guid.CreateVersion7(), "X", 10m, "TRY", "monthly", 1, Today.AddDays(1)));
+        var result = await harness.ReactivateAsync(Guid.CreateVersion7());
         Assert.Equal(DomainErrors.UserErrors.UnAuthorized.Code, result.Error.Code);
     }
 
@@ -224,7 +144,8 @@ public class UpdateSubscriptionHandlerTests
             services.AddScoped<ISubifyDbContext>(sp => sp.GetRequiredService<SubifyDbContext>());
             services.AddScoped<IActivityLogger, ActivityLogger>();
             services.AddScoped<CreateSubscriptionHandler>();
-            services.AddScoped<UpdateSubscriptionHandler>();
+            services.AddScoped<ArchiveSubscriptionHandler>();
+            services.AddScoped<ReactivateSubscriptionHandler>();
 
             var provider = services.BuildServiceProvider();
             provider.GetRequiredService<IHttpContextAccessor>().HttpContext = new DefaultHttpContext();
@@ -272,37 +193,6 @@ public class UpdateSubscriptionHandlerTests
             return user.Id;
         }
 
-        public async Task<Guid> SeedProviderAsync(bool active)
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
-            var p = Provider.CreateCatalog(
-                "Test Provider",
-                $"provider-{Guid.NewGuid():N}"[..20],
-                "USD",
-                9.99m,
-                BillingCycle.Monthly,
-                "GLOBAL");
-            if (!active)
-            {
-                p.Deactivate();
-            }
-
-            db.Providers.Add(p);
-            await db.SaveChangesAsync();
-            return p.Id;
-        }
-
-        public async Task<Guid> SeedUserCategoryAsync(Guid userId, string name)
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
-            var c = UserCategory.CreateForUser(userId, name);
-            db.UserCategories.Add(c);
-            await db.SaveChangesAsync();
-            return c.Id;
-        }
-
         public async Task<Result<CreateSubscriptionResponse>> CreateAsync(CreateSubscriptionCommand command)
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -310,11 +200,18 @@ public class UpdateSubscriptionHandlerTests
                 .Handle(command, CancellationToken.None);
         }
 
-        public async Task<Result<SubscriptionResponse>> UpdateAsync(UpdateSubscriptionCommand command)
+        public async Task<Result<SubscriptionResponse>> ArchiveAsync(Guid id)
         {
             await using var scope = _provider.CreateAsyncScope();
-            return await scope.ServiceProvider.GetRequiredService<UpdateSubscriptionHandler>()
-                .Handle(command, CancellationToken.None);
+            return await scope.ServiceProvider.GetRequiredService<ArchiveSubscriptionHandler>()
+                .Handle(new ArchiveSubscriptionCommand(id), CancellationToken.None);
+        }
+
+        public async Task<Result<SubscriptionResponse>> ReactivateAsync(Guid id)
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ReactivateSubscriptionHandler>()
+                .Handle(new ReactivateSubscriptionCommand(id), CancellationToken.None);
         }
 
         public async ValueTask DisposeAsync()

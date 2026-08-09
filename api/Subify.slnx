@@ -2,6 +2,7 @@
   <Project Path="Subify.Api.Tests/Subify.Api.Tests.csproj" />
   <Project Path="Subify.Api/Subify.Api.csproj" />
   <Project Path="Subify.Application/Subify.Application.csproj" />
+  <Project Path="Subify.Application.Tests/Subify.Application.Tests.csproj" />
   <Project Path="Subify.Domain.Tests/Subify.Domain.Tests.csproj" />
   <Project Path="Subify.Domain/Subify.Domain.csproj" />
   <Project Path="Subify.Infrastructure/Subify.Infrastructure.csproj" />

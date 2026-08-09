@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Subify.Application.Common.Activity;
 using Subify.Application.Common.Interfaces;
 using Subify.Application.Features.Auth.Login;
 using Subify.Domain.Constants;
@@ -36,6 +37,11 @@ public class LoginHandlerTests
         var stored = await db.RefreshTokens.SingleAsync();
         Assert.NotEqual(result.Value.RefreshToken, stored.TokenHash);
         Assert.Equal(64, stored.TokenHash.Length);
+
+        // 5.4.3 — successful login activity
+        var log = await db.ActivityLogs.SingleAsync();
+        Assert.Equal(ActivityLogConstants.EntityTypes.Auth, log.EntityType);
+        Assert.Equal(ActivityLogConstants.Actions.AuthLogin, log.Action);
     }
 
     [Fact]
@@ -71,6 +77,10 @@ public class LoginHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Equal(DomainErrors.Auth.InvalidCredentials.Code, result.Error.Code);
+
+        using var scope = harness.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SubifyDbContext>();
+        Assert.Empty(await db.ActivityLogs.ToListAsync());
     }
 
     [Fact]
@@ -141,9 +151,11 @@ public class LoginHandlerTests
 
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ISubifyDbContext>(sp => sp.GetRequiredService<SubifyDbContext>());
+            services.AddScoped<IActivityLogger, ActivityLogger>();
             services.AddScoped<LoginHandler>();
 
             var provider = services.BuildServiceProvider();
+            provider.GetRequiredService<IHttpContextAccessor>().HttpContext = new DefaultHttpContext();
 
             await using (var scope = provider.CreateAsyncScope())
             {

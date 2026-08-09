@@ -6,6 +6,24 @@ Bu doküman, Subify projesinin test yaklaşımını ve coverage hedeflerini tan�
 >
 > - [API_CONTRACTS.md](./API_CONTRACTS.md)
 > - [SEQUENCE_DIAGRAMS.md](./diagrams/SEQUENCE_DIAGRAMS.md)
+> - Operasyonel task checklist: [SUBIFY_OS_TASK_LIST.md](./SUBIFY_OS_TASK_LIST.md) · Faz 12
+
+---
+
+## Subify OS — mevcut test düzeni (2026-08-01)
+
+> Aşağıdaki “legacy freemium” örnekleri tarihseldir. **OS ürününde subscription limiti yok.**
+
+| Proje | Rol | Komut |
+| ----- | --- | ----- |
+| `api/Subify.Domain.Tests` | Domain pure logic (math, XOR, seeds) | `dotnet test api/Subify.Domain.Tests` |
+| `api/Subify.Application.Tests` | FluentValidation unit | `dotnet test api/Subify.Application.Tests` |
+| `api/Subify.Api.Tests` | Handler harness + `Integration/` WAF | `dotnet test api/Subify.Api.Tests` |
+| Full API solution | Hepsi | `dotnet test api/Subify.slnx` |
+| `web/e2e` | Playwright smoke (P2, live stack) | `cd web && npx playwright test` |
+
+**Integration factory:** `SubifyWebApplicationFactory` — env `Testing`, SQLite shared memory, hosted services off, `EnsureCreated` + role/settings seed.  
+**Kritik akışlar:** auth (setup→login→refresh→logout), subscription isolation, admin 403, no freemium limit.
 
 ---
 
