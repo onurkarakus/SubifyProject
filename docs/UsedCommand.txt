@@ -23,3 +23,29 @@ dotnet ef database drop -p ../Subify.Infrastructure -s . --force
   "email": "onurkarakus2103@gmail.com",
   "password": "P@ssw0rd"
 }
+
+
+cd docker && docker compose -f docker-compose.db.yaml up -d
+cd ../api/Subify.Api && dotnet run --launch-profile http
+cd ../../web && npm run dev
+
+cd docker && docker compose down -v && docker compose up -d --build
+
+docker compose up -d --build    
+
+
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H 'X-goog-api-key: AIzaSyDOUHaGjbpc-WkqX33jx21rcER2-lpdjis' \
+  -X POST \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "Explain how AI works in a few words"
+          }
+        ]
+      }
+    ]
+  }'
