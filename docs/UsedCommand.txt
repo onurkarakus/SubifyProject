@@ -8,7 +8,7 @@ dotnet ef database drop -p ../Subify.Infrastructure -s . --force
 {
   "email": "admin@example.com",
   "password": "ChangeMe_123!",
-  "fullName": "Onur Karakuş",
+  "fullName": "Demo User",
   "mainCurrency": "TL",
   "locale": "tr-TR",
   "useDarkTheme": true,
