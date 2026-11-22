@@ -6,7 +6,6 @@ Bu doküman, Subify projesinin test yaklaşımını ve coverage hedeflerini tan�
 >
 > - [API_CONTRACTS.md](./API_CONTRACTS.md)
 > - [SEQUENCE_DIAGRAMS.md](./diagrams/SEQUENCE_DIAGRAMS.md)
-> - Operasyonel task checklist: [SUBIFY_OS_TASK_LIST.md](./SUBIFY_OS_TASK_LIST.md) · Faz 12
 
 ---
 

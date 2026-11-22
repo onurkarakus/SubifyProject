@@ -909,8 +909,6 @@ Aşağıdakiler manifesto ile çelişmez; implementasyon sırasında kilitlenebi
 | [UI_MOCKUPS.md](./UI_MOCKUPS.md) | Ekran referansı | Renk token’ları manifesto ile override |
 | [TESTING_STRATEGY.md](./TESTING_STRATEGY.md) | Test | Premium senaryoları çıkar |
 | [LOGGING_MONITORING.md](./LOGGING_MONITORING.md) | Log | Geçerli |
-| [Subify.Web.Uygulamasi.v2.PRD.md](./Subify.Web.Uygulamasi.v2.PRD.md) | **LEGACY SaaS** | Tarihsel; uygulama için kullanma |
-| [SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md](./SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md) | Eski task list | OS roadmap ile yeniden hizalanmalı |
 | diagrams/* | Diyagramlar | MSSQL/RevenueCat notları güncellenmeli |
 
 ---

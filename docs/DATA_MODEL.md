@@ -20,7 +20,6 @@ Bu doküman, Subify uygulamasının tüm veritabanı tablolarını, ilişkilerin
 > **Referanslar:**
 >
 > - [Subify OS PRD](./SUBIFY_OS_PRD.md) *(geçerli)*
-> - [Eski SaaS PRD — LEGACY](./Subify.Web.Uygulamasi.v2.PRD.md)
 > - [ADR Kararları](./ADR.md)
 > - [ERD Diyagramı](./diagrams/ERD.md)
 

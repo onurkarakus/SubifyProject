@@ -5,7 +5,7 @@ Bu doküman, Subify uygulamasının loglama ve izleme yaklaşımını detayland�
 > **Referanslar:**
 >
 > - [DEPLOYMENT_DIAGRAM.md](./diagrams/DEPLOYMENT_DIAGRAM.md)
-> - [PRD - Observability Section](./Subify.Web.Uygulamasi.v2.PRD.md)
+> - [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md)
 
 ---
 

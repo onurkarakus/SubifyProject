@@ -27,27 +27,21 @@ Subify OS keeps **two layers** of docs on purpose:
 
 ## Maintainer memory (mostly Turkish)
 
-> These files are the **project brain**: decisions, backlog, future SaaS path.  
+> These files are the **project brain**: product decisions and requirements. Task lists, the future SaaS plan and legacy PRDs live in the maintainer's private notes.  
 > They stay in the repo for continuity. They are **not** linked from the root README so the public surface stays English and scannable.
 
 | Doc | Language | Role |
 | --- | -------- | ---- |
 | [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md) | TR | Product constitution (self-host, no freemium) |
 | [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md) | TR | OS product requirements |
-| [SUBIFY_OS_TASK_LIST.md](./SUBIFY_OS_TASK_LIST.md) | TR | Implementation checklist / sprint memory |
-| [SUBIFY_SAAS_TRANSITION_PRD.md](./SUBIFY_SAAS_TRANSITION_PRD.md) | TR | Future Cloud product PRD (not OS runtime) |
-| [SUBIFY_SAAS_TRANSITION_TASK_LIST.md](./SUBIFY_SAAS_TRANSITION_TASK_LIST.md) | TR | Cloud tasks `S0`–`S9` |
 | [SEED_DATA.md](./SEED_DATA.md) | TR/mixed | Seed notes |
 | [UI_MOCKUPS.md](./UI_MOCKUPS.md) | mixed | Mockup index (legacy design refs) |
 | [ADR.md](./ADR.md) | mixed | Architecture decision records |
-| [REVENUECAT_CONFIG.md](./REVENUECAT_CONFIG.md) | TR/EN | Payment config — **OS has no payments**; Cloud reference |
 
 ### Legacy (keep for history — do not treat as current OS source of truth)
 
 | Doc | Note |
 | --- | ---- |
-| [Subify.Web.Uygulamasi.v2.PRD.md](./Subify.Web.Uygulamasi.v2.PRD.md) | Old freemium SaaS PRD |
-| [SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md](./SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md) | Old task list |
 | [mockups/](./mockups/) | Early design images (README uses **live** [screenshots/](./screenshots/) instead) |
 
 ---
@@ -57,7 +51,7 @@ Subify OS keeps **two layers** of docs on purpose:
 | Audience | Language |
 | -------- | -------- |
 | Root README, ARCHITECTURE, public “how to run” | **English** |
-| Day-to-day product memory, task lists, SaaS planning | **Turkish OK** (do not delete) |
+| Day-to-day product memory | **Turkish OK** (do not delete) |
 | New **public-facing** pages | Prefer English |
 | Full dual-language copies of every PRD | **Not required** unless external contributors demand it |
 
@@ -65,10 +59,9 @@ Subify OS keeps **two layers** of docs on purpose:
 
 1. [SUBIFY_OS_MANIFESTO.md](./SUBIFY_OS_MANIFESTO.md)  
 2. [SUBIFY_OS_PRD.md](./SUBIFY_OS_PRD.md)  
-3. [SUBIFY_OS_TASK_LIST.md](./SUBIFY_OS_TASK_LIST.md)  
-4. Other docs  
+3. Other docs  
 
-**Cloud / billing work:** use SaaS transition docs — do not add paywalls to the OS task list.
+**Cloud / billing work:** planned outside this repository — do not add paywalls to Subify OS.
 
 ---
 

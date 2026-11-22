@@ -22,7 +22,6 @@ Bu doküman, Subify API'sinin tüm endpoint'lerini detaylı Request/Response ör
 > **Referanslar:**
 >
 > - [Subify OS PRD](./SUBIFY_OS_PRD.md) *(geçerli)*
-> - [Eski SaaS PRD — LEGACY](./Subify.Web.Uygulamasi.v2.PRD.md)
 > - [Sequence Diagrams](./diagrams/SEQUENCE_DIAGRAMS.md)
 
 ---

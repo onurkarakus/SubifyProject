@@ -6,7 +6,7 @@ Bu doküman, Subify uygulamasının mobil ve web arayüz tasarımlarını içeri
 >
 > **Referanslar:**
 >
-> - [Ana PRD](./Subify.Web.Uygulamasi.v2.PRD.md)
+> - [Ana PRD](./SUBIFY_OS_PRD.md)
 > - [Component Diagram](./diagrams/COMPONENT_DIAGRAM.md)
 
 ---

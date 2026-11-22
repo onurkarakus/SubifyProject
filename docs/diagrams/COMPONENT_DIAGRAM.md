@@ -4,7 +4,7 @@ Bu doküman, Subify uygulamasının sistem bileşenlerini ve aralarındaki bağ�
 
 > **Referanslar:**
 >
-> - [Ana PRD](../Subify.Web.Uygulamasi.v2.PRD.md)
+> - [Ana PRD](../SUBIFY_OS_PRD.md)
 > - [Deployment Diagram](./DEPLOYMENT_DIAGRAM.md)
 
 ---

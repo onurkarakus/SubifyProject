@@ -4,7 +4,7 @@ Bu doküman, Subify uygulamasının VPS üzerindeki deployment yapısını Docke
 
 > **Referanslar:**
 >
-> - [Ana PRD](../Subify.Web.Uygulamasi.v2.PRD.md)
+> - [Ana PRD](../SUBIFY_OS_PRD.md)
 > - [Component Diagram](./COMPONENT_DIAGRAM.md)
 
 ---

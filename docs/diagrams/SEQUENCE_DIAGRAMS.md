@@ -4,7 +4,7 @@ Bu doküman, Subify uygulamasının kritik akışlarını Mermaid sequence diyag
 
 > **Referanslar:**
 >
-> - [Ana PRD](../Subify.Web.Uygulamasi.v2.PRD.md)
+> - [Ana PRD](../SUBIFY_OS_PRD.md)
 > - [API Contracts](../API_CONTRACTS.md)
 
 ---
