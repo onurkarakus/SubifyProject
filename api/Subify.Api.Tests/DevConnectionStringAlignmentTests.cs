@@ -4,7 +4,8 @@ using System.Text.RegularExpressions;
 namespace Subify.Api.Tests;
 
 /// <summary>
-/// Task 2.3.11 — Development connection string stays aligned with docker-compose defaults.
+/// Task 2.3.11 — Development connection string stays aligned with docker-compose defaults,
+/// and the base appsettings.json never carries a database password.
 /// </summary>
 public class DevConnectionStringAlignmentTests
 {
@@ -29,7 +30,12 @@ public class DevConnectionStringAlignmentTests
         var envText = File.ReadAllText(envExample);
 
         AssertContainsCredential(devCs, host: "localhost", database: "subify_db", user: "subify_admin", password: "SecretPassword123!");
-        AssertContainsCredential(baseCs, host: "localhost", database: "subify_db", user: "subify_admin", password: "SecretPassword123!");
+        // Base appsettings ships without a password: real credentials come from
+        // appsettings.Development.json (local docker default), user secrets or environment variables.
+        Assert.Contains("Host=localhost", baseCs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Database=subify_db", baseCs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Username=subify_admin", baseCs, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Password=", baseCs, StringComparison.OrdinalIgnoreCase);
 
         Assert.Contains("subify_admin", composeText);
         Assert.Contains("SecretPassword123!", composeText);

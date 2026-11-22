@@ -50,12 +50,6 @@ Subify OS keeps **two layers** of docs on purpose:
 | [SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md](./SUBIFY_DEVELOPMENT_TASK_LIST_NEW.md) | Old task list |
 | [mockups/](./mockups/) | Early design images (README uses **live** [screenshots/](./screenshots/) instead) |
 
-### Local-only / prefer not to highlight
-
-| File | Note |
-| ---- | ---- |
-| `UsedCommand.txt` | Personal command scrapbook — avoid relying on it in PRs; do not treat as product docs |
-
 ---
 
 ## Language policy (for humans and agents)
